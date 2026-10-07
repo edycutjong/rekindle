@@ -35,3 +35,6 @@ AGENTS.md
 .claude/
 specs/
 graphify-out/
+
+# blind-audit answer key: kitchen only until the external audit returns (scripts/manual_audit.py)
+bench/manual_audit_key.csv

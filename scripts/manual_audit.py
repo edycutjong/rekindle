@@ -7,7 +7,9 @@ sources instead (the venue's own site, its map listing, its menu), and summarise
   sample   draw 20 random arm-A outing venues + 20 random arm-B outing venues from bench/results.json (fixed seed),
            shuffle them together and write
              bench/manual_audit.csv      what the auditor sees: no arm column, no Qloo verdict
-             bench/manual_audit_key.csv  audit_id -> arm (kept apart so an external auditor can work blind)
+             the key                      audit_id -> arm, kept OUT of the repo until the external blind audit returns
+                                          (default ../assets/audit/manual_audit_key.csv beside the project, or --key /
+                                          $REKINDLE_AUDIT_KEY); committed with the audit summary once the verdicts are in
            Refuses to overwrite a CSV that already has verdicts unless --force.
   summary  join the filled CSV with the key -> bench/audit.json (per-arm rates; inconclusive rows are counted and
            left out of the denominator, never guessed).
@@ -27,7 +29,9 @@ from datetime import datetime, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BENCH = os.path.join(ROOT, "bench")
 CSV = os.path.join(BENCH, "manual_audit.csv")
-KEY = os.path.join(BENCH, "manual_audit_key.csv")
+# the answer key stays out of the public repo while the audit is blind (QA round 1); bench/ is the post-audit home
+KEY_CANDIDATES = [os.environ.get("REKINDLE_AUDIT_KEY", ""), os.path.join(os.path.dirname(ROOT), "assets", "audit", "manual_audit_key.csv"), os.path.join(BENCH, "manual_audit_key.csv")]
+KEY = next((k for k in KEY_CANDIDATES if k and os.path.exists(k)), KEY_CANDIDATES[1])
 FIELDS = ["audit_id", "venue_name", "address", "locality", "day", "hour", "in_recovery", "exists", "open_at_slot", "serves_alcohol", "source_url", "notes"]
 
 
@@ -48,6 +52,7 @@ def sample(a):
             addr = v.get("stated_address") if arm == "A" else (v.get("address") or m.get("address") or "")
             rows.append({"arm": arm, "venue_name": v["name"], "address": addr or "", "locality": profiles[v["profile"]]["locality"], "day": v["day"], "hour": f"{int(v['hour']):02d}:00", "in_recovery": "yes" if v["in_recovery"] else "no"})
     rng.shuffle(rows)
+    os.makedirs(os.path.dirname(KEY), exist_ok=True)
     with open(CSV, "w", newline="") as f, open(KEY, "w", newline="") as k:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         kw = csv.writer(k)
