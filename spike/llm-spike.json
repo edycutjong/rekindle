@@ -1,0 +1,219 @@
+{
+  "at": "2026-10-07T00:23:35.020Z",
+  "n": 5,
+  "variants": [
+    {
+      "label": "qwen3.8-flash",
+      "served": true,
+      "servedModel": "qwen3.8-flash",
+      "ok": 5,
+      "validToolCalls": 5,
+      "p50_ms": 9538,
+      "p95_ms": 13520,
+      "runs": [
+        {
+          "status": 200,
+          "ms": 12872,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "podcast",
+            "take": 3
+          },
+          "reasoningTokens": 565,
+          "completionTokens": 607
+        },
+        {
+          "status": 200,
+          "ms": 4730,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "artist",
+            "take": 3
+          },
+          "reasoningTokens": 248,
+          "completionTokens": 289
+        },
+        {
+          "status": 200,
+          "ms": 7225,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 3
+          },
+          "reasoningTokens": 308,
+          "completionTokens": 350
+        },
+        {
+          "status": 200,
+          "ms": 13520,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "artist",
+            "take": 3
+          },
+          "reasoningTokens": 644,
+          "completionTokens": 685
+        },
+        {
+          "status": 200,
+          "ms": 9538,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 3
+          },
+          "reasoningTokens": 467,
+          "completionTokens": 509
+        }
+      ]
+    },
+    {
+      "label": "qwen3.8-flash enable_thinking=false",
+      "served": true,
+      "servedModel": "qwen3.8-flash",
+      "ok": 5,
+      "validToolCalls": 5,
+      "p50_ms": 1038,
+      "p95_ms": 1071,
+      "runs": [
+        {
+          "status": 200,
+          "ms": 950,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 5
+          },
+          "reasoningTokens": null,
+          "completionTokens": 39
+        },
+        {
+          "status": 200,
+          "ms": 1046,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 5
+          },
+          "reasoningTokens": null,
+          "completionTokens": 39
+        },
+        {
+          "status": 200,
+          "ms": 1038,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 5
+          },
+          "reasoningTokens": null,
+          "completionTokens": 39
+        },
+        {
+          "status": 200,
+          "ms": 1008,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 5
+          },
+          "reasoningTokens": null,
+          "completionTokens": 39
+        },
+        {
+          "status": 200,
+          "ms": 1071,
+          "servedModel": "qwen3.8-flash",
+          "toolCallValid": true,
+          "args": {
+            "type": "tv_show",
+            "take": 5
+          },
+          "reasoningTokens": null,
+          "completionTokens": 39
+        }
+      ]
+    },
+    {
+      "label": "groq openai/gpt-oss-120b",
+      "served": true,
+      "servedModel": "openai/gpt-oss-120b",
+      "ok": 5,
+      "validToolCalls": 5,
+      "p50_ms": 894,
+      "p95_ms": 1028,
+      "runs": [
+        {
+          "status": 200,
+          "ms": 1018,
+          "servedModel": "openai/gpt-oss-120b",
+          "toolCallValid": true,
+          "args": {
+            "take": 3,
+            "type": "artist"
+          },
+          "reasoningTokens": 273,
+          "completionTokens": 308
+        },
+        {
+          "status": 200,
+          "ms": 894,
+          "servedModel": "openai/gpt-oss-120b",
+          "toolCallValid": true,
+          "args": {
+            "take": 3,
+            "type": "artist"
+          },
+          "reasoningTokens": 323,
+          "completionTokens": 358
+        },
+        {
+          "status": 200,
+          "ms": 1028,
+          "servedModel": "openai/gpt-oss-120b",
+          "toolCallValid": true,
+          "args": {
+            "take": 3,
+            "type": "artist"
+          },
+          "reasoningTokens": 262,
+          "completionTokens": 297
+        },
+        {
+          "status": 200,
+          "ms": 865,
+          "servedModel": "openai/gpt-oss-120b",
+          "toolCallValid": true,
+          "args": {
+            "take": 3,
+            "type": "artist"
+          },
+          "reasoningTokens": 146,
+          "completionTokens": 181
+        },
+        {
+          "status": 200,
+          "ms": 798,
+          "servedModel": "openai/gpt-oss-120b",
+          "toolCallValid": true,
+          "args": {
+            "take": 3,
+            "type": "artist"
+          },
+          "reasoningTokens": 274,
+          "completionTokens": 309
+        }
+      ]
+    }
+  ]
+}
