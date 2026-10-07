@@ -284,6 +284,28 @@ export async function findAtHome(ctx: ToolContext, slot: SlotSpec, type: HomeTyp
 }
 
 /** Solo outing: verified place open at the slot, near, within budget, allowed. */
+/** at most this many ambiguous candidates per slot are shown to the clinician (design.md: REVIEW is a dashed box, not a list) */
+export const MAX_REVIEW_PER_SLOT = 2;
+
+/**
+ * After a slot is filled, the rest of Qloo's answer is still screened (no extra request) for candidates the verifier
+ * can only send to clinician REVIEW (e.g. bar seating alone on an in-recovery case), so an ambiguous venue Qloo ranked
+ * below the placed card is surfaced rather than silently dropped. Refused and passing ones are not listed.
+ */
+function heldForReview(ctx: ToolContext, slot: SlotSpec, rest: QlooEntity[], names: Map<string, string>, originForDistance: boolean | undefined, already: number): Card[] {
+  const out: Card[] = [];
+  const lowRated = new Set(ctx.history.lowRated);
+  for (const e of rest) {
+    if (already + out.length >= MAX_REVIEW_PER_SLOT) break;
+    if (ctx.used.has(e.entity_id)) continue;
+    const distance = originForDistance && e.location ? haversine(ctx.case.lat, ctx.case.lon, e.location.lat, e.location.lon) : e.query?.distance;
+    const ent: QlooEntity = distance !== undefined ? { ...e, query: { ...e.query, distance } } : e;
+    const v = verifyCard(ent, { kind: "outing", constraints: ctx.case, lowRated, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen, slot: { day: slot.day, hour: slot.hour } });
+    if (v.verdict === "REVIEW") out.push(toCard(ent, slot, slot.hour, "REVIEW", v.checks, names, distance));
+  }
+  return out;
+}
+
 export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingParamsOpts & { originForDistance?: boolean } = {}): Promise<ToolResult> {
   const names = loveNames(ctx.case, ctx.history);
   let res;
@@ -308,7 +330,8 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
     if (v.verdict === "PASS") {
       ctx.used.add(e.entity_id);
       ctx.usedPlaces?.add(e.entity_id);
-      return { card: toCard(ent, slot, slot.hour, "PASS", v.checks, names, distance), refusals, review, returned: list.length };
+      const card = toCard(ent, slot, slot.hour, "PASS", v.checks, names, distance);
+      return { card, refusals, review: [...review, ...heldForReview(ctx, slot, list.slice(list.indexOf(e) + 1), names, o.originForDistance, review.length)], returned: list.length };
     }
     if (v.verdict === "REVIEW") {
       review.push(toCard(ent, slot, slot.hour, "REVIEW", v.checks, names, distance));
@@ -443,6 +466,18 @@ export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: Case
     const failed = recheckConstraints(s.card, c);
     if (failed.length === 0) {
       slots.push(s);
+      continue;
+    }
+    if (failed.every((r) => r.verdict === "REVIEW")) {
+      // ambiguous under the new constraint (e.g. bar seating alone, now in recovery): not refused, but no longer a card
+      // the clinician can approve blind — it moves to REVIEW and the slot is refilled with a clean candidate
+      const kept = s.card.checks.filter((x) => !failed.some((f) => f.rule === x.rule));
+      review.push({ ...s.card, verdict: "REVIEW", checks: [...kept, ...failed] });
+      const r = s.slot.rung === "solo" ? await findOutings(ctx, s.slot) : await placeSocial(ctx, s.slot);
+      refilled++;
+      slots.push({ slot: s.slot, card: r.card, ...(r.card ? {} : { empty: r.empty }) });
+      refusals.push(...r.refusals);
+      review.push(...r.review);
       continue;
     }
     for (const r of failed) struck.push({ day: s.slot.day, hour: s.card.hour, entity_id: s.card.entity_id, name: s.card.name, rule: r.rule, detail: r.detail, verdict: r.verdict, struckByToggle: true });

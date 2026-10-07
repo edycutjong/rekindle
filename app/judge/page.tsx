@@ -59,7 +59,9 @@ export default async function Judge() {
             strike bars in place.
           </li>
           <li>
-            <b>REVIEW.</b> A candidate the screen cannot decide (e.g. bar seating alone) goes to the clinician in a dashed box, never onto the sheet unasked.
+            <b>REVIEW.</b> A candidate the screen cannot decide (e.g. bar seating alone on an in-recovery case) goes to the clinician in a dashed box, never onto the
+            sheet unasked. Toggle <i>in recovery</i> on Maya&apos;s sheet: ambiguous venues in Qloo&apos;s answers are listed for review. It depends on what Qloo returns
+            that day.
             {reviewSlug ? (
               <span className={j.go}>
                 <StartCase slug={reviewSlug} label={`Plan ${seedLabel(reviewSlug)} (REVIEW in the bench run)`} />
