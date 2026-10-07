@@ -186,6 +186,18 @@ describe("R-KIND: behavioural-activation categories only", () => {
     const v = verifyCard(teku, { kind: "outing", constraints: MAYA, slot: thu(15) });
     expect(v.reasons.find((r) => r.rule === "R-KIND")?.detail).toBe("not an activity: bar");
   });
+
+  it("refuses bar-and-grill, night clubs, lounges and izakayas for every case; barbecue is not a bar (QA round 1: Dokebi Bar and Grill)", () => {
+    // live week 1, not in recovery: placed Sat 18:00 (tags from spike/dx-repro.json F2)
+    const dokebi = place({ name: "Dokebi Bar and Grill", tags: withTags("urn:tag:category:place:korean_restaurant", "urn:tag:category:place:bar_grill", "urn:tag:offerings:place:hard_liquor", "urn:tag:offerings:place:alcohol") });
+    const v = verifyCard(dokebi, { kind: "outing", constraints: MAYA, slot: thu(15) });
+    expect(MAYA.inRecovery).toBe(false);
+    expect(v.verdict).toBe("REFUSE");
+    expect(v.reasons.find((r) => r.rule === "R-KIND")?.detail).toBe("not an activity: bar_grill");
+    for (const slug of ["gastropub", "night_club", "lounge", "cocktail_lounge", "hookah_bar", "izakaya", "sake_bar", "karaoke_bar", "bar_and_grill"])
+      expect(activityKind(place({ tags: withTags("urn:tag:category:place:japanese_restaurant", `urn:tag:category:place:${slug}`) })).ok, slug).toBe(false);
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:barbecue_restaurant") })).ok).toBe(true);
+  });
 });
 
 describe("verifyCard: the whole rule set against the case row", () => {

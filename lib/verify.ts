@@ -348,10 +348,15 @@ const KIND_DENY_HINT = /tattoo|clothing|boutique|jewel|hotel|motel|butcher|meat_
  * not only in recovery (B5 bench: "TeKu Tavern + Café" carries `cafe` AND `bar`/`beer_hall`/`cider_bar` and was
  * placed for a not-in-recovery profile). Only the `category:` namespace counts here; `genre:` tags are softer.
  */
-const DRINK_CATEGORY = new Set(["pub", "brewpub", "brewery", "distillery", "winery", "beer_hall", "beer_garden", "taproom", "tavern", "beer_store", "wine_store", "saloon", "biergarten"]);
+const DRINK_CATEGORY = new Set([
+  "pub", "brewpub", "gastropub", "brewery", "distillery", "winery", "beer_hall", "beer_garden", "taproom", "tavern", "beer_store", "wine_store", "saloon", "biergarten",
+  "night_club", "nightclub", "gay_night_club", "lounge", "cocktail_lounge", "hookah_lounge", "izakaya", "speakeasy", "liquor_store",
+]);
+/** `bar` as a whole word of the slug (bar, wine_bar, bar_grill, bar_and_grill, karaoke_bar) — never `barbecue`. */
+const BAR_WORD = /(^|_)bar(_|$)/;
 export function isDrinkingCategory(slug: string): boolean {
   if (DRINK_CATEGORY.has(slug)) return true;
-  return slug === "bar" || (slug.endsWith("_bar") && !BAR_ALLOW.has(slug));
+  return BAR_WORD.test(slug) && !BAR_ALLOW.has(slug);
 }
 
 export function activityKind(e: Pick<QlooEntity, "tags">): { ok: boolean; matched?: string; categories: string[] } {
