@@ -1,6 +1,9 @@
 name: gitleaks
 
-# Secret scan over the FULL git history. Called by ci.yml (Stage 2) on every push/PR, and weekly on its own.
+# Secret scan over the FULL git history: every commit reachable from the checkout, on every
+# push/PR (called by ci.yml Stage 2) and weekly on its own. Uses the gitleaks CLI, not
+# gitleaks-action: the action picks its own commit range from the triggering event (often a
+# single pushed commit) and ignores fetch-depth. The job log prints "N commits scanned".
 on:
   workflow_call:
   workflow_dispatch:
@@ -19,7 +22,18 @@ jobs:
         with:
           persist-credentials: false # this job never pushes
           fetch-depth: 0 # the point is to scan the past
-      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+      - name: Install gitleaks (pinned release, sha256-verified)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_VERSION: "8.30.1"
+          GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb" # gitleaks_8.30.1_linux_x64.tar.gz, from the release checksums.txt
+        run: |
+          set -euo pipefail
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/$tarball" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/$tarball"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/$tarball" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$tarball" -C "$RUNNER_TEMP" gitleaks
+      - name: Scan every commit in history
+        run: |
+          set -euo pipefail
+          echo "commits in checkout: $(git rev-list --count --all)"
+          "$RUNNER_TEMP/gitleaks" git --no-banner --redact --exit-code 1 --log-opts="--all" .
