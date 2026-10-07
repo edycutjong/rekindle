@@ -577,7 +577,7 @@
 }
 .actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 4px;
   margin-top: 8px;
 }
@@ -586,7 +586,8 @@
 }
 .act {
   min-height: 44px;
-  padding: 0 10px;
+  padding: 0 4px;
+  white-space: nowrap;
   font: 14px var(--font-body);
   color: var(--ink);
   background: var(--paper);
