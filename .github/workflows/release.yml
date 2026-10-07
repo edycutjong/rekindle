@@ -3,16 +3,19 @@ name: release
 # Semantic version from Angular-convention commits since the last tag: feat → minor, fix/perf → patch,
 # feat!/BREAKING CHANGE → major; docs/chore/test/ci/refactor/style → no release.
 # Runs only after the CI/CD Pipeline succeeded for a push to main, and tags exactly the commit CI tested
-# (a commit whose CI fails, or is still running, is never released).
+# (a commit whose CI fails, or is still running, is never released). A manual run (workflow_dispatch)
+# is held to the same rule: it must be dispatched on main, and the "Require green CI" step fails
+# unless a CI/CD Pipeline push run on that exact SHA concluded success.
 on:
   workflow_run:
     workflows: ["CI/CD Pipeline"]
     types: [completed]
     branches: [main]
-  workflow_dispatch: # manual: releases the current main HEAD
+  workflow_dispatch: # manual: releases the current main HEAD, only if CI passed on it
 
 permissions:
   contents: write
+  actions: read # gh run list, for the dispatch CI check
 
 concurrency:
   group: release
@@ -20,11 +23,20 @@ concurrency:
 
 jobs:
   release:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    if: (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     env:
       SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
+      - name: Require green CI on this SHA (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          OK=$(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$SHA" --event push --json conclusion -q '[.[] | select(.conclusion == "success")] | length')
+          if [ "$OK" -lt 1 ]; then echo "::error::no successful CI/CD Pipeline push run for $SHA; not releasing"; exit 1; fi
+          echo "CI/CD Pipeline passed on $SHA"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
