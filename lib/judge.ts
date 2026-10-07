@@ -45,8 +45,12 @@ export interface BenchResults {
   ablation_in_recovery: Record<string, AblationArm>;
   latency: Record<string, Record<string, number | null>>;
   coverage_refusals_arm_b: { profile: string; empty_outings: { day: string; rung: string; reason: string }[] }[];
-  plans: { profile: string; arm: string; review: number; refusals_by_rule: Record<string, number> }[];
+  plans: { profile: string; arm: string; review: number; refusals_by_rule: Record<string, number>; qloo_calls?: number }[];
   errors: unknown[];
+  started_at?: string;
+  wall_seconds?: number;
+  verify_venue_calls?: number;
+  arm_a_runs?: unknown[];
 }
 
 export interface ReplanResults {
@@ -181,4 +185,31 @@ export function profilesWith(bench: BenchResults | null, what: "review" | "cover
   if (!bench) return [];
   if (what === "coverage") return bench.coverage_refusals_arm_b.map((x) => x.profile);
   return bench.plans.filter((p) => p.arm === "B" && p.review > 0).map((p) => p.profile);
+}
+
+/** docs/rigor.json ← scripts/rigor.py: test counts measured from the suite (drift-checked by npm run docs:check) */
+export interface Rigor {
+  tests: number;
+  files: number;
+  property_cases: number;
+  properties: number;
+  runs_per_property: number;
+}
+
+/**
+ * One-line run receipt for /judge, from the bench's own fields (the same facts bench_table.py writes into DEMO.md).
+ * Missing fields are left out, never estimated.
+ */
+export function benchReceipt(b: BenchResults): string {
+  const utc = (iso: string) => `${iso.slice(0, 16).replace("T", " ")} UTC`;
+  const parts: string[] = [`bench run finished ${utc(b.finished_at)}`];
+  if (typeof b.wall_seconds === "number") parts.push(`${b.wall_seconds} s wall clock`);
+  const armA = b.arm_a_runs ? ` + ${b.arm_a_runs.length} arm-A model plans` : "";
+  parts.push(`${b.plans.length} Rekindle plans${armA}`);
+  if (b.plans.every((x) => typeof x.qloo_calls === "number")) {
+    parts.push(`${b.plans.reduce((n, x) => n + (x.qloo_calls ?? 0), 0)} Qloo calls on the plan path`);
+  }
+  if (typeof b.verify_venue_calls === "number") parts.push(`${b.verify_venue_calls} grading calls`);
+  parts.push(`${b.errors.length} errors`);
+  return parts.join(" · ");
 }

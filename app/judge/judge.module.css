@@ -16,6 +16,30 @@
   font-size: 16px;
   margin: 10px 0 24px;
 }
+.claim {
+  max-width: 900px;
+  font-size: 19px;
+  line-height: 1.5;
+  margin: 4px 0 24px;
+}
+.cmd {
+  max-width: 900px;
+  overflow-x: auto;
+  white-space: pre;
+  font: 13px/1.6 var(--font-data);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 12px 14px;
+  margin: 8px 0 10px;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 28px;
+}
 .big {
   font: 40px/1.1 var(--font-data);
   margin: 4px 0;

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartCase } from "@/components/StartCase";
 import r from "@/components/rekindle.module.css";
-import { ARM_LABEL, benchRows, loadJudgeData, pctLabel, profilesWith } from "@/lib/judge";
+import rigorJson from "@/docs/rigor.json";
+import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, pctLabel, profilesWith, type Rigor } from "@/lib/judge";
 import { latestReceipts, type Receipts } from "@/lib/receipts";
 import { SEEDS } from "@/lib/service";
 import { storeFromEnv } from "@/lib/store";
@@ -13,10 +14,15 @@ import j from "./judge.module.css";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Judge receipts · Rekindle" };
 
+const REPO = "https://github.com/edycutjong/rekindle";
+const LIVE = "https://rekindle-one.vercel.app";
+const rigor: Rigor = rigorJson;
+
 const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ?? slug;
 
 /**
- * /judge: the receipts a judge needs without reading code — the six edge states to click,
+ * /judge: the receipts a judge needs without reading code — the claim, the 30-second path, how to reproduce, the honest
+ * limitations and the links (mirrored in JUDGE.md), then the six edge states to click,
  * the bench table (Qloo-graded and manually audited side by side), the ablation, re-plan responsiveness, and the
  * refusals by rule of the latest live runs. Every number is read from a committed script output or a stored call log.
  */
@@ -44,6 +50,124 @@ export default async function Judge() {
           <code>bench/results.json</code>, <code>bench/replan.json</code> and <code>bench/audit.json</code> in the repository (written by the scripts named beside them)
           and from the stored Qloo call logs of this deployment.
         </p>
+
+        <h2 className={s.h2}>The claim</h2>
+        <p className={j.claim} data-testid="claim">
+          <b>Rekindle is a behavioural-activation planning agent for clinicians.</b> It turns what a depressed patient used to love into a week of real, open, nearby
+          activities, verified with Qloo, approved by the clinician, and re-planned from the patient&apos;s own pleasure ratings.
+        </p>
+
+        <h2 className={s.h2}>The 30-second path</h2>
+        <ol className={j.states} data-testid="click-path">
+          <li>
+            Open <Link className={r.link} href="/">the live app</Link> and click <b>Plan Maya&apos;s week, live</b>. The agent trace lists each Qloo call as it happens;
+            the week arrives in about 20 s.
+          </li>
+          <li>
+            Click <b>In recovery</b>. Alcohol-serving venues are struck in place with their rule (<code>R-ALC …</code>) and those slots are refilled live.
+          </li>
+          <li>
+            Come back here for the six edge states (each with a live start button) and the bench, and open{" "}
+            <Link className={r.link} href="/integrations/qloo">
+              /integrations/qloo
+            </Link>{" "}
+            for every Qloo request behind the latest plans (the key is never shown).
+          </li>
+        </ol>
+        <p className={j.def}>
+          The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in{" "}
+          <a className={r.link} href={`${REPO}/blob/main/DEMO.md`}>
+            DEMO.md
+          </a>
+          , about 4 minutes.
+        </p>
+
+        <h2 className={s.h2}>Receipts in one line</h2>
+        <p className={j.def} data-testid="receipt-line">
+          <b>
+            {rigor.tests} Vitest tests in {rigor.files} files
+          </b>
+          , no keys needed (<code>npm test</code>) · <b>{rigor.property_cases.toLocaleString("en-US")} generated verifier cases</b> ({rigor.properties} properties ×{" "}
+          {rigor.runs_per_property.toLocaleString("en-US")}, fixed seeds): no PASS outing ever breaks a hard constraint
+          {bench && (
+            <>
+              {" "}
+              · {benchReceipt(bench)} (<code>bench/results.json</code>)
+            </>
+          )}
+          .
+        </p>
+
+        <h2 className={s.h2}>Reproduce (the real path)</h2>
+        <pre className={j.cmd} data-testid="reproduce">
+          {`# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
+git clone ${REPO} && cd rekindle && npm ci
+python3 scripts/ui_smoke.py ${LIVE} /tmp/shots live
+E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
+# the bench, against a live deployment (needs BENCH_TOKEN and model keys): DEMO.md "Bench (reproduce)"`}
+        </pre>
+        <p className={j.def}>
+          <b>CI / deterministic, not the product:</b> <code>npm run check</code> and <code>npx playwright test</code> run with no keys. In that mode the app refuses to
+          plan (&ldquo;No week is invented&rdquo;) and the E2E suite asserts exactly that.
+        </p>
+
+        <h2 className={s.h2}>Honest limitations</h2>
+        <ol className={j.states} data-testid="limitations">
+          <li>
+            <b>Not a clinical tool.</b> Clinician support only: no diagnosis, no efficacy claims, no patient logins.
+          </li>
+          <li>
+            <b>A plan is slow:</b> p50 about 17 s from click in the bench, inside our 30 s gate but over the 15 s target.
+          </li>
+          <li>
+            <b>The ember thread is attribution, not causation</b>, and on live re-plans most leads are ties (see re-plan responsiveness below).
+          </li>
+          <li>
+            <b>The alcohol screen is a deny list.</b> It is measured by the ablation below, but an alcohol-serving venue with none of the tags or keywords would get
+            through.
+          </li>
+        </ol>
+        <p className={j.def}>
+          All seven are in the{" "}
+          <a className={r.link} href={`${REPO}#limitations-honest-limits-7`}>
+            README (Limitations)
+          </a>
+          .
+        </p>
+
+        <h2 className={s.h2}>Links</h2>
+        <ul className={j.links} data-testid="links">
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={REPO}>
+              GitHub repository
+            </a>
+          </li>
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={LIVE}>
+              Live app
+            </a>
+          </li>
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/DEMO.md`}>
+              DEMO.md (click path + bench)
+            </a>
+          </li>
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/JUDGE.md`}>
+              JUDGE.md (this page as a file)
+            </a>
+          </li>
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/ARCHITECTURE.md`}>
+              ARCHITECTURE.md (generated from the code)
+            </a>
+          </li>
+          <li>
+            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/DX-REPORT.md`}>
+              Qloo DX report
+            </a>
+          </li>
+        </ul>
 
         <h2 className={s.h2}>Six states to check</h2>
         <ol className={j.states} data-testid="edge-states">

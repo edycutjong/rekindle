@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { benchRows, loadJudgeData, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
+import { benchReceipt, benchRows, loadJudgeData, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
 import { countRules, summarise } from "../lib/receipts";
 
 const arm = (o: Partial<BenchResults["arms"][string]> = {}) => ({ outing_venues: 10, errors: 0, violation: 3, violation_rate: 0.3, unverifiable: 2, closed_at_slot: 1, alcohol: 0, alcohol_denominator: 5, unknown_hours: 1, ...o });
@@ -40,6 +40,11 @@ describe("/judge view model", () => {
     expect(profilesWith(bench, "review")).toEqual(["maya"]);
     expect(profilesWith(bench, "coverage")).toEqual(["cal"]);
     expect(profilesWith(null, "review")).toEqual([]);
+  });
+  it("states the run receipt from the bench's own fields and leaves out what the run did not record", () => {
+    expect(benchReceipt(bench)).toBe("bench run finished 2026-10-07 13:00 UTC · 3 Rekindle plans · 0 errors");
+    const full = { ...bench, wall_seconds: 822.8, verify_venue_calls: 7, arm_a_runs: [{}, {}], plans: bench.plans.map((x, i) => ({ ...x, qloo_calls: i + 1 })) };
+    expect(benchReceipt(full)).toBe("bench run finished 2026-10-07 13:00 UTC · 822.8 s wall clock · 3 Rekindle plans + 2 arm-A model plans · 6 Qloo calls on the plan path · 7 grading calls · 0 errors");
   });
   it("formats rates and never invents one", () => {
     expect(pctLabel(0)).toBe("0.0%");
