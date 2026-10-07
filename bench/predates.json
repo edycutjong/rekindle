@@ -69,6 +69,26 @@
    "commit": "32b969c",
    "date": "2026-10-07",
    "subject": "Fix the re-plan route refusing itself: the route claims runs/replan-<id> before opening the stream, and replanWeek's precheck then saw that …"
+  },
+  {
+   "commit": "bc88584",
+   "date": "2026-10-07",
+   "subject": "A constraint toggle replaces the week it was applied to: the parent gets superseded_by=<new week>; approve, card actions, toggles, ratings …"
+  },
+  {
+   "commit": "1667494",
+   "date": "2026-10-07",
+   "subject": "Ember thread only on a real lead: a rekindled input must beat the card's next-strongest explainability input by >= 0.02 (EMBER_MIN_MARGIN) …"
+  },
+  {
+   "commit": "ba014b8",
+   "date": "2026-10-07",
+   "subject": "COACH-DOSE truth-boundary rule: a coaching line that names a duration contradicting its card's dose is dropped and logged (at-home cards …"
+  },
+  {
+   "commit": "dc5de31",
+   "date": "2026-10-07",
+   "subject": "Coaching is a race, not a relay: the providers that did not fail routing each get one forced submitPlan call (own tool, so a loser can …"
   }
  ]
 }
