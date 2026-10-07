@@ -10,9 +10,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "spike:llm": "tsx scripts/llm-spike.ts --n 5 --out spike/llm-spike.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "spike:qloo": "tsx scripts/spike.ts --out spike/qloo-spike.json --capture fixtures/qloo_captured",
+    "maya": "tsx scripts/maya.ts --out spike/maya-e2e.json",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.1",
     "next": "15.5.27",
     "react": "19.1.0",
     "react-dom": "19.1.0",
