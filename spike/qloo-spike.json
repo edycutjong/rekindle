@@ -1,0 +1,929 @@
+{
+  "at": "2026-10-07T00:33:49.130Z",
+  "deterministic": true,
+  "rows": [
+    {
+      "id": "S1",
+      "param": "/search types (pin)",
+      "endpoint": "/search",
+      "changed": true,
+      "assertion": "pinned results are all urn:entity:artist",
+      "ok": true,
+      "detail": "unpinned types urn:entity:artist,urn:entity:person,urn:entity:podcast → pinned top Phoebe Bridgers"
+    },
+    {
+      "id": "P23",
+      "param": "/search filter.location + filter.radius",
+      "endpoint": "/search",
+      "changed": true,
+      "assertion": "all hits ≤1 mile; every hit carries tags; hours present or classed unknown",
+      "ok": true,
+      "detail": "20 hits, 0 beyond 1 mi, hours object on 16/20, tags on 20/20, Thu hours unknown on 4; top Dun-Well Doughnuts"
+    },
+    {
+      "id": "E1",
+      "param": "GET /entities (hours for /search hits without hours)",
+      "endpoint": "/entities",
+      "changed": false,
+      "assertion": "the full entity carries hours that /search omitted",
+      "ok": false,
+      "detail": "0/4 hour-less /search hits gain hours via /entities"
+    },
+    {
+      "id": "T1",
+      "param": "/v2/tags filter.query",
+      "endpoint": "/v2/tags",
+      "changed": true,
+      "assertion": "\"ramen\" resolves to urn:tag:genre:place:restaurant:ramen",
+      "ok": true,
+      "detail": "ramen → urn:tag:specialty_dish:place:ramen, urn:tag:cuisine:qloo:ramen, urn:tag:menu_highlight:qloo:ramen; pottery → urn:tag:category:place:pottery, urn:tag:genre:place:pottery"
+    },
+    {
+      "id": "I1",
+      "param": "signal.interests.entities",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "explainability lists the input entities on every result",
+      "ok": true,
+      "detail": "Bridgers+Fleabag top Puerh Brooklyn teashop, Desert Island vs Bridgers-only top Land to Sea, Fleur Noire Tattoo"
+    },
+    {
+      "id": "I2",
+      "param": "feature.explainability",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "true → per-result explainability; false → none",
+      "ok": true,
+      "detail": "explainability on 25/25 (true) vs 0/25 (false)"
+    },
+    {
+      "id": "I3",
+      "param": "signal.interests.tags",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "ramen tag raises Japanese/ramen places in top 10",
+      "ok": true,
+      "detail": "Japanese/ramen in top 10: 0 → 4"
+    },
+    {
+      "id": "I4",
+      "param": "filter.location (WKT POINT)",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "different neighbourhood → mostly different places",
+      "ok": true,
+      "detail": "Williamsburg vs Park Slope: 25 only-W, 25 only-PS"
+    },
+    {
+      "id": "I5",
+      "param": "filter.location.radius",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "every query.distance ≤ 500 m",
+      "ok": true,
+      "detail": "r=1500 max 1436 m → r=500 max 497 m"
+    },
+    {
+      "id": "I6",
+      "param": "filter.hours",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "no result is closed:true on the filtered day",
+      "ok": true,
+      "detail": "closed on Sunday: 0 without filter → 0 with filter.hours=sunday"
+    },
+    {
+      "id": "I7",
+      "param": "filter.price_level.max",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "no result has price_level > 1",
+      "ok": true,
+      "detail": "price_level>1: 2 → 0"
+    },
+    {
+      "id": "I8",
+      "param": "filter.price_level.min",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "no result has price_level < 3",
+      "ok": true,
+      "detail": "25 results, 0 below 3 (not used by the product; probed for completeness)"
+    },
+    {
+      "id": "I9",
+      "param": "filter.tags (quiet)",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "every result carries noise_level:qloo:quiet",
+      "ok": true,
+      "detail": "6 results, 0 without the quiet tag; top Puerh Brooklyn teashop"
+    },
+    {
+      "id": "I10",
+      "param": "operator.filter.tags=intersection",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "intersection → every result has both tags",
+      "ok": true,
+      "detail": "union 25 results vs intersection 5 (5 with both)"
+    },
+    {
+      "id": "I11",
+      "param": "filter.exclude.tags (14 alcohol tags)",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "no result carries any of the 14 excluded tags",
+      "ok": true,
+      "detail": "results carrying an excluded tag: 19/25 → 0; screen still flags 4 (4-tag set: screen flags 17; recovery OFF: 19)"
+    },
+    {
+      "id": "P22",
+      "param": "filter.exclude.entities",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "the excluded entity is absent",
+      "ok": true,
+      "detail": "excluded Puerh Brooklyn teashop → absent=true"
+    },
+    {
+      "id": "W1",
+      "param": "signal.interests.entities.weight",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "weight 1 vs 50 reorders or rescores results",
+      "ok": true,
+      "detail": "12 set changes; top lo Patisserie Tomoko, Brooklyn Ball Factory | top hi Land to Sea, Patisserie Tomoko"
+    },
+    {
+      "id": "W2",
+      "param": "signal.interests.tags.weight",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "higher tag weight → more ramen/Japanese in top 10",
+      "ok": true,
+      "detail": "Japanese/ramen in top 10: weight 1 → 4, weight 50 → 5"
+    },
+    {
+      "id": "X1",
+      "param": "bias.trends",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "off vs high changes results",
+      "ok": true,
+      "detail": "top off Puerh Brooklyn teashop, Desert Island | top high Ume, Barcade"
+    },
+    {
+      "id": "X2",
+      "param": "filter.external.exists",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "every result has external.resy",
+      "ok": true,
+      "detail": "25 results, 25 with external.resy (not used by the product)"
+    },
+    {
+      "id": "X3",
+      "param": "diversify.by (+diversify.take)",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "more distinct cities when diversified",
+      "ok": true,
+      "detail": "distinct cities r=40 km: 1 → 18 (not used by the product)"
+    },
+    {
+      "id": "P20",
+      "param": "filter.type=urn:heatmap + POINT + radius + boundary=urn:geohash",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "cells are geohash-7 inside the radius (+1 cell slack)",
+      "ok": true,
+      "detail": "215 cells, top dr5rt1p (Park Slope/Bridgers-only top dr5rkdk)"
+    },
+    {
+      "id": "P13",
+      "param": "DX re-check: output.heatmap.boundary=urn:entity:locality",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "documented value still returns HTTP 500 (DX finding)",
+      "ok": true,
+      "detail": "HTTP 500 — re-check of the 500 seen 2026-10-07 (product uses urn:geohash only)"
+    },
+    {
+      "id": "P21",
+      "param": "filter.location.geohash",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "every result's geohash starts with the cell",
+      "ok": true,
+      "detail": "2 results in dr5rt1p, 2 inside (thin → POINT fallback stays)"
+    },
+    {
+      "id": "H-ar",
+      "param": "filter.type=urn:entity:artist",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "≥3 results of that type, explainability on all",
+      "ok": true,
+      "detail": "top Lucy Dacus, Big Thief; explainability 5/5"
+    },
+    {
+      "id": "H-po",
+      "param": "filter.type=urn:entity:podcast",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "≥3 results of that type, explainability on all",
+      "ok": true,
+      "detail": "top Las Culturistas with Matt Rogers and Bowen Yang, Seek Treatment with Cat & Pat; explainability 5/5"
+    },
+    {
+      "id": "H-bo",
+      "param": "filter.type=urn:entity:book",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "≥3 results of that type, explainability on all",
+      "ok": true,
+      "detail": "top My Name Is Why, We Need New Stories; explainability 5/5"
+    },
+    {
+      "id": "H-tv",
+      "param": "filter.type=urn:entity:tv_show",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "≥3 results of that type, explainability on all",
+      "ok": true,
+      "detail": "top High Fidelity, Crashing; explainability 5/5"
+    },
+    {
+      "id": "P24",
+      "param": "Bozeman + filter.tags=quiet (coverage)",
+      "endpoint": "/v2/insights",
+      "changed": true,
+      "assertion": "quiet in Bozeman returns < 4 places (coverage refusal fires)",
+      "ok": true,
+      "detail": "without quiet 25 → with quiet 0"
+    }
+  ],
+  "calls": [
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2"
+      },
+      "status": 200,
+      "ms": 1500,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2"
+      },
+      "status": 200,
+      "ms": 647,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/search",
+      "params": {
+        "query": "Phoebe Bridgers",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 386,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/search",
+      "params": {
+        "query": "Phoebe Bridgers",
+        "types": "urn:entity:artist",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 289,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/search",
+      "params": {
+        "query": "Dun-Well Doughnuts",
+        "types": "urn:entity:place",
+        "take": "20"
+      },
+      "status": 200,
+      "ms": 342,
+      "n_results": 20,
+      "attempts": 1
+    },
+    {
+      "path": "/search",
+      "params": {
+        "query": "Dun-Well Doughnuts",
+        "types": "urn:entity:place",
+        "take": "20",
+        "filter.location": "40.7081,-73.9571",
+        "filter.radius": "1"
+      },
+      "status": 200,
+      "ms": 322,
+      "n_results": 20,
+      "attempts": 1
+    },
+    {
+      "path": "/entities",
+      "params": {
+        "entity_ids": "C2FB4194-5720-4506-9D92-DD3AA8890FFF,65F8AF2C-71A6-4087-8F9C-D7E821F79246,FA2ED9C1-9AC0-4CC0-9CD7-67609CD8E7E0,17F25A57-2EE5-4073-B973-FD66591D6469"
+      },
+      "status": 200,
+      "ms": 272,
+      "n_results": 4,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/tags",
+      "params": {
+        "filter.query": "ramen",
+        "take": "10"
+      },
+      "status": 200,
+      "ms": 269,
+      "n_results": 10,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/tags",
+      "params": {
+        "filter.query": "pottery",
+        "take": "10"
+      },
+      "status": 200,
+      "ms": 303,
+      "n_results": 10,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 416,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 395,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "false",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 383,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen"
+      },
+      "status": 200,
+      "ms": 436,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9799 40.6710)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 396,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "500",
+        "feature.explainability": "true",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 410,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.hours": "sunday"
+      },
+      "status": 200,
+      "ms": 406,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.price_level.max": "1"
+      },
+      "status": 200,
+      "ms": 407,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.price_level.min": "3"
+      },
+      "status": 200,
+      "ms": 416,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.tags": "urn:tag:noise_level:qloo:quiet"
+      },
+      "status": 200,
+      "ms": 375,
+      "n_results": 6,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.tags": "urn:tag:noise_level:qloo:quiet,urn:tag:accessibility:place:wheelchair_accessible_entrance",
+        "operator.filter.tags": "union"
+      },
+      "status": 200,
+      "ms": 434,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.tags": "urn:tag:noise_level:qloo:quiet,urn:tag:accessibility:place:wheelchair_accessible_entrance",
+        "operator.filter.tags": "intersection"
+      },
+      "status": 200,
+      "ms": 382,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar"
+      },
+      "status": 200,
+      "ms": 432,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar"
+      },
+      "status": 200,
+      "ms": 427,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.exclude.entities": "7D74B102-A9A0-49E6-9F2B-4653B7531747"
+      },
+      "status": 200,
+      "ms": 408,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "signal.interests.entities.weight": "1"
+      },
+      "status": 200,
+      "ms": 413,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "signal.interests.entities.weight": "50"
+      },
+      "status": 200,
+      "ms": 407,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "signal.interests.tags.weight": "1"
+      },
+      "status": 200,
+      "ms": 419,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "signal.interests.tags.weight": "50"
+      },
+      "status": 200,
+      "ms": 410,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "bias.trends": "off"
+      },
+      "status": 200,
+      "ms": 402,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "bias.trends": "high"
+      },
+      "status": 200,
+      "ms": 428,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.external.exists": "resy"
+      },
+      "status": 200,
+      "ms": 428,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "40000",
+        "feature.explainability": "true",
+        "take": "25"
+      },
+      "status": 200,
+      "ms": 1268,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "40000",
+        "feature.explainability": "true",
+        "take": "25",
+        "diversify.by": "properties.geocode.city",
+        "diversify.take": "2"
+      },
+      "status": 200,
+      "ms": 1372,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:geohash"
+      },
+      "status": 200,
+      "ms": 386,
+      "n_results": 215,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+        "filter.location": "POINT(-73.9799 40.6710)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:geohash"
+      },
+      "status": 200,
+      "ms": 359,
+      "n_results": 210,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:entity:locality"
+      },
+      "status": 500,
+      "ms": 1347,
+      "n_results": 0,
+      "attempts": 2,
+      "error": "{\"errors\":[{\"message\":\"System Error\"}]}"
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "10",
+        "filter.location.geohash": "dr5rt1p"
+      },
+      "status": 200,
+      "ms": 1142,
+      "n_results": 2,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:artist",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 3372,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:podcast",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 605,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:book",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 718,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:tv_show",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 693,
+      "n_results": 5,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-111.0429 45.6770)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2"
+      },
+      "status": 200,
+      "ms": 417,
+      "n_results": 25,
+      "attempts": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-111.0429 45.6770)",
+        "filter.location.radius": "1500",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "filter.tags": "urn:tag:noise_level:qloo:quiet"
+      },
+      "status": 200,
+      "ms": 326,
+      "n_results": 0,
+      "attempts": 1
+    }
+  ]
+}
