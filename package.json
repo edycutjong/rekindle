@@ -13,7 +13,11 @@
     "typecheck": "tsc --noEmit",
     "spike:qloo": "tsx scripts/spike.ts --out spike/qloo-spike.json --capture fixtures/qloo_captured",
     "maya": "tsx scripts/maya.ts --out spike/maya-e2e.json",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test && npm run seed:check",
+    "maya:agent": "tsx scripts/maya.ts --agent --out spike/maya-agent.json",
+    "plan:http": "tsx scripts/plan-http.ts --out spike/plan-http.json",
+    "seed": "python3 scripts/seed.py --resolve",
+    "seed:check": "python3 scripts/seed.py --check"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.64",
