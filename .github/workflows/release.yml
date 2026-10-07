@@ -2,28 +2,41 @@ name: release
 
 # Semantic version from Angular-convention commits since the last tag: feat → minor, fix/perf → patch,
 # feat!/BREAKING CHANGE → major; docs/chore/test/ci/refactor/style → no release.
+# Runs only after the CI/CD Pipeline succeeded for a push to main, and tags exactly the commit CI tested
+# (a commit whose CI fails, or is still running, is never released).
 on:
-  push:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types: [completed]
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: # manual: releases the current main HEAD
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
       - name: Compute next version
         id: ver
         run: |
           set -euo pipefail
-          LAST=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$LAST" ]; then RANGE=""; CUR="0.0.0"; else RANGE="${LAST}..HEAD"; CUR="${LAST#v}"; fi
-          if [ -n "$RANGE" ]; then LOG=$(git log --format=%B "$RANGE"); else LOG=$(git log --format=%B); fi
+          if git tag --points-at "$SHA" | grep -q '^v'; then echo "$SHA is already released."; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          LAST=$(git describe --tags --abbrev=0 "$SHA" 2>/dev/null || echo "")
+          if [ -z "$LAST" ]; then RANGE="$SHA"; CUR="0.0.0"; else RANGE="${LAST}..${SHA}"; CUR="${LAST#v}"; fi
+          LOG=$(git log --format=%B "$RANGE")
           BUMP=none
           if echo "$LOG" | grep -qE '^(feat|fix|perf)(\(.+\))?!:|BREAKING CHANGE:'; then BUMP="major"
           elif echo "$LOG" | grep -qE '^feat(\(.+\))?:'; then BUMP="minor"
@@ -46,6 +59,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$NEXT" -m "$NEXT"
+          git tag -a "$NEXT" -m "$NEXT" "$SHA"
           git push origin "$NEXT"
-          gh release create "$NEXT" --generate-notes --title "$NEXT"
+          gh release create "$NEXT" --verify-tag --generate-notes --title "$NEXT"

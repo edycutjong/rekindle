@@ -221,7 +221,7 @@ python3 scripts/edge_states.py https://rekindle-one.vercel.app /tmp/shots live
 | Build | `next build` + bundle budget (fail > 2000 KB) | Stage 3 |
 | E2E | Playwright, desktop + Pixel 7 | Stage 4 |
 | Performance | Lighthouse CI | Stage 5 |
-| Releases | semantic version from conventional commits | `release.yml` |
+| Releases | semantic version from conventional commits, cut only after the CI/CD Pipeline passed on that exact commit | `release.yml` |
 
 ## 📁 Project Structure
 
