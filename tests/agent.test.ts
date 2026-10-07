@@ -38,19 +38,10 @@ function scriptedLlm(turns: ((b: Body) => Response)[], bodies: Body[] = [], prov
 const failingLlm = (provider: "qwen" | "groq", status = 503): LlmHandle =>
   makeLlm(provider, { QWEN_API_KEY: "k", GROQ_API_KEY: "k" }, (async () => new Response(JSON.stringify({ error: { message: "model overloaded" } }), { status, headers: { "content-type": "application/json" } })) as unknown as typeof fetch)!;
 
-/** tool results the model has seen so far, parsed from the request messages */
-function toolResults(b: Body): { entity_id?: string; name?: string }[] {
-  const out: { entity_id?: string; name?: string }[] = [];
-  for (const m of b.messages) {
-    if (m.role !== "tool") continue;
-    const text = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
-    try {
-      out.push(JSON.parse(text));
-    } catch {
-      for (const id of text.matchAll(/"entity_id":"([^"]+)"/g)) out.push({ entity_id: id[1] });
-    }
-  }
-  return out;
+/** entity IDs of the placed cards the coaching call was given (its user prompt lists them; earlier: tool results) */
+function placedIds(b: Body): string[] {
+  const text = b.messages.map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content))).join("\n");
+  return [...new Set([...text.matchAll(/"entity_id":"([^"]+)"/g)].map((m) => m[1]))];
 }
 
 const ROUTE_ALL: ToolCall[] = [
@@ -68,7 +59,7 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     const qlooRequests: QlooParams[] = [];
     const bodies: Body[] = [];
     const events: AgentEvent[] = [];
-    const llm = scriptedLlm([() => completion(ROUTE_ALL), (b) => completion([{ name: "submitPlan", args: { coaching: toolResults(b).filter((r) => r.entity_id).map((r) => ({ entity_id: r.entity_id, line: "Ten minutes is plenty; stop whenever you like." })) } }])], bodies);
+    const llm = scriptedLlm([() => completion(ROUTE_ALL), (b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "Ten minutes is plenty; stop whenever you like." })) } }])], bodies);
     const plan = await runAgent({ qloo: replayClient(qlooRequests), case: MAYA, llms: [llm], onEvent: (e) => events.push(e) });
 
     expect(plan.slots).toHaveLength(7);
@@ -113,7 +104,7 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     const llm = scriptedLlm([
       () => completion(ROUTE_ALL),
       (b) => {
-        const ids = toolResults(b).filter((r) => r.entity_id).map((r) => r.entity_id!);
+        const ids = placedIds(b);
         return completion([
           {
             name: "submitPlan",
@@ -177,6 +168,21 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.llm?.provider).toBe("groq");
     expect(plan.llmErrors).toHaveLength(1);
     expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+  });
+
+  it("a primary that times out on the coaching hand-off passes it to the other provider (QA round 2: 20 s timeout → template ×7)", async () => {
+    const events: AgentEvent[] = [];
+    let n = 0;
+    // Qwen routes the week, then hangs on the coaching call until it is aborted
+    const slowQwen = makeLlm("qwen", { QWEN_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
+      n++ === 0 ? completion(ROUTE_ALL) : new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
+    const groq = scriptedLlm([(b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "Ten minutes is plenty; stop whenever you like." })) } }])], [], "groq");
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [slowQwen, groq], coachAttemptMs: 300, coachBudgetMs: 3000, onEvent: (e) => events.push(e) });
+    expect(plan.llm?.provider).toBe("qwen");
+    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+    expect(plan.llmErrors).toEqual([expect.objectContaining({ provider: "qwen", error: expect.stringMatching(/timeout|abort/i) })]);
+    expect(events.find((e) => e.type === "llm_fallback")).toMatchObject({ from: "qwen:qwen3.8-flash", to: "groq:openai/gpt-oss-120b" });
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
   });
 
   it("every provider down: the week is routed deterministically by the same tools, never by model text", async () => {

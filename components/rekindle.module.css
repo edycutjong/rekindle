@@ -292,6 +292,12 @@
   line-height: 1.45;
   margin: 8px 0 6px;
 }
+.coachBy {
+  display: block;
+  font: 12px var(--font-data);
+  color: var(--muted);
+  margin-top: 2px;
+}
 .why {
   font-size: 15px;
   line-height: 1.45;

@@ -108,6 +108,11 @@ export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: Em
       {c.coaching && (
         <p className={s.coach} data-testid="coach">
           {c.coaching}
+          {c.coaching_by === "template" && (
+            <span className={s.coachBy} data-testid="coach-template" title="Written from a fixed template, not by the model (the model's line was missing, dropped by a coaching rule, or the time budget ran out)">
+              coaching: template
+            </span>
+          )}
         </p>
       )}
       <WhyLine parts={why} />

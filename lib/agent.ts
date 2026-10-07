@@ -73,6 +73,9 @@ export interface AgentOptions {
   onEvent?: (e: AgentEvent) => void;
   /** total budget for LLM calls (ms); tools already started keep running */
   llmBudgetMs?: number;
+  /** the coaching hand-off gets its own window after the routing budget (each provider attempt ≤ COACH_ATTEMPT_MS) */
+  coachBudgetMs?: number;
+  coachAttemptMs?: number;
   maxSteps?: number;
   /** bench ablation only (arms B−/B−4) and the pool audit; never set on the public path */
   toolOptions?: Pick<ToolContext, "alcoholScreen" | "excludeTagSet" | "onPool">;
@@ -86,6 +89,9 @@ const FACT_PATTERN = /\b\d+(?:[.,]\d+)?\s?(?:m|km|metres?|meters?|miles?|mi|bloc
 const dayEnum = z.enum(DAYS);
 
 const fmtHour = (h: number) => `${String(h).padStart(2, "0")}:00`;
+/** coaching window after the routing budget, and the cap on one provider's coaching attempt inside it */
+export const COACH_BUDGET_MS = 6_000;
+export const COACH_ATTEMPT_MS = 4_000;
 
 /** Deterministic dose line, used when the LLM gave none (or its line was dropped). */
 export function templateCoaching(card: Card, homeType?: HomeType): string {
@@ -331,56 +337,64 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   } satisfies ToolSet;
 
   const submittedStop: StopCondition<typeof tools> = ({ steps }) => steps.some((s) => s.toolCalls.some((tc) => tc.toolName === "submitPlan"));
+  // routing stops once every slot is routed: the coaching hand-off is its own bounded call (below), so a slow provider
+  // that spent the routing budget cannot also take the coaching with it (QA round 2: 20 s timeout → template ×7)
+  const routedStop: StopCondition<typeof tools> = () => allRouted();
 
   let routedBy: { provider: string; model: string } | null = null;
   let llmSteps = 0;
   let llmMs = 0;
   const llmErrors: { provider: string; error: string }[] = [];
-  // 20 s for the model leaves room for the deterministic fallback inside the 30 s plan gate (Groq TPM limits seen live)
+  // 20 s for routing leaves room for the coaching window and the deterministic fallback inside the 30 s plan gate
   const deadline = t0 + (opts.llmBudgetMs ?? 20_000);
 
-  // Walk the provider chain. A provider that makes progress but stops early (e.g. one tool per step until the step cap)
-  // gets another round for what is still open — the slots, then the coaching hand-off; a provider that errors or calls
-  // no tool hands over to the next one.
+  const onCallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { outputTokens?: number } }) => {
+    const ms = Math.round(e.performance.responseTimeMs);
+    llmSteps++;
+    llmMs += ms;
+    const toolCalls = e.content.flatMap((part) => (part.type === "tool-call" && part.toolName ? [part.toolName] : []));
+    emit({ type: "llm", provider: llm.provider, model: llm.modelId, step: llmSteps, ms, toolCalls, finishReason: String(e.finishReason), outputTokens: e.usage.outputTokens ?? null });
+  };
+  const failed = new Set<LlmHandle>();
+  const fail = (llm: LlmHandle, e: unknown, next: LlmHandle | undefined) => {
+    const error = (e instanceof Error ? `${e.name}: ${e.message}` : String(e)).slice(0, 300);
+    llmErrors.push({ provider: llm.provider, error });
+    failed.add(llm);
+    emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error });
+  };
+
+  // Walk the provider chain for ROUTING. A provider that makes progress but stops early (e.g. one tool per step until
+  // the step cap) gets another round for the slots still open; a provider that errors or calls no tool hands over to
+  // the next one.
   let i = 0;
   let rounds = 0;
   while (i < opts.llms.length && rounds < opts.llms.length + 2) {
     rounds++;
     const llm = opts.llms[i];
     const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day));
-    if (!open.length && (submitCalls > 0 || filled.size === 0)) break;
+    if (!open.length) break;
     const remaining = deadline - Date.now();
     if (remaining < 2000) break;
     try {
-      const before = { claimed: claimed.size, submits: submitCalls };
+      const before = { claimed: claimed.size };
       await generateText({
         model: llm.model,
         system: systemPrompt(),
-        prompt: open.length ? userPrompt(c, week, history, open) + (filled.size ? `\nAlready placed (keep; coach these too):\n${[...filled.values()].filter((f) => f.card).map((f) => JSON.stringify(summary(f))).join("\n")}` : "") : `All slots are filled:\n${[...filled.values()].map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`,
+        prompt: userPrompt(c, week, history, open) + (filled.size ? `\nAlready placed (keep):\n${[...filled.values()].filter((f) => f.card).map((f) => JSON.stringify(summary(f))).join("\n")}` : ""),
         tools,
-        stopWhen: [stepCountIs(opts.maxSteps ?? 10), submittedStop],
+        activeTools: ["findAtHome", "findOutings", "placeSocial"],
+        stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, submittedStop],
         maxRetries: 1,
         temperature: 0.2,
         abortSignal: AbortSignal.timeout(remaining),
-        // once every slot is routed, the only remaining move is the coaching hand-off
-        prepareStep: () => (allRouted() ? { activeTools: ["submitPlan"], toolChoice: { type: "tool", toolName: "submitPlan" } } : {}),
-        onLanguageModelCallEnd: (e) => {
-          const ms = Math.round(e.performance.responseTimeMs);
-          llmSteps++;
-          llmMs += ms;
-          const toolCalls = e.content.flatMap((part) => (part.type === "tool-call" ? [part.toolName] : []));
-          emit({ type: "llm", provider: llm.provider, model: llm.modelId, step: llmSteps, ms, toolCalls, finishReason: String(e.finishReason), outputTokens: e.usage.outputTokens ?? null });
-        },
+        onLanguageModelCallEnd: onCallEnd(llm),
       });
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
-      if (allRouted() && submitCalls > 0) break;
-      if (claimed.size === before.claimed && submitCalls === before.submits) throw new Error("the model made no progress (no tool called)");
+      if (allRouted()) break;
+      if (claimed.size === before.claimed) throw new Error("the model made no progress (no tool called)");
     } catch (e) {
-      const error = (e instanceof Error ? `${e.name}: ${e.message}` : String(e)).slice(0, 300);
-      llmErrors.push({ provider: llm.provider, error });
-      const next = opts.llms[i + 1];
-      emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error });
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
+      fail(llm, e, opts.llms[i + 1]);
       i++;
     }
   }
@@ -391,6 +405,37 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     claimed.add(slot.day);
     const toolName: ToolName = slot.rung === "home" ? "findAtHome" : slot.rung === "solo" ? "findOutings" : "placeSocial";
     await runSlot(slot, toolName, { day: slot.day, ...(slot.homeType ? { type: slot.homeType } : {}) }, "fallback");
+  }
+
+  // The coaching hand-off: one forced submitPlan call per provider attempt, each bounded by COACH_ATTEMPT_MS inside its
+  // own window after the routing budget. A provider that failed or timed out above is skipped, so a slow primary
+  // hands the coaching to the other provider instead of every card falling back to the template dose.
+  const placed = [...filled.values()].filter((f) => f.card);
+  const coachDeadline = Math.max(deadline, Date.now()) + (opts.coachBudgetMs ?? COACH_BUDGET_MS);
+  const coaches = opts.llms.filter((l) => !failed.has(l));
+  for (let k = 0; k < coaches.length && placed.length && submitCalls === 0; k++) {
+    const llm = coaches[k];
+    const attempt = opts.coachAttemptMs ?? COACH_ATTEMPT_MS;
+    const remaining = Math.min(attempt, coachDeadline - Date.now());
+    if (remaining < Math.min(1500, attempt)) break;
+    try {
+      await generateText({
+        model: llm.model,
+        system: systemPrompt(),
+        prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`,
+        tools,
+        activeTools: ["submitPlan"],
+        toolChoice: { type: "tool", toolName: "submitPlan" },
+        stopWhen: [stepCountIs(1), submittedStop],
+        maxRetries: 0,
+        temperature: 0.2,
+        abortSignal: AbortSignal.timeout(remaining),
+        onLanguageModelCallEnd: onCallEnd(llm),
+      });
+      if (submitCalls === 0) throw new Error("the model did not call submitPlan");
+    } catch (e) {
+      fail(llm, e, coaches[k + 1]);
+    }
   }
 
   const slots = skeleton.map((s) => filled.get(s.day)!).filter(Boolean);

@@ -92,7 +92,7 @@ flowchart LR
 ```
 
 - **Next.js 15** (App Router, TypeScript) on Vercel. The UI and API routes are one deploy, and week plans stream to the browser as Server-Sent Events.
-- **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` is the automatic fallback.
+- **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over on a provider error or timeout (routing, or the coaching hand-off, which has its own window after the 20 s routing budget); when no model line arrives in time, the card gets a template coaching line and says "coaching: template".
   Constraints never come from the model: radius, price, recovery, quiet and wheelchair are applied from the stored case on every request.
 - **Store:** a private Vercel Blob store (one zod-validated JSON document per case, plan, and plan call log); in memory for local development.
 - **Rate limits:** public / judge / bench namespaces, so judges are never locked out and the bench never touches the public quota.
