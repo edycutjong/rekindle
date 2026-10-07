@@ -189,7 +189,6 @@ export const ALCOHOL_DENY_TAGS: ReadonlySet<string> = new Set<string>([
   "urn:tag:offerings:place:cocktails",
   "urn:tag:offerings:place:craft_beer",
   "urn:tag:offerings:place:happy_hour_drinks",
-  "urn:tag:offerings:place:ok_to_order_just_drinks",
   "urn:tag:offerings:place:sake",
   // beverage family
   "urn:tag:beverage_offering:qloo:spirits",
@@ -249,6 +248,10 @@ export const ALCOHOL_REVIEW_TAGS: ReadonlySet<string> = new Set<string>([
   "urn:tag:amenity:qloo:sustainable_bar",
   "urn:tag:amenity:qloo:tasting_bar",
   "urn:tag:offerings:place:food_at_bar",
+  // D9 bench pools: on coffee chains these mean "coffee deals" / "drinks-only order is fine", not alcohol
+  "urn:tag:offerings:place:happy_hour",
+  "urn:tag:offerings:place:ok_to_order_just_drinks",
+  "urn:tag:amenity:qloo:bar_stools",
 ]);
 
 /** Tag namespaces describing the area or the audience, not what the venue serves — never screened. */
@@ -259,7 +262,9 @@ const ALC_TOKENS = new Set(["alcohol", "alcoholic", "beer", "beers", "wine", "wi
 /** Allow tokens/segments that contain an alcohol-looking token but are not alcohol (P10, P19). */
 const ALC_ALLOW_SEGMENTS = new Set(["specialty_non_alcoholic", "non_alcoholic", "soft_drinks", "wellness_drinks", "home_brewing", "brewing_gear", "cold_brew", "nitro_cold_brew"]);
 /** `<x>_bar` segments that are not drinking establishments. */
-const BAR_ALLOW = new Set(["espresso_bar", "coffee_bar", "juice_bar", "juice_and_smoothie_bar", "chai_bar", "salad_bar", "tea_bar", "dessert_bar", "milk_bar", "poke_bar", "smoothie_bar", "nail_bar", "oxygen_bar", "cheese_bar_nearby"]);
+const BAR_ALLOW = new Set(["topping_bar", "sundae_bar", "waffle_bar", "taco_bar", "noodle_bar", "ramen_bar", "espresso_bar", "coffee_bar", "juice_bar", "juice_and_smoothie_bar", "chai_bar", "salad_bar", "tea_bar", "dessert_bar", "milk_bar", "poke_bar", "smoothie_bar", "nail_bar", "oxygen_bar", "cheese_bar_nearby"]);
+/** `bar_<x>` segments that do mean a drinks service (the rest of `bar_*` is furniture → REVIEW). */
+const BAR_SERVICE = new Set(["bar_service", "bar_onsite", "bar_menu", "bar_program", "bar_scene", "bar_crawl"]);
 /** Namespaces where a hit is a soft signal (who goes there / what it suits), not what the venue serves → REVIEW. */
 const SOFT_NAMESPACES = ["urn:tag:interests:", "urn:tag:customer_identity:", "urn:tag:activity_type:", "urn:tag:event:", "urn:tag:resy:"];
 
@@ -292,10 +297,13 @@ export function alcoholScreen(e: Pick<QlooEntity, "tags" | "name">): { verdict: 
     const seg = segment(id);
     if (ALC_ALLOW_SEGMENTS.has(seg) || BAR_ALLOW.has(seg)) continue;
     const tokens = seg.split("_");
-    const isBar = seg === "bar" || (seg.endsWith("_bar") && !BAR_ALLOW.has(seg)) || seg.startsWith("bar_") && !seg.startsWith("barbecue");
-    const tokenHit = tokens.some((tok) => ALC_TOKENS.has(tok)) || isBar || seg === "happy_hour";
+    const isBar = seg === "bar" || BAR_SERVICE.has(seg) || (seg.endsWith("_bar") && !BAR_ALLOW.has(seg));
+    // `bar_<x>` segments describe furniture or ordering (bar_stools, bar_area), and `happy_hour` alone is a price deal:
+    // a signal for the clinician, not proof of alcohol (D9 bench: 16 Handles, Dunkin', ROKA)
+    const furniture = (seg.startsWith("bar_") && !BAR_SERVICE.has(seg)) || seg === "happy_hour";
+    const tokenHit = tokens.some((tok) => ALC_TOKENS.has(tok)) || isBar || furniture;
     if (!tokenHit) continue;
-    const soft = SOFT_NAMESPACES.some((ns) => id.startsWith(ns));
+    const soft = SOFT_NAMESPACES.some((ns) => id.startsWith(ns)) || (furniture && !tokens.some((tok) => ALC_TOKENS.has(tok)));
     hits.push({ source: "token", value: id, verdict: soft ? "REVIEW" : "REFUSE" });
   }
   const name = (e.name ?? "").toLowerCase();

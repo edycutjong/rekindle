@@ -116,6 +116,15 @@ describe("R-ALC: exact deny list + token screen (in recovery)", () => {
     expect(r.hits).toEqual([{ source: "tag", value: "urn:tag:amenity:qloo:bar_seating", verdict: "REVIEW" }]);
   });
 
+  it("D9 bench false positives: topping_bar PASSes; bar_stools / happy_hour / ok_to_order_just_drinks go to REVIEW; bar_service still REFUSEs", () => {
+    expect(alcoholScreen(place({ name: "16 Handles", tags: withTags("urn:tag:amenity:qloo:topping_bar") })).verdict).toBe("PASS");
+    expect(alcoholScreen(place({ name: "ROKA", tags: withTags("urn:tag:amenity:qloo:bar_stools") })).verdict).toBe("REVIEW");
+    expect(alcoholScreen(place({ name: "Dunkin'", tags: withTags("urn:tag:offerings:place:happy_hour", "urn:tag:offerings:place:ok_to_order_just_drinks") })).verdict).toBe("REVIEW");
+    expect(alcoholScreen(place({ tags: withTags("urn:tag:amenity:qloo:bar_service") })).verdict).toBe("REFUSE");
+    expect(alcoholScreen(place({ tags: withTags("urn:tag:offerings:place:happy_hour_drinks") })).verdict).toBe("REFUSE");
+    expect(alcoholScreen(place({ tags: withTags("urn:tag:amenity:qloo:bar_wine_list") })).verdict).toBe("REFUSE");
+  });
+
   it("does not false-positive on P10's substring traps: independent_publishing, barbecue_grill, espresso_bar, book_publisher", () => {
     const e = place({ name: "Desert Island", tags: withTags("urn:tag:interests:qloo:independent_publishing", "urn:tag:amenities:place:barbecue_grill", "urn:tag:category:place:espresso_bar", "urn:tag:category:place:book_publisher", "urn:tag:nearby_attraction:qloo:brooklyn_brewery") });
     expect(alcoholScreen(e)).toEqual({ verdict: "PASS", hits: [] });
