@@ -49,6 +49,8 @@ export interface AgentPlan extends Omit<WeekPlan, "slots"> {
   slots: AgentSlot[];
   /** the LLM that routed this plan, or null when every provider failed (deterministic route) */
   llm: { provider: string; model: string } | null;
+  /** the provider whose coaching call won the race (null: every card's coaching is the template) */
+  coachedBy?: { provider: string; model: string } | null;
   llmSteps: number;
   llmMs: number;
   llmErrors: { provider: string; error: string }[];
@@ -378,6 +380,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const routedStop: StopCondition<typeof tools> = () => allRouted();
 
   let routedBy: { provider: string; model: string } | null = null;
+  let coachedBy: { provider: string; model: string } | null = null;
   let llmSteps = 0;
   let llmMs = 0;
   const llmErrors: { provider: string; error: string }[] = [];
@@ -443,34 +446,22 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     await runSlot(slot, toolName, { day: slot.day, ...(slot.homeType ? { type: slot.homeType } : {}) }, "fallback");
   }
 
-  // The coaching hand-off: one forced submitPlan call per provider attempt, each bounded by COACH_ATTEMPT_MS inside its
-  // own window after the routing budget. A provider that failed or timed out above is skipped, so a slow primary
-  // hands the coaching to the other provider instead of every card falling back to the template dose.
+  // The coaching hand-off: the providers that did not fail above RACE one forced submitPlan call each inside the
+  // coaching window; the first valid call wins and the others are aborted. QA round 3: sequentially, Qwen timed out on
+  // every sampled run, so Groq got only what was left of the window and often templated the whole week too.
   const placed = [...filled.values()].filter((f) => f.card);
   const coachDeadline = Math.max(deadline, Date.now()) + (opts.coachBudgetMs ?? COACH_BUDGET_MS);
   const coaches = opts.llms.filter((l) => !failed.has(l));
-  for (let k = 0; k < coaches.length && placed.length && submitCalls === 0; k++) {
-    const llm = coaches[k];
-    const attempt = opts.coachAttemptMs ?? COACH_ATTEMPT_MS;
-    const remaining = Math.min(attempt, coachDeadline - Date.now());
-    if (remaining < Math.min(1500, attempt)) break;
-    try {
-      await generateText({
-        model: llm.model,
-        system: systemPrompt(),
-        prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`,
-        tools,
-        activeTools: ["submitPlan"],
-        toolChoice: { type: "tool", toolName: "submitPlan" },
-        stopWhen: [stepCountIs(1), submittedStop],
-        maxRetries: 0,
-        temperature: 0.2,
-        abortSignal: AbortSignal.timeout(remaining),
-        onLanguageModelCallEnd: onCallEnd(llm),
-      });
-      if (submitCalls === 0) throw new Error("the model did not call submitPlan");
-    } catch (e) {
-      fail(llm, e, coaches[k + 1]);
+  if (placed.length && submitCalls === 0 && coaches.length) {
+    const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd });
+    if (r.lines) {
+      submitted = [...submitted, ...r.lines];
+      submitCalls++;
+      coachedBy = r.by ? { provider: r.by.provider, model: r.by.modelId } : null;
+    }
+    for (const e of r.errors) {
+      llmErrors.push(e);
+      emit({ type: "llm_fallback", from: e.from, to: null, error: e.error });
     }
   }
 
@@ -490,9 +481,64 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const dropped = assembleCoaching(slots, submitted, otherNames);
   if (dropped.length) emit({ type: "truth_boundary", dropped });
 
-  const plan: AgentPlan = { week, slots, refusals, review, calls: [], llm: routedBy, llmSteps, llmMs, llmErrors, dropped, latencyMs: Date.now() - t0 };
+  const plan: AgentPlan = { week, slots, refusals, review, calls: [], llm: routedBy, coachedBy, llmSteps, llmMs, llmErrors, dropped, latencyMs: Date.now() - t0 };
   emit({ type: "plan", plan });
   return plan;
+}
+
+type CallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { outputTokens?: number } }) => void;
+
+const coachingSchema = z.object({ coaching: z.array(z.object({ entity_id: z.string(), line: z.string() })).max(14) });
+
+/**
+ * Race the providers for one forced submitPlan call inside `windowMs`. Each provider gets its own submitPlan tool (so
+ * a loser's late call can never add lines), the first provider whose call returns lines wins and the rest are
+ * aborted. Errors are reported only when no provider won (an aborted loser is not a failure).
+ */
+export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs: number; onCallEnd?: CallEnd }): Promise<{ lines: { entity_id: string; line: string }[] | null; by: LlmHandle | null; errors: { provider: string; from: string; error: string }[] }> {
+  if (!o.llms.length || o.windowMs < 1500) return { lines: null, by: null, errors: [] };
+  const won = new AbortController();
+  const signal = AbortSignal.any([AbortSignal.timeout(o.windowMs), won.signal]);
+  const attempt = async (llm: LlmHandle) => {
+    let got: { entity_id: string; line: string }[] | null = null;
+    const tools = {
+      submitPlan: tool({
+        description: "Finish: one coaching line (≤25 words) per placed card, keyed by the entity_id a tool returned.",
+        inputSchema: coachingSchema,
+        execute: async ({ coaching }) => {
+          got = coaching;
+          return { ok: true };
+        },
+      }),
+    } satisfies ToolSet;
+    await generateText({
+      model: llm.model,
+      system: systemPrompt(),
+      prompt: o.prompt,
+      tools,
+      toolChoice: { type: "tool", toolName: "submitPlan" },
+      stopWhen: stepCountIs(1),
+      maxRetries: 0,
+      temperature: 0.2,
+      abortSignal: signal,
+      ...(o.onCallEnd ? { onLanguageModelCallEnd: o.onCallEnd(llm) } : {}),
+    });
+    if (!got) throw new Error("the model did not call submitPlan");
+    won.abort();
+    return { llm, lines: got as { entity_id: string; line: string }[] };
+  };
+  const runs = o.llms.map(attempt);
+  try {
+    const r = await Promise.any(runs);
+    return { lines: r.lines, by: r.llm, errors: [] };
+  } catch {
+    const settled = await Promise.allSettled(runs);
+    return {
+      lines: null,
+      by: null,
+      errors: settled.flatMap((x, k) => (x.status === "rejected" ? [{ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: (x.reason instanceof Error ? `${x.reason.name}: ${x.reason.message}` : String(x.reason)).slice(0, 300) }] : [])),
+    };
+  }
 }
 
 /** I1 check used by tests and scripts: every card carries a Qloo entity_id returned in this run. */

@@ -170,20 +170,37 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
   });
 
-  it("a primary that times out on the coaching hand-off passes it to the other provider (QA round 2: 20 s timeout → template ×7)", async () => {
-    const events: AgentEvent[] = [];
+  it("coaching is a race: a primary that hangs loses to the other provider, which coaches every card (QA round 3: Qwen timed out on 5/5 runs)", async () => {
     let n = 0;
     // Qwen routes the week, then hangs on the coaching call until it is aborted
     const slowQwen = makeLlm("qwen", { QWEN_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
       n++ === 0 ? completion(ROUTE_ALL) : new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
-    const groq = scriptedLlm([(b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "Ten minutes is plenty; stop whenever you like." })) } }])], [], "groq");
-    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [slowQwen, groq], coachAttemptMs: 300, coachBudgetMs: 3000, onEvent: (e) => events.push(e) });
+    const groq = scriptedLlm([(b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty; stop whenever you like." })) } }])], [], "groq");
+    const t = Date.now();
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [slowQwen, groq], coachBudgetMs: 3000 });
     expect(plan.llm?.provider).toBe("qwen");
-    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
-    expect(plan.llmErrors).toEqual([expect.objectContaining({ provider: "qwen", error: expect.stringMatching(/timeout|abort/i) })]);
-    expect(events.find((e) => e.type === "llm_fallback")).toMatchObject({ from: "qwen:qwen3.8-flash", to: "groq:openai/gpt-oss-120b" });
+    expect(plan.coachedBy?.provider).toBe("groq");
+    // the loser was aborted when Groq won, not after the window: no error, no wait
+    expect(plan.llmErrors).toEqual([]);
+    expect(Date.now() - t).toBeLessThan(2500);
     expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
   });
+
+  it("coaching race: two providers that both answer never double-apply lines; two that hang leave the template and both errors", async () => {
+    const lines = (b: Parameters<typeof placedIds>[0]) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const both = await runAgent({ qloo: replayClient(), case: MAYA, llms: [scriptedLlm([() => completion(ROUTE_ALL), lines]), scriptedLlm([lines], [], "groq")] });
+    expect(both.dropped.filter((d) => d.rule === "COACH-DUPLICATE")).toEqual([]);
+    expect(both.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+    const hang = (provider: "qwen" | "groq", routeFirst: boolean) => {
+      let k = 0;
+      return makeLlm(provider, { QWEN_API_KEY: "k", GROQ_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
+        routeFirst && k++ === 0 ? completion(ROUTE_ALL) : new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
+    };
+    const none = await runAgent({ qloo: replayClient(), case: MAYA, llms: [hang("qwen", true), hang("groq", false)], llmBudgetMs: 2100, coachBudgetMs: 1600 });
+    expect(none.coachedBy).toBeNull();
+    expect(none.llmErrors.map((e) => e.provider).sort()).toEqual(["groq", "qwen"]);
+    expect(none.slots.filter((s) => s.card).every((s) => s.coachingBy === "template")).toBe(true);
+  }, 15_000);
 
   it("every provider down: the week is routed deterministically by the same tools, never by model text", async () => {
     const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), failingLlm("groq", 500)] });

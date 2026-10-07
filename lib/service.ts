@@ -3,7 +3,7 @@
  * for a stored case with its Qloo call log persisted beside the plan.
  */
 import profiles from "../fixtures/profiles.json";
-import { coachingAlcohol, runAgent, templateCoaching, type AgentEvent } from "./agent";
+import { assembleCoaching, coachingAlcohol, coachRace, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
@@ -214,7 +214,7 @@ export class Conflict extends Error {
  * Loosening a constraint keeps every verified card and retries only the empty outing slots (coverage refusal → the
  * clinician widens the radius); re-plan to use the wider constraint everywhere.
  */
-export async function toggleConstraints(o: { store: Store; planId: string; patch: ConstraintPatch; qloo?: (onCall: (l: QlooCallLog) => void) => QlooClient }): Promise<{ plan: PlanDoc; case: CaseDoc }> {
+export async function toggleConstraints(o: { store: Store; planId: string; patch: ConstraintPatch; qloo?: (onCall: (l: QlooCallLog) => void) => QlooClient; llms?: LlmHandle[]; coachWindowMs?: number }): Promise<{ plan: PlanDoc; case: CaseDoc }> {
   const t0 = Date.now();
   const parent = await o.store.getPlan(o.planId);
   if (!parent) throw new NotFound(`plan ${o.planId} not found`);
@@ -230,7 +230,8 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history, { refillEmpty: loosens(c, next) });
   const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
   const toggled = planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) });
-  const doc = await refreshDiff(o.store, next.in_recovery ? screenCoaching(toggled) : toggled);
+  const coached = await coachRefills(toggled, o.llms ?? llmChainFromEnv(), o.coachWindowMs ?? TOGGLE_COACH_MS);
+  const doc = await refreshDiff(o.store, next.in_recovery ? screenCoaching(coached) : coached);
   await o.store.putCase(next);
   await o.store.putPlan(doc);
   const merged = callsDoc(doc.id, calls);
@@ -261,6 +262,35 @@ export async function latestVersion(store: Store, plan: PlanDoc, maxHops = 50): 
     cur = next;
   }
   return cur;
+}
+
+/** coaching window for the cards a toggle refilled (one raced call; the toggle itself takes ~2 s) */
+export const TOGGLE_COACH_MS = 4_000;
+
+/**
+ * The cards a constraint toggle refilled get one short raced coaching call (lib/agent.ts coachRace) through the same
+ * truth-boundary assembler as the agent run; a line that fails a rule, or no answer in the window, keeps the template
+ * dose (QA round 3: every refilled card said "coaching: template").
+ */
+export async function coachRefills(plan: PlanDoc, llms: LlmHandle[], windowMs: number): Promise<PlanDoc> {
+  const refills = plan.cards.filter((c) => c.routed_by === "toggle" && c.coaching_by === "template");
+  if (!refills.length || !llms.length) return plan;
+  const slots: AgentSlot[] = refills.map((c) => {
+    const card = cardFromDoc(c);
+    return { slot: card.slot, card, routedBy: "llm", tool: "findOutings", params: {} };
+  });
+  const lines = slots.map((s) => JSON.stringify({ ok: true, day: s.slot.day, entity_id: s.card!.entity_id, name: s.card!.name, type: s.card!.entityType, hour: `${String(s.card!.hour).padStart(2, "0")}:00`, because: s.card!.why.map((w) => `${w.name} ${w.score.toFixed(2)}`).join(" · ") }));
+  const r = await coachRace({ llms, prompt: `All slots are filled:\n${lines.join("\n")}\nCall submitPlan now.`, windowMs });
+  const llmErrors = [...plan.llm_errors, ...r.errors.map((e) => ({ provider: e.provider, error: `toggle coaching: ${e.error}` }))];
+  if (!r.lines) return PlanDoc.parse({ ...plan, llm_errors: llmErrors });
+  const others = [...plan.cards.map((c) => c.name), ...plan.refusals.map((x) => x.name), ...plan.review.map((x) => x.name)];
+  const dropped = assembleCoaching(slots, r.lines, others);
+  const byId = new Map(slots.map((s) => [s.card!.entity_id, s]));
+  const cards = plan.cards.map((c) => {
+    const s = c.routed_by === "toggle" && c.coaching_by === "template" ? byId.get(c.qloo_entity_id) : undefined;
+    return s && s.coachingBy === "llm" ? { ...c, coaching: s.coaching!, coaching_by: "llm" as const } : c;
+  });
+  return PlanDoc.parse({ ...plan, cards, dropped: [...plan.dropped, ...dropped], llm_errors: llmErrors, coach_llm: plan.coach_llm ?? (r.by ? `${r.by.provider}:${r.by.modelId}` : null) });
 }
 
 /**

@@ -136,6 +136,8 @@ export const PlanDoc = z.object({
   parent_plan_id: z.string().nullable().default(null),
   llm_provider: z.string().nullable(),
   llm_model: z.string().nullable(),
+  /** "provider:model" whose coaching call won the race (null: template coaching, or a plan from before QA round 3) */
+  coach_llm: z.string().nullable().default(null),
   llm_steps: z.number().int().default(0),
   llm_ms: z.number().int().default(0),
   qloo_calls: z.number().int(),
@@ -312,6 +314,7 @@ export function planDocFromAgent(p: AgentPlan, o: { id?: string; caseId: string;
     parent_plan_id: o.parentPlanId ?? null,
     llm_provider: p.llm?.provider ?? null,
     llm_model: p.llm?.model ?? null,
+    coach_llm: p.coachedBy ? `${p.coachedBy.provider}:${p.coachedBy.model}` : null,
     llm_steps: p.llmSteps,
     llm_ms: p.llmMs,
     qloo_calls: o.calls,

@@ -62,6 +62,32 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     expect(calls.length).toBeGreaterThan(plan.qloo_calls);
   });
 
+  it("the cards a toggle refilled get one raced coaching call through the truth-boundary rules (QA round 3)", async () => {
+    const { store, plan } = await mayaWeek();
+    const target = plan.cards.find((x) => x.rung === "solo")!;
+    await store.putPlan(PlanDoc.parse({ ...plan, cards: plan.cards.map((x) => (x.id === target.id ? { ...x, tags: [...x.tags, "urn:tag:beverage_offering:qloo:craft_beer"] } : x)) }));
+    const prompts: string[] = [];
+    const llm = makeLlm("groq", { GROQ_API_KEY: "k" }, (async (_u: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { messages: { content: unknown }[] };
+      const text = body.messages.map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content))).join("\n");
+      prompts.push(text);
+      const ids = [...new Set([...text.matchAll(/"entity_id":"([^"]+)"/g)].map((m) => m[1]!))];
+      const coaching = ids.map((entity_id, i) => ({ entity_id, line: i === 0 ? "Fifteen minutes there is plenty." : "Stay for an hour or two." }));
+      return new Response(JSON.stringify({ id: "x", object: "chat.completion", created: 0, model: "m", choices: [{ index: 0, message: { role: "assistant", content: null, tool_calls: [{ id: "c0", type: "function", function: { name: "submitPlan", arguments: JSON.stringify({ coaching }) } }] }, finish_reason: "tool_calls" }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } }), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch)!;
+    const { plan: next } = await toggleConstraints({ store, planId: plan.id, patch: { in_recovery: true }, qloo: loggingReplay, llms: [llm], coachWindowMs: 3000 });
+    const refills = next.cards.filter((c) => c.routed_by === "toggle");
+    expect(refills.length).toBeGreaterThan(0);
+    expect(prompts).toHaveLength(1);
+    // only refilled cards were offered to the model
+    for (const c of next.cards.filter((x) => x.routed_by !== "toggle")) expect(prompts[0]).not.toContain(c.qloo_entity_id);
+    expect(refills[0]!.coaching_by).toBe("llm");
+    expect(refills[0]!.coaching).toBe("Fifteen minutes there is plenty.");
+    // a line breaking a rule (COACH-DOSE: an hour) keeps the template
+    for (const c of refills.slice(1)) expect(c.coaching_by).toBe("template");
+    expect(next.coach_llm).toMatch(/^groq:/);
+  });
+
   it("in recovery ON re-screens every card's coaching, home cards too (COACH-ALC): a drinking line becomes the template dose", async () => {
     const { store, plan } = await mayaWeek();
     const home = plan.cards.find((x) => x.rung === "home")!;
