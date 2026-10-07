@@ -1,0 +1,58 @@
+# For judges
+
+This page mirrors [`/judge`](https://rekindle-one.vercel.app/judge) on the live app. No login, no keys, no cloning. Every case is fictional.
+
+## The claim
+
+**Rekindle is a behavioural-activation planning agent for clinicians.** It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.
+
+## The 30-second path
+
+1. Open **https://rekindle-one.vercel.app** and click **Plan Maya's week, live**. The agent trace lists each Qloo call as it happens; the week arrives in about 20 s.
+2. Click **In recovery**. Alcohol-serving venues are struck in place with their rule (`R-ALC …`) and those slots are refilled live.
+3. Open [`/judge`](https://rekindle-one.vercel.app/judge) for the six edge states (each with a live start button) and the bench, and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) for every Qloo request behind the latest plans (the key is never shown).
+
+The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [DEMO.md](DEMO.md), about 4 minutes.
+
+## Receipts
+
+<!-- bench:killer:start -->
+**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC).
+<!-- bench:killer:end -->
+
+| Receipt | Value | Source |
+|---|---|---|
+| Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
+| Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
+| Ember threads on live re-plans | 2 of 77 rekindled-top cards clear the 0.02 lead; 75 are shown as ties (median lead 0.0068) | `bench/ember-live.json` |
+| Unit + property tests | 177 Vitest tests, 14 files, no keys needed | `npm test` |
+| Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
+| E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
+
+The bench predates later plan-path changes and is re-run before submission; [DEMO.md](DEMO.md#bench-reproduce) lists them and explains how to read the table (Qloo grades both arms; the manual audit was not blind).
+
+## Reproduce (the real path)
+
+```bash
+# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
+python3 scripts/ui_smoke.py https://rekindle-one.vercel.app /tmp/shots live
+E2E_BASE_URL=https://rekindle-one.vercel.app E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
+# the bench, against a live deployment (needs BENCH_TOKEN and model keys): see DEMO.md "Bench (reproduce)"
+```
+
+**CI / deterministic, not the product:** `npm run check` and `npx playwright test` run with no keys. In that mode the app refuses to plan ("The plan could not finish … No week is invented") and the E2E suite asserts exactly that.
+
+## Honest limitations
+
+1. **Not a clinical tool.** Clinician support only: no diagnosis, no efficacy claims, no patient logins.
+2. **A plan is slow:** p50 about 17 s from click, inside our 30 s gate but over the 15 s target.
+3. **The ember thread is attribution, not causation**, and on live re-plans most leads are ties (above).
+4. **The alcohol screen is a deny list.** It is measured by the ablation, but an alcohol-serving venue with none of the tags or keywords would get through.
+
+The full list is in the [README](README.md) (Limitations).
+
+## Links
+
+- Live app: https://rekindle-one.vercel.app · receipts: https://rekindle-one.vercel.app/judge
+- Repository: https://github.com/edycutjong/rekindle
+- Architecture (generated from the code): [ARCHITECTURE.md](ARCHITECTURE.md) · Qloo DX report: [DX-REPORT.md](DX-REPORT.md)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the bench numbers into README.md and DEMO.md from the committed bench files — never by hand.
+"""Write the bench numbers into README.md, DEMO.md and JUDGE.md from the committed bench files — never by hand.
 
 Sources: bench/results.json (scripts/bench.py), bench/replan.json (scripts/replan_check.py),
 bench/audit.json (scripts/manual_audit.py summary). Each target file carries marker pairs:
@@ -20,7 +20,7 @@ import sys
 from datetime import datetime
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-TARGETS = [ROOT / "README.md", ROOT / "DEMO.md"]
+TARGETS = [ROOT / "README.md", ROOT / "DEMO.md", ROOT / "JUDGE.md"]
 
 
 def load(name):
@@ -172,7 +172,7 @@ def main() -> int:
         if stale:
             print("stale bench numbers in: " + ", ".join(stale) + " (run python3 scripts/bench_table.py)", file=sys.stderr)
             return 1
-        print("bench numbers in README.md / DEMO.md match bench/*.json")
+        print("bench numbers in README.md / DEMO.md / JUDGE.md match bench/*.json")
         return 0
     print("updated: " + (", ".join(stale) or "nothing"))
     return 0
