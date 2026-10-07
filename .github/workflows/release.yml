@@ -1,0 +1,51 @@
+name: release
+
+# Semantic version from Angular-convention commits since the last tag: feat → minor, fix/perf → patch,
+# feat!/BREAKING CHANGE → major; docs/chore/test/ci/refactor/style → no release.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Compute next version
+        id: ver
+        run: |
+          set -euo pipefail
+          LAST=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST" ]; then RANGE=""; CUR="0.0.0"; else RANGE="${LAST}..HEAD"; CUR="${LAST#v}"; fi
+          if [ -n "$RANGE" ]; then LOG=$(git log --format=%B "$RANGE"); else LOG=$(git log --format=%B); fi
+          BUMP=none
+          if echo "$LOG" | grep -qE '^(feat|fix|perf)(\(.+\))?!:|BREAKING CHANGE:'; then BUMP="major"
+          elif echo "$LOG" | grep -qE '^feat(\(.+\))?:'; then BUMP="minor"
+          elif echo "$LOG" | grep -qE '^(fix|perf)(\(.+\))?:'; then BUMP="patch"
+          fi
+          if [ "$BUMP" = none ]; then echo "No releasable commits since ${LAST:-the beginning}."; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          IFS=. read -r MA MI PA <<< "$CUR"
+          case "$BUMP" in
+            major) MA=$((MA+1)); MI=0; PA=0 ;;
+            minor) MI=$((MI+1)); PA=0 ;;
+            patch) PA=$((PA+1)) ;;
+          esac
+          echo "next=v${MA}.${MI}.${PA}" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+      - name: Tag and publish
+        if: steps.ver.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT: ${{ steps.ver.outputs.next }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEXT" -m "$NEXT"
+          git push origin "$NEXT"
+          gh release create "$NEXT" --generate-notes --title "$NEXT"

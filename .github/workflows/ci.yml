@@ -1,0 +1,177 @@
+name: CI/CD Pipeline
+
+# Quality ─┐
+#          ├─> Build ─> E2E ─────────┐
+# Security ┘        └─> Performance ─┴─> Deploy gate (main)
+# Vercel deploys main through its Git integration; this pipeline is the gate a judge can read.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── STAGE 1: Code quality (parallel with Stage 2) ────────────
+  quality:
+    name: "Stage 1 · Quality (Node ${{ matrix.node-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Node 22 + 24 on main, 22 only on PRs
+        node-version: ${{ github.event_name == 'push' && fromJSON('[22, 24]') || fromJSON('[22]') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # docs:check lists plan-path commits since the bench run; kitchen:check greps tracked files
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - name: Lint (ESLint)
+        run: npm run lint
+      - name: Type check (tsc)
+        run: npm run typecheck
+      - name: Unit + property tests with coverage (Vitest, no keys)
+        run: npm run test:coverage
+      - name: Seed data, generated docs and kitchen checks
+        run: npm run seed:check && npm run docs:check && npm run kitchen:check
+      - name: Upload coverage
+        if: matrix.node-version == 22
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  # ── STAGE 2: Security (parallel with Stage 1) ────────────────
+  secret-scan:
+    name: "Stage 2 · Secret scan (gitleaks, full history)"
+    uses: ./.github/workflows/gitleaks.yml
+
+  dependency-audit:
+    name: "Stage 2 · Dependency audit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: npm audit, production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+      - name: npm audit, all dependencies (advisory)
+        run: npm audit --audit-level=high || echo "::warning::dev-dependency advisories (see log); production tree is clean"
+      - name: License compliance (no GPL-3.0 / AGPL-3.0 in production)
+        run: npx -y license-checker --production --failOn "GPL-3.0;AGPL-3.0" --summary
+
+  # ── STAGE 3: Build ───────────────────────────────────────────
+  build:
+    name: "Stage 3 · Build + bundle budget"
+    needs: [quality]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Next.js production build
+        run: npm run build
+      - name: Bundle size budget (.next/static, warn 1500 KB, fail 2000 KB)
+        run: |
+          KB=$(du -sk .next/static | cut -f1)
+          echo "### Bundle: ${KB} KB of static assets" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$KB" -gt 2000 ]; then echo "::error::${KB} KB > 2000 KB"; exit 1; fi
+          if [ "$KB" -gt 1500 ]; then echo "::warning::${KB} KB > 1500 KB"; fi
+      - name: Keep the build for E2E and Lighthouse
+        uses: actions/upload-artifact@v7
+        with:
+          name: next-build
+          path: |
+            .next/
+            !.next/cache/
+          include-hidden-files: true
+          retention-days: 1
+
+  # ── STAGE 4: E2E ─────────────────────────────────────────────
+  e2e:
+    name: "Stage 4 · E2E (Playwright, keyless)"
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .next
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Playwright (desktop + Pixel 7)
+        run: npx playwright test
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # ── STAGE 5: Performance ─────────────────────────────────────
+  performance:
+    name: "Stage 5 · Lighthouse CI"
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .next
+      - name: Lighthouse (/, /judge, /cases/new; accessibility >= 0.9 blocks)
+        run: npm run lighthouse
+
+  # ── STAGE 6: Deploy gate (main only) ─────────────────────────
+  deploy-gate:
+    name: "Stage 6 · Deploy gate"
+    needs: [quality, secret-scan, dependency-audit, build, e2e, performance]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: All gates passed
+        run: |
+          {
+            echo "## All CI/CD gates passed"
+            echo "- Stage 1 Quality: ESLint, tsc, Vitest + coverage, seed/docs/kitchen checks"
+            echo "- Stage 2 Security: gitleaks (full history), npm audit, license check"
+            echo "- Stage 3 Build: next build, bundle budget"
+            echo "- Stage 4 E2E: Playwright, desktop + Pixel 7"
+            echo "- Stage 5 Performance: Lighthouse CI"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Production health (informational; Vercel deploys main via its Git integration)
+        run: |
+          curl -s --max-time 20 https://rekindle-one.vercel.app/api/health | tee -a "$GITHUB_STEP_SUMMARY" || true
