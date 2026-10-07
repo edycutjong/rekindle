@@ -73,6 +73,8 @@ export interface AgentOptions {
   /** total budget for LLM calls (ms); tools already started keep running */
   llmBudgetMs?: number;
   maxSteps?: number;
+  /** bench ablation only (arms B−/B−4) and the pool audit; never set on the public path */
+  toolOptions?: Pick<ToolContext, "alcoholScreen" | "excludeTagSet" | "onPool">;
 }
 
 const WORD_LIMIT = 25;
@@ -178,7 +180,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const history = opts.history ?? EMPTY_HISTORY;
   const c = opts.case;
   const emit = opts.onEvent ?? (() => {});
-  const ctx: ToolContext = { qloo: opts.qloo, case: c, history, used: new Set(), usedPlaces: new Set(), seen: new Set() };
+  const ctx: ToolContext = { qloo: opts.qloo, case: c, history, used: new Set(), usedPlaces: new Set(), seen: new Set(), ...(opts.toolOptions ?? {}) };
   const skeleton = ladder(c.energy);
   const filled = new Map<DayName, AgentSlot>();
   const claimed = new Set<DayName>();

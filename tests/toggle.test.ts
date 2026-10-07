@@ -69,6 +69,23 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     expect(same.plan.id).toBe(plan.id);
   });
 
+  it("coverage refusal → widening the radius (loosening) retries only the empty outing slots, live", async () => {
+    const store = new MemoryStore();
+    const c = { ...caseFromSeed("maya")!, max_meters: 300 };
+    await store.putCase(c);
+    // 300 m around Maya: every captured place is further away, so the outings are left empty (a coverage refusal)
+    const plan = await runPlanForCase({ store, caseId: c.id, qloo: loggingReplay, llms: [downLlm()] });
+    const emptyOutings = plan.empty_slots.filter((e) => e.rung !== "home");
+    expect(emptyOutings.length).toBeGreaterThan(0);
+    const homes = plan.cards.filter((x) => x.rung === "home").map((x) => x.qloo_entity_id);
+    const r = await toggleConstraints({ store, planId: plan.id, patch: { max_meters: 1500 }, qloo: loggingReplay });
+    expect(r.plan.toggle).toMatchObject({ changed: { max_meters: 1500 }, struck: 0, refilled: emptyOutings.length });
+    expect(r.plan.cards.filter((x) => x.rung !== "home").length).toBeGreaterThan(0);
+    for (const x of r.plan.cards.filter((x) => x.rung !== "home")) expect(x.distance_m!).toBeLessThanOrEqual(1500);
+    // verified at-home cards are kept as they were
+    expect(r.plan.cards.filter((x) => x.rung === "home").map((x) => x.qloo_entity_id)).toEqual(homes);
+  });
+
   it("the route validates the patch (unknown keys → 400), 404s an unknown plan and refuses a non-draft week (409)", async () => {
     const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
     const post = (id: string, body: unknown) => toggleRoute(new Request(`http://x/api/plans/${id}/constraints`, { method: "POST", body: JSON.stringify(body) }), ctx(id));

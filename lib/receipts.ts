@@ -42,7 +42,8 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
   const plans: PlanReceipt[] = [];
   for (const id of ids) {
     const [plan, calls] = await Promise.all([store.getPlan(id), store.getCalls(id)]);
-    if (!plan) continue;
+    // the injected-outage demo sends no request; it is not a receipt of Qloo's behaviour
+    if (!plan || plan.fault) continue;
     plans.push({
       plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: plan.refusals.length },
       calls: calls?.calls ?? [],

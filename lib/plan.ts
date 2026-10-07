@@ -246,6 +246,8 @@ export interface ToolContext {
   /** bench ablation only */
   alcoholScreen?: boolean;
   excludeTagSet?: readonly string[];
+  /** bench only: sees every place list Qloo returned to an outing query (the verifier's full input pool) */
+  onPool?: (p: { day: DayName; hour: number; rung: Rung; entities: QlooEntity[] }) => void;
 }
 
 export interface ToolResult {
@@ -292,6 +294,7 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
   }
   const list = res.results.entities ?? [];
   list.forEach((e) => ctx.seen.add(e.entity_id));
+  ctx.onPool?.({ day: slot.day, hour: slot.hour, rung: slot.rung, entities: list });
   const refusals: Refusal[] = [];
   const review: Card[] = [];
   const lowRated = new Set(ctx.history.lowRated);
@@ -411,8 +414,9 @@ export function recheckConstraints(card: Card, c: CaseConstraints): RuleResult[]
 /**
  * Constraint toggle (e.g. "in recovery" ON): re-verify every placed outing against the new case row; the ones that
  * fail are struck in place with their rule, and only those slots are refilled with the new server-side filters.
+ * With `refillEmpty` (the change loosened a constraint), empty outing slots are retried under the new case row too.
  */
-export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: CaseRow, history: PlanHistory = EMPTY_HISTORY): Promise<WeekPlan & { struck: Refusal[]; refilled: number }> {
+export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: CaseRow, history: PlanHistory = EMPTY_HISTORY, o: { refillEmpty?: boolean } = {}): Promise<WeekPlan & { struck: Refusal[]; refilled: number }> {
   const placed = prev.slots.flatMap((s) => (s.card ? [s.card.entity_id] : []));
   const placedPlaces = prev.slots.flatMap((s) => (s.card && s.card.rung !== "home" ? [s.card.entity_id] : []));
   // struck entities stay in `used`, so the refill can never put them back
@@ -423,6 +427,15 @@ export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: Case
   const review: Card[] = prev.review.filter((x) => !recheckConstraints(x, c).some((r) => r.verdict === "REFUSE"));
   let refilled = 0;
   for (const s of prev.slots) {
+    // a loosened constraint (e.g. the clinician widens the radius after a coverage refusal) retries empty outing slots
+    if (!s.card && s.slot.rung !== "home" && o.refillEmpty) {
+      const r = s.slot.rung === "solo" ? await findOutings(ctx, s.slot) : await placeSocial(ctx, s.slot);
+      refilled++;
+      slots.push({ slot: s.slot, card: r.card, ...(r.card ? {} : { empty: r.empty }) });
+      refusals.push(...r.refusals);
+      review.push(...r.review);
+      continue;
+    }
     if (!s.card || s.slot.rung === "home") {
       slots.push(s);
       continue;

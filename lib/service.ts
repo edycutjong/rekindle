@@ -5,8 +5,10 @@
 import profiles from "../fixtures/profiles.json";
 import { runAgent, templateCoaching, type AgentEvent } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
-import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
+import { QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
+import { ALCOHOL_EXCLUDE_4, ALCOHOL_EXCLUDE_14 } from "./tags";
+import { alcoholScreen } from "./verify";
 import { diffWeeks } from "./replan";
 import { callsDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type Store } from "./store";
 
@@ -58,6 +60,29 @@ export interface RunPlanOptions {
   /** injectable for scripts/tests; default: from env */
   qloo?: (onCall: (l: QlooCallLog) => void) => QlooClient;
   llms?: LlmHandle[];
+  /** bench namespace only (the route refuses it otherwise): ablation arm + verifier-input pool audit */
+  bench?: BenchArm;
+  /** injected failure for the Qloo-unavailable demo: no request leaves the server */
+  fault?: "qloo_unreachable";
+}
+
+export type BenchArm = "B" | "B-" | "B-4";
+
+/** Arm → tool options (complexity.md §2): B− turns R-ALC's screen off, B−4 also sends only the 4 bar tags. */
+export function benchToolOptions(arm: BenchArm) {
+  return { alcoholScreen: arm === "B", excludeTagSet: arm === "B-4" ? ALCOHOL_EXCLUDE_4 : ALCOHOL_EXCLUDE_14 };
+}
+
+/** A Qloo client whose every request fails as a network error before leaving the server (the outage demo). */
+export function unreachableQloo(onCall: (l: QlooCallLog) => void): QlooClient {
+  return new QlooClient({
+    apiKey: "fault-injection-no-key",
+    onCall,
+    sleep: async () => {},
+    fetchImpl: async () => {
+      throw new TypeError("fetch failed (injected outage: no request was sent)");
+    },
+  });
 }
 
 /** Run week 1 for a stored case, persist the plan and its Qloo call log, and return the stored plan. */
@@ -69,10 +94,34 @@ export async function runPlanForCase(o: RunPlanOptions): Promise<PlanDoc> {
     calls.push(l);
     o.onEvent?.({ type: "qloo", path: l.path, status: l.status, ms: l.ms, n_results: l.n_results, params: l.params });
   };
-  const qloo = (o.qloo ?? qlooFromEnv)(onCall);
-  const llms = o.llms ?? llmChainFromEnv();
-  const plan = await runAgent({ qloo, case: caseRowFromDoc(c), week: 1, history: EMPTY_HISTORY, llms, onEvent: (e) => e.type !== "plan" && o.onEvent?.(e) });
-  const doc = planDocFromAgent(plan, { caseId: c.id, history: EMPTY_HISTORY, calls: calls.length });
+  const qloo = (o.fault ? unreachableQloo : (o.qloo ?? qlooFromEnv))(onCall);
+  // the outage demo routes deterministically: no LLM spend for a week that cannot get any Qloo data
+  const llms = o.fault ? [] : (o.llms ?? llmChainFromEnv());
+  const pool = new Map<string, { entity_id: string; name: string; verdict: "REFUSE" | "REVIEW"; hits: string[] }>();
+  let pools = 0;
+  const seenPool = new Set<string>();
+  const toolOptions = o.bench
+    ? {
+        ...benchToolOptions(o.bench),
+        onPool: (p: { entities: { entity_id: string; name: string; tags?: { id?: string; tag_id?: string }[] }[] }) => {
+          pools++;
+          for (const e of p.entities) {
+            seenPool.add(e.entity_id);
+            if (pool.has(e.entity_id)) continue;
+            const a = alcoholScreen(e);
+            if (a.verdict !== "PASS") pool.set(e.entity_id, { entity_id: e.entity_id, name: e.name, verdict: a.verdict, hits: a.hits.map((h) => h.value.replace("urn:tag:", "")) });
+          }
+        },
+      }
+    : undefined;
+  const row = caseRowFromDoc(c);
+  const plan = await runAgent({ qloo, case: row, week: 1, history: EMPTY_HISTORY, llms, toolOptions, onEvent: (e) => e.type !== "plan" && o.onEvent?.(e) });
+  const base = planDocFromAgent(plan, { caseId: c.id, history: EMPTY_HISTORY, calls: calls.length });
+  const doc = PlanDoc.parse({
+    ...base,
+    ...(o.fault ? { fault: o.fault } : {}),
+    ...(o.bench ? { bench: { arm: o.bench, alcohol_screen: o.bench === "B", exclude_set: o.bench === "B-4" ? "4" : "14", pools, pool_entities: seenPool.size, pool_alcohol: [...pool.values()] } } : {}),
+  });
   await o.store.putPlan(doc);
   await o.store.putCalls(callsDoc(doc.id, calls));
   return doc;
@@ -98,7 +147,8 @@ export class Conflict extends Error {
  * Toggle a constraint on a draft week: re-verify only the placed outings against the new case row (lib/plan.ts
  * applyConstraints), strike the ones that now fail in place with their rule, and refill only those slots live.
  * Writes a new case (the old plan stays consistent with its own case) and a new plan whose parent is the old one.
- * Loosening a constraint keeps the verified week as it is (nothing fails); re-plan to use the wider constraint.
+ * Loosening a constraint keeps every verified card and retries only the empty outing slots (coverage refusal → the
+ * clinician widens the radius); re-plan to use the wider constraint everywhere.
  */
 export async function toggleConstraints(o: { store: Store; planId: string; patch: ConstraintPatch; qloo?: (onCall: (l: QlooCallLog) => void) => QlooClient }): Promise<{ plan: PlanDoc; case: CaseDoc }> {
   const t0 = Date.now();
@@ -112,7 +162,7 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const next = CaseDoc.parse({ ...c, ...changed, id: newId(), created_at: new Date().toISOString() });
   const calls: QlooCallLog[] = [];
   const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
-  const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history);
+  const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history, { refillEmpty: loosens(c, next) });
   const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
   const doc = await refreshDiff(o.store, planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) }));
   await o.store.putCase(next);
@@ -120,6 +170,11 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const merged = callsDoc(doc.id, calls);
   await o.store.putCalls({ plan_id: doc.id, calls: [...prior, ...merged.calls] });
   return { plan: doc, case: next };
+}
+
+/** Did the change loosen any constraint (wider radius, higher budget, a flag switched off)? Then empty outings are retried. */
+export function loosens(before: CaseDoc, after: CaseDoc): boolean {
+  return after.max_meters > before.max_meters || after.price_max > before.price_max || (before.in_recovery && !after.in_recovery) || (before.need_quiet && !after.need_quiet) || (before.need_wheelchair && !after.need_wheelchair);
 }
 
 /** Recompute a re-planned week's diff after its cards changed (clinician swap / remove, constraint toggle). */
