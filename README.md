@@ -169,7 +169,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 ## 🚀 Getting Started
 
-Requires Node ≥ 22 and Python 3 (for the scripts).
+Requires Node 22 or 24 (the CI matrix; `engines` in package.json) and Python 3 (for the scripts).
 
 ```bash
 git clone https://github.com/edycutjong/rekindle && cd rekindle
