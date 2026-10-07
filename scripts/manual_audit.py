@@ -93,10 +93,16 @@ def summary(a):
         s["alcohol"] += v["alcohol"]
     for s in arms.values():
         s["rate"] = round(s["violations"] / s["checked"], 4) if s["checked"] else None
+    # which audit IDs were wrong, per arm, would reveal the arm of those rows to anyone reading the repo while the
+    # external blind audit is open: they go only to the kitchen copy beside the key, never into bench/audit.json
+    wrong = {arm: s.pop("wrong_ids") for arm, s in arms.items()}
+    with open(os.path.join(os.path.dirname(KEY), "audit_wrong_ids.json"), "w") as f:
+        json.dump(wrong, f, indent=1)
+        f.write("\n")
     out = {
         "generated_by": "scripts/manual_audit.py summary",
         "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "source": "bench/manual_audit.csv + bench/manual_audit_key.csv",
+        "source": "bench/manual_audit.csv + the arm key (kept outside the repo until the external blind audit returns)",
         "auditor": a.auditor,
         "method": a.method,
         "definition": "wrong = venue not found, or not open at the slot, or (in-recovery case) serves alcohol, per public sources; rate = wrong / checked; inconclusive rows are excluded from the denominator",

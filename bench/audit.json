@@ -1,7 +1,7 @@
 {
  "generated_by": "scripts/manual_audit.py summary",
- "finished_at": "2026-10-07T13:13:57+00:00",
- "source": "bench/manual_audit.csv + bench/manual_audit_key.csv",
+ "finished_at": "2026-10-07T15:06:23+00:00",
+ "source": "bench/manual_audit.csv + the arm key (kept outside the repo until the external blind audit returns)",
  "auditor": "the build agent (Claude), not blind: it ran the bench, so arm labels could be inferred from address style; no external human auditor yet",
  "method": "each sampled venue looked up in public web sources (venue sites, city/tourism listings, review and delivery listings; links in bench/manual_audit.csv) for existence at the stated address, hours covering the slot, and alcohol service on in-recovery cases. Stale (pre-2024) or missing evidence = inconclusive, never guessed. Google Maps was not used.",
  "definition": "wrong = venue not found, or not open at the slot, or (in-recovery case) serves alcohol, per public sources; rate = wrong / checked; inconclusive rows are excluded from the denominator",
@@ -14,8 +14,7 @@
    "rate": 0.0,
    "not_found": 0,
    "closed_at_slot": 0,
-   "alcohol": 0,
-   "wrong_ids": []
+   "alcohol": 0
   },
   "A": {
    "sampled": 20,
@@ -25,16 +24,7 @@
    "rate": 0.4118,
    "not_found": 4,
    "closed_at_slot": 2,
-   "alcohol": 1,
-   "wrong_ids": [
-    "AUD-10",
-    "AUD-11",
-    "AUD-24",
-    "AUD-25",
-    "AUD-27",
-    "AUD-33",
-    "AUD-38"
-   ]
+   "alcohol": 1
   }
  }
 }
