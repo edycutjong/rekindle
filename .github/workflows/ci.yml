@@ -13,8 +13,10 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # PR runs collapse to the newest push; every main commit keeps a complete gate result (release.yml waits on it)
+  # PR runs collapse to the newest push. Main runs get one group per SHA: a shared group lets GitHub cancel a
+  # PENDING main run when a newer push queues (even with cancel-in-progress false), and release.yml needs every
+  # main commit's gate result.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
