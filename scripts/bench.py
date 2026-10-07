@@ -81,6 +81,7 @@ class Http:
                 b = {"error": txt[:300]}
             return st, b.get("plan"), {"error": b.get("error")}, secs
         plan, err, kinds = None, None, {}
+        tokens = {"llm_calls": 0, "input": 0, "output": 0, "unreported": 0}  # summed from the agent's `llm` trace frames
         for frame in txt.split("\n\n"):
             m = re.search(r"^event: (.*)$", frame, re.M)
             d = re.search(r"^data: (.*)$", frame, re.M)
@@ -91,7 +92,14 @@ class Http:
                 plan = json.loads(d.group(1))["plan"]
             if m.group(1) == "error" and d:
                 err = json.loads(d.group(1))
-        return st, plan, {"events": kinds, "error": err}, secs
+            if m.group(1) == "llm" and d:
+                e = json.loads(d.group(1))
+                tokens["llm_calls"] += 1
+                if e.get("inputTokens") is None or e.get("outputTokens") is None:
+                    tokens["unreported"] += 1
+                tokens["input"] += e.get("inputTokens") or 0
+                tokens["output"] += e.get("outputTokens") or 0
+        return st, plan, {"events": kinds, "error": err, "tokens": tokens}, secs
 
 
 class Verifier:
@@ -196,7 +204,8 @@ def llm_plan(prompt):
             text = out["choices"][0]["message"]["content"]
             m = re.search(r"\{.*\}", text, re.S)
             acts = json.loads(m.group(0))["activities"]
-            return acts, round(time.time() - t0, 2), body["model"]
+            u = out.get("usage") or {}
+            return acts, round(time.time() - t0, 2), body["model"], {"llm_calls": 1, "input": u.get("prompt_tokens") or 0, "output": u.get("completion_tokens") or 0, "unreported": 0 if u else 1}
         except Exception as e:  # noqa: BLE001 — retried, then reported
             last = e
             time.sleep(2 + 3 * attempt)
@@ -204,7 +213,7 @@ def llm_plan(prompt):
 
 
 def run_arm_a(p, in_recovery, verify):
-    acts, secs, model = llm_plan(arm_a_prompt(p, in_recovery))
+    acts, secs, model, tokens = llm_plan(arm_a_prompt(p, in_recovery))
     slots = {(s["day"], s["rung"] != "home") for s in ladder(p["energy"])}
     rows = []
     for a in acts:
@@ -220,7 +229,7 @@ def run_arm_a(p, in_recovery, verify):
         addr = str(a.get("street_address") or "").strip()
         v = verify({"name": name[:160], "address": addr[:300] if len(addr) >= 3 else "unknown address", "day": day, "hour": max(0, min(23, hour)), "origin": {"lat": p["lat"], "lon": p["lon"]}}) if name else {"verifiable": False, "slot": {"status": None}, "alcohol": {"verdict": None, "hits": []}}
         rows.append({"profile": p["slug"], "arm": "A", "in_recovery": in_recovery, "day": day, "hour": hour, "name": name, "stated_address": addr, "verdict": v, "classes": classify(v, in_recovery, p["radius_m"])})
-    return {"profile": p["slug"], "arm": "A", "llm_seconds": secs, "model": model, "activities": len(acts), "outings": len(rows)}, rows
+    return {"profile": p["slug"], "arm": "A", "llm_seconds": secs, "model": model, "tokens": tokens, "activities": len(acts), "outings": len(rows)}, rows
 
 
 # ------------------------------------------------------------------ arms B / B- / B-4 (Rekindle, live)
@@ -242,7 +251,7 @@ def run_rekindle(http, p, in_recovery, arm):
         time.sleep(5)
     if not plan:
         return {"profile": p["slug"], "arm": arm, "error": f"plan {st}: {info}"}
-    return {"profile": p["slug"], "arm": arm, "case_id": cid, "plan_id": plan["id"], "client_seconds": round(secs, 2), "plan": plan}
+    return {"profile": p["slug"], "arm": arm, "case_id": cid, "plan_id": plan["id"], "client_seconds": round(secs, 2), "tokens": info.get("tokens"), "plan": plan}
 
 
 def grade_rekindle(run, p, in_recovery, verify, symmetry):
@@ -263,7 +272,7 @@ def grade_rekindle(run, p, in_recovery, verify, symmetry):
     outings = [c for c in plan["cards"] if c["rung"] != "home"]
     summary = {
         "profile": p["slug"], "arm": run["arm"], "plan_id": plan["id"], "client_seconds": run["client_seconds"], "server_ms": plan["latency_ms"], "qloo_calls": plan["qloo_calls"],
-        "llm": f"{plan['llm_provider']}:{plan['llm_model']}" if plan["llm_model"] else "deterministic", "cards": len(plan["cards"]), "outing_cards": len(outings),
+        "llm": f"{plan['llm_provider']}:{plan['llm_model']}" if plan["llm_model"] else "deterministic", "tokens": run.get("tokens"), "cards": len(plan["cards"]), "outing_cards": len(outings),
         "empty_slots": [{"day": e["day_name"], "rung": e["rung"], "reason": e["reason"]} for e in plan["empty_slots"]],
         "refusals_by_rule": {}, "review": len(plan["review"]),
         "pool": {"pools": plan["bench"]["pools"], "entities": plan["bench"]["pool_entities"], "alcohol_refuse": len(flagged), "alcohol_review": sum(1 for x in plan["bench"]["pool_alcohol"] if x["verdict"] == "REVIEW"), "flagged": [{"name": x["name"], "hits": x["hits"][:4]} for x in flagged.values()]},
@@ -416,6 +425,8 @@ def main():
         "latency": lat,
         "coverage_refusals_arm_b": coverage,
         "verify_venue_calls": verify.n,
+        # model tokens across every plan and arm-A call (provider-reported usage); priced by hand from the provider consoles
+        "tokens": {k: sum((x.get("tokens") or {}).get(k, 0) for x in plans + a_runs) for k in ("llm_calls", "input", "output", "unreported")},
         "errors": errors,
         "plans": plans,
         "arm_a_runs": a_runs,

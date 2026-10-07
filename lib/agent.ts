@@ -60,7 +60,7 @@ export interface AgentPlan extends Omit<WeekPlan, "slots"> {
 
 export type AgentEvent =
   | { type: "start"; week: number; slots: { day: DayName; hour: number; rung: string }[]; llm: string[] }
-  | { type: "llm"; provider: string; model: string; step: number; ms: number; toolCalls: string[]; finishReason: string; outputTokens: number | null }
+  | { type: "llm"; provider: string; model: string; step: number; ms: number; toolCalls: string[]; finishReason: string; inputTokens: number | null; outputTokens: number | null }
   | { type: "llm_fallback"; from: string; to: string | null; error: string }
   | { type: "tool"; tool: ToolName; day: DayName; params: Record<string, unknown>; routedBy: RoutedBy; ms: number; returned: number; card: { entity_id: string; name: string; hour: number; movedFrom?: number } | null; refusals: Record<string, number>; review: number; empty?: string }
   | { type: "tool_rejected"; tool: string; day: string; reason: string }
@@ -387,12 +387,12 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   // 20 s for routing leaves room for the coaching window and the deterministic fallback inside the 30 s plan gate
   const deadline = t0 + (opts.llmBudgetMs ?? 20_000);
 
-  const onCallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { outputTokens?: number } }) => {
+  const onCallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { inputTokens?: number; outputTokens?: number } }) => {
     const ms = Math.round(e.performance.responseTimeMs);
     llmSteps++;
     llmMs += ms;
     const toolCalls = e.content.flatMap((part) => (part.type === "tool-call" && part.toolName ? [part.toolName] : []));
-    emit({ type: "llm", provider: llm.provider, model: llm.modelId, step: llmSteps, ms, toolCalls, finishReason: String(e.finishReason), outputTokens: e.usage.outputTokens ?? null });
+    emit({ type: "llm", provider: llm.provider, model: llm.modelId, step: llmSteps, ms, toolCalls, finishReason: String(e.finishReason), inputTokens: e.usage.inputTokens ?? null, outputTokens: e.usage.outputTokens ?? null });
   };
   const failed = new Set<LlmHandle>();
   const fail = (llm: LlmHandle, e: unknown, next: LlmHandle | undefined) => {
@@ -486,7 +486,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   return plan;
 }
 
-type CallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { outputTokens?: number } }) => void;
+type CallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { inputTokens?: number; outputTokens?: number } }) => void;
 
 const coachingSchema = z.object({ coaching: z.array(z.object({ entity_id: z.string(), line: z.string() })).max(14) });
 
