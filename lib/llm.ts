@@ -2,7 +2,7 @@
  * LLM providers for the agent loop (OpenAI-compatible endpoints via the Vercel AI SDK).
  *
  *   qwen  qwen3.8-flash on DashScope-intl, always sent with `enable_thinking: false` (D1 spike: thinking on p50 9.5 s,
- *         off p50 1.0 s per call, 5/5 valid typed tool calls)
+ *         off p50 1.0 s per call, 5/5 valid typed tool calls) and `parallel_tool_calls: true` when tools are offered
  *   groq  openai/gpt-oss-120b on Groq (needs a User-Agent header; p50 0.9 s in the D1 spike)
  *
  * `LLM_PROVIDER` picks the primary; the other one is the automatic fallback when its key is set. The model only routes
@@ -35,7 +35,8 @@ export function makeLlm(provider: LlmProviderId, env: Record<string, string | un
       apiKey,
       ...(fetchImpl ? { fetch: fetchImpl } : {}),
       // thinking stays off on every call: a plan makes several LLM calls and the 15 s p50 budget cannot absorb 9.5 s each
-      transformRequestBody: (body) => ({ ...body, enable_thinking: false }),
+      // DashScope returns one tool call per turn unless parallel_tool_calls is set; the agent routes 7 slots at once
+      transformRequestBody: (body) => ({ ...body, enable_thinking: false, ...(body.tools ? { parallel_tool_calls: true } : {}) }),
     });
     return { provider, modelId, model: p.chatModel(modelId) };
   }

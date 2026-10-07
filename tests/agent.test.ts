@@ -147,6 +147,29 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.slots.filter((s) => s.routedBy === "llm")).toHaveLength(6);
   });
 
+  it("a model that stops early gets another round for the open slots, then the coaching hand-off (sequential Qwen, 2026-10-07)", async () => {
+    const bodies: Body[] = [];
+    const llm = scriptedLlm(
+      [
+        () => completion([ROUTE_ALL[0]]),
+        () => completion([], "Monday is done."),
+        () => completion(ROUTE_ALL.slice(1)),
+        // the coaching turn sees this round's tool results plus the cards placed in the earlier round (in the prompt)
+        (b) => completion([{ name: "submitPlan", args: { coaching: [...new Set([...JSON.stringify(b.messages).matchAll(/entity_id\\?":\\?"([^"\\]+)/g)].map((m) => m[1]))].map((entity_id) => ({ entity_id, line: "One small step is enough." })) } }]),
+      ],
+      bodies,
+    );
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [llm] });
+    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+    expect(plan.llmErrors).toEqual([]);
+    // the second round only offers what is still open
+    const secondRoundUser = JSON.stringify(bodies[2].messages.filter((m) => m.role === "user"));
+    expect(secondRoundUser).not.toContain("- monday 19:00 home");
+    expect(secondRoundUser).toContain("Already placed");
+    expect(bodies.filter((b) => b.tools).every((b) => (b as unknown as { parallel_tool_calls?: boolean }).parallel_tool_calls === true)).toBe(true);
+  });
+
   it("LLM fallback switch: the primary fails, the secondary provider routes the week", async () => {
     const events: AgentEvent[] = [];
     const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])], [], "groq")], onEvent: (e) => events.push(e) });

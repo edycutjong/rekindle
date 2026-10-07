@@ -187,6 +187,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const review: Card[] = [];
   const otherNames = new Set<string>();
   let submitted: { entity_id: string; line: string }[] = [];
+  let submitCalls = 0;
 
   emit({ type: "start", week, slots: skeleton.map((s) => ({ day: s.day, hour: s.hour, rung: s.rung })), llm: opts.llms.map((l) => `${l.provider}:${l.modelId}`) });
 
@@ -284,6 +285,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
       inputSchema: z.object({ coaching: z.array(z.object({ entity_id: z.string(), line: z.string() })).max(14) }),
       execute: async ({ coaching }) => {
         submitted = [...submitted, ...coaching];
+        submitCalls++;
         return { ok: true };
       },
     }),
@@ -297,20 +299,26 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const llmErrors: { provider: string; error: string }[] = [];
   const deadline = t0 + (opts.llmBudgetMs ?? 25_000);
 
-  for (let i = 0; i < opts.llms.length; i++) {
+  // Walk the provider chain. A provider that makes progress but stops early (e.g. one tool per step until the step cap)
+  // gets another round for what is still open — the slots, then the coaching hand-off; a provider that errors or calls
+  // no tool hands over to the next one.
+  let i = 0;
+  let rounds = 0;
+  while (i < opts.llms.length && rounds < opts.llms.length + 2) {
+    rounds++;
     const llm = opts.llms[i];
     const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day));
-    const needCoaching = submitted.length === 0;
-    if (!open.length && !needCoaching) break;
+    if (!open.length && (submitCalls > 0 || filled.size === 0)) break;
     const remaining = deadline - Date.now();
     if (remaining < 2000) break;
     try {
+      const before = { claimed: claimed.size, submits: submitCalls };
       await generateText({
         model: llm.model,
         system: systemPrompt(),
-        prompt: open.length ? userPrompt(c, week, history, open) : `All slots are filled:\n${[...filled.values()].map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`,
+        prompt: open.length ? userPrompt(c, week, history, open) + (filled.size ? `\nAlready placed (keep; coach these too):\n${[...filled.values()].filter((f) => f.card).map((f) => JSON.stringify(summary(f))).join("\n")}` : "") : `All slots are filled:\n${[...filled.values()].map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`,
         tools,
-        stopWhen: [stepCountIs(opts.maxSteps ?? 4), submittedStop],
+        stopWhen: [stepCountIs(opts.maxSteps ?? 10), submittedStop],
         maxRetries: 1,
         temperature: 0.2,
         abortSignal: AbortSignal.timeout(remaining),
@@ -325,14 +333,15 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         },
       });
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
-      if (claimed.size > 0 || submitted.length > 0) break;
-      throw new Error("the model called no tool");
+      if (allRouted() && submitCalls > 0) break;
+      if (claimed.size === before.claimed && submitCalls === before.submits) throw new Error("the model made no progress (no tool called)");
     } catch (e) {
       const error = (e instanceof Error ? `${e.name}: ${e.message}` : String(e)).slice(0, 300);
       llmErrors.push({ provider: llm.provider, error });
       const next = opts.llms[i + 1];
       emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error });
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
+      i++;
     }
   }
 
