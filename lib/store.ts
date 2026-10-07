@@ -134,6 +134,13 @@ export const PlanDoc = z.object({
   /** truth-boundary drops (R-ID / COACH-*) */
   dropped: z.array(z.object({ rule: z.string(), entity_id: z.string(), detail: z.string() })),
   llm_errors: z.array(z.object({ provider: z.string(), error: z.string() })).default([]),
+  /** how this week was produced: the agent run, or a constraint toggle applied to a parent plan */
+  origin: z.enum(["agent", "toggle", "replan"]).default("agent"),
+  /** constraint toggle that produced this plan (origin "toggle") */
+  toggle: z
+    .object({ changed: z.record(z.string(), z.union([z.boolean(), z.number()])), struck: z.number().int(), refilled: z.number().int(), ms: z.number().int() })
+    .nullable()
+    .default(null),
 });
 export type PlanDoc = z.infer<typeof PlanDoc>;
 
@@ -172,7 +179,7 @@ export function caseRowFromDoc(d: CaseDoc): CaseRow {
   };
 }
 
-function cardToDoc(planId: string, c: Card, extra: Partial<CardDoc> = {}): CardDoc {
+export function cardToDoc(planId: string, c: Card, extra: Partial<CardDoc> = {}): CardDoc {
   return CardDoc.parse({
     id: newId(),
     plan_id: planId,
@@ -245,6 +252,42 @@ export function planDocFromAgent(p: AgentPlan, o: { id?: string; caseId: string;
     review: p.review.map((c) => cardToDoc(id, c, { routed_by: "llm" })),
     dropped: p.dropped,
     llm_errors: p.llmErrors,
+  });
+}
+
+/**
+ * A constraint toggle's result as a new plan document (parent = the plan it was applied to). Cards that survived keep
+ * their coaching and routing; refilled slots are marked `routed_by: "toggle"` with a template dose line. Refusals keep
+ * the parent's plus the newly struck ones (`struck_by_toggle`) and the refill's.
+ */
+export function planDocFromToggle(
+  parent: PlanDoc,
+  w: WeekPlan,
+  o: { caseId: string; changed: Record<string, boolean | number>; struck: number; refilled: number; ms: number; calls: number; coach: (c: Card) => string },
+): PlanDoc {
+  const id = newId();
+  const prior = new Map(parent.cards.map((c) => [`${c.day_name}|${c.qloo_entity_id}`, c]));
+  return PlanDoc.parse({
+    ...parent,
+    id,
+    case_id: o.caseId,
+    status: "draft",
+    created_at: new Date().toISOString(),
+    approved_at: null,
+    parent_plan_id: parent.id,
+    qloo_calls: o.calls,
+    latency_ms: o.ms,
+    origin: "toggle",
+    toggle: { changed: o.changed, struck: o.struck, refilled: o.refilled, ms: o.ms },
+    cards: w.slots.flatMap((s) => {
+      if (!s.card) return [];
+      const kept = prior.get(`${s.slot.day}|${s.card.entity_id}`);
+      if (kept) return [{ ...kept, id: newId(), plan_id: id }];
+      return [cardToDoc(id, s.card, { coaching: o.coach(s.card), coaching_by: "template", routed_by: "toggle", tool: s.slot.rung === "social" ? "placeSocial" : "findOutings", tool_params: { day: s.slot.day } })];
+    }),
+    empty_slots: w.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: "toggle" })),
+    refusals: w.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}) })),
+    review: w.review.map((c) => cardToDoc(id, c, { routed_by: "toggle" })),
   });
 }
 

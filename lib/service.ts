@@ -3,11 +3,11 @@
  * for a stored case with its Qloo call log persisted beside the plan.
  */
 import profiles from "../fixtures/profiles.json";
-import { runAgent, type AgentEvent } from "./agent";
+import { runAgent, templateCoaching, type AgentEvent } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
-import { EMPTY_HISTORY, wkt } from "./plan";
-import { callsDoc, CaseDoc, caseRowFromDoc, newId, planDocFromAgent, type PlanDoc, type Store } from "./store";
+import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
+import { callsDoc, CaseDoc, caseRowFromDoc, newId, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type PlanDoc, type Store } from "./store";
 
 export interface SeedProfile {
   slug: string;
@@ -75,6 +75,50 @@ export async function runPlanForCase(o: RunPlanOptions): Promise<PlanDoc> {
   await o.store.putPlan(doc);
   await o.store.putCalls(callsDoc(doc.id, calls));
   return doc;
+}
+
+/** The constraint tabs (ui.md Case strip). Distance and budget can be tightened or loosened; flags switch on/off. */
+export interface ConstraintPatch {
+  in_recovery?: boolean;
+  need_quiet?: boolean;
+  need_wheelchair?: boolean;
+  max_meters?: number;
+  price_max?: number;
+}
+
+export class Conflict extends Error {
+  constructor(m: string) {
+    super(m);
+    this.name = "Conflict";
+  }
+}
+
+/**
+ * Toggle a constraint on a draft week: re-verify only the placed outings against the new case row (lib/plan.ts
+ * applyConstraints), strike the ones that now fail in place with their rule, and refill only those slots live.
+ * Writes a new case (the old plan stays consistent with its own case) and a new plan whose parent is the old one.
+ * Loosening a constraint keeps the verified week as it is (nothing fails); re-plan to use the wider constraint.
+ */
+export async function toggleConstraints(o: { store: Store; planId: string; patch: ConstraintPatch; qloo?: (onCall: (l: QlooCallLog) => void) => QlooClient }): Promise<{ plan: PlanDoc; case: CaseDoc }> {
+  const t0 = Date.now();
+  const parent = await o.store.getPlan(o.planId);
+  if (!parent) throw new NotFound(`plan ${o.planId} not found`);
+  if (parent.status !== "draft") throw new Conflict("only a draft week can change constraints");
+  const c = await o.store.getCase(parent.case_id);
+  if (!c) throw new NotFound(`case ${parent.case_id} not found`);
+  const changed = Object.fromEntries(Object.entries(o.patch).filter(([k, v]) => v !== undefined && c[k as keyof CaseDoc] !== v)) as Record<string, boolean | number>;
+  if (Object.keys(changed).length === 0) return { plan: parent, case: c };
+  const next = CaseDoc.parse({ ...c, ...changed, id: newId(), created_at: new Date().toISOString() });
+  const calls: QlooCallLog[] = [];
+  const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
+  const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history);
+  const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
+  const doc = planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) });
+  await o.store.putCase(next);
+  await o.store.putPlan(doc);
+  const merged = callsDoc(doc.id, calls);
+  await o.store.putCalls({ plan_id: doc.id, calls: [...prior, ...merged.calls] });
+  return { plan: doc, case: next };
 }
 
 export class NotFound extends Error {
