@@ -84,10 +84,17 @@ export interface AuditResults {
   arms: Record<string, AuditArm>;
 }
 
+/** bench/predates.json (scripts/bench_table.py): plan-path commits made after the bench finished */
+export interface Predates {
+  bench_finished_at: string;
+  commits: { commit: string; date: string; subject: string }[];
+}
+
 export interface JudgeData {
   bench: BenchResults | null;
   replan: ReplanResults | null;
   audit: AuditResults | null;
+  predates: Predates | null;
 }
 
 async function readJson<T>(file: string): Promise<T | null> {
@@ -99,8 +106,8 @@ async function readJson<T>(file: string): Promise<T | null> {
 }
 
 export async function loadJudgeData(dir = path.join(process.cwd(), "bench")): Promise<JudgeData> {
-  const [bench, replan, audit] = await Promise.all([readJson<BenchResults>(path.join(dir, "results.json")), readJson<ReplanResults>(path.join(dir, "replan.json")), readJson<AuditResults>(path.join(dir, "audit.json"))]);
-  return { bench, replan, audit };
+  const [bench, replan, audit, predates] = await Promise.all([readJson<BenchResults>(path.join(dir, "results.json")), readJson<ReplanResults>(path.join(dir, "replan.json")), readJson<AuditResults>(path.join(dir, "audit.json")), readJson<Predates>(path.join(dir, "predates.json"))]);
+  return { bench, replan, audit, predates };
 }
 
 export const ARM_LABEL: Record<string, string> = {

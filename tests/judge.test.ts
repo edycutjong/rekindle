@@ -54,6 +54,12 @@ describe("/judge view model", () => {
     expect(d.replan).toBeNull();
     expect(d.audit).toBeNull();
   });
+  it("the committed bench says what it predates and never calls the (non-blind) manual audit blind (QA round 2)", async () => {
+    const d = await loadJudgeData();
+    expect(d.predates?.commits.length).toBeGreaterThan(0);
+    for (const c of d.predates!.commits) expect(Date.parse(c.date)).toBeGreaterThanOrEqual(Date.parse(d.predates!.bench_finished_at.slice(0, 10)));
+    expect(JSON.stringify(d.bench!.definitions)).not.toMatch(/blind/i);
+  });
   it("counts refusals by rule and totals them across plans", () => {
     expect(countRules([{ rule: "R-ALC" }, { rule: "R-OPEN" }, { rule: "R-ALC" }])).toEqual({ "R-ALC": 2, "R-OPEN": 1 });
     const plan = (rules: Record<string, number>, review: number) => ({

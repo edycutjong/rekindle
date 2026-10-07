@@ -1,0 +1,64 @@
+{
+ "generated_by": "scripts/bench_table.py",
+ "bench_finished_at": "2026-10-07T13:11:44+00:00",
+ "plan_path": [
+  "lib/verify.ts",
+  "lib/plan.ts",
+  "lib/replan.ts",
+  "lib/agent.ts",
+  "lib/tags.ts",
+  "lib/gate.ts"
+ ],
+ "commits": [
+  {
+   "commit": "4c5debc",
+   "date": "2026-10-07",
+   "subject": "REVIEW state: ambiguous venues ranked below the placed card are surfaced for clinician review (max 2 per slot, no extra request); a placed …"
+  },
+  {
+   "commit": "a535ac1",
+   "date": "2026-10-07",
+   "subject": "R-KIND: a drinking-establishment place category (bar, beer_hall, brewery, pub…) refuses the card for every case, even beside 'cafe' (B5 …"
+  },
+  {
+   "commit": "0c8fe00",
+   "date": "2026-10-07",
+   "subject": "Coverage: an LLM-narrowed outing query that verifies nothing is retried once at the case radius before the slot is left empty; the empty …"
+  },
+  {
+   "commit": "bc55721",
+   "date": "2026-10-07",
+   "subject": "COACH-ALC: drop LLM coaching lines that mention drinking on every case (the model never sees the recovery flag); switching 'In recovery' on …"
+  },
+  {
+   "commit": "638d75b",
+   "date": "2026-10-07",
+   "subject": "Re-plan remembers the clinician's refusals: cards swapped out or removed at the gate go to history.struck, are sent as …"
+  },
+  {
+   "commit": "387fd29",
+   "date": "2026-10-07",
+   "subject": "Re-plan keeps what she enjoyed: the top-rated (>=7) activity returns in its own slot after a live Qloo /entities re-check through the same …"
+  },
+  {
+   "commit": "deadfb0",
+   "date": "2026-10-07",
+   "subject": "R-KIND: 'bar' as a whole word of a place category (bar_grill, bar_and_grill, karaoke_bar…) plus gastropub, night club, lounge, …"
+  },
+  {
+   "commit": "73f163a",
+   "date": "2026-10-07",
+   "subject": "Verifier ledger: an R-OPEN miss re-slotted and placed that day is a move, not a refusal; the card keeps 'moved from 18:00 (closed then)', …"
+  },
+  {
+   "commit": "78513a1",
+   "date": "2026-10-07",
+   "subject": "One re-plan per rated week: a create-only runs/replan-<id> marker (Blob allowOverwrite:false / ETag ifMatch over a failed or stale one) is …"
+  },
+  {
+   "commit": "abfcc19",
+   "date": "2026-10-07",
+   "subject": "Coaching hand-off gets its own window: routing stops once every slot is routed, and the forced submitPlan call runs after it with a 6 s …"
+  }
+ ]
+}

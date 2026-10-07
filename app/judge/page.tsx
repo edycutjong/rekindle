@@ -21,7 +21,7 @@ const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ??
  * refusals by rule of the latest live runs. Every number is read from a committed script output or a stored call log.
  */
 export default async function Judge() {
-  const { bench, replan, audit } = await loadJudgeData();
+  const { bench, replan, audit, predates } = await loadJudgeData();
   let live: Receipts | null = null;
   let liveError: string | null = null;
   try {
@@ -95,6 +95,20 @@ export default async function Judge() {
         </ol>
 
         <h2 className={s.h2}>Bench: the killer number</h2>
+        {predates && predates.commits.length > 0 && (
+          <details className={j.def} data-testid="bench-predates">
+            <summary>
+              <b>This bench run predates {predates.commits.length} later changes to the plan path.</b> The numbers below were measured before them; the bench is re-run on the final deploy before submission.
+            </summary>
+            <ul>
+              {predates.commits.map((c) => (
+                <li key={c.commit}>
+                  <code>{c.commit}</code> {c.subject}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         {!bench ? (
           <p data-testid="bench-missing">The bench has not been run on this deployment yet (scripts/bench.py writes bench/results.json).</p>
         ) : (
@@ -181,7 +195,7 @@ export default async function Judge() {
                 </tbody>
               </table>
             </div>
-            <p className={j.def}>{bench.definitions.ablation_pool}. Counted before any other rule runs; the last column is what would reach the sheet.</p>
+            <p className={j.def}>{bench.definitions.ablation_pool}. The last column is what would reach the sheet.</p>
 
             <h2 className={s.h2}>Latency</h2>
             <dl className={s.totals} data-testid="latency">

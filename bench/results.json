@@ -14,8 +14,8 @@
   "alcohol": "in-recovery profiles only: the matched Qloo record carries an R-ALC deny tag or keyword",
   "unknown_hours": "matched, but Qloo has no hours for that day (separate column, not in the headline)",
   "beyond_radius": "matched place farther from the patient's point than the case's distance cap (separate column, not in the headline)",
-  "known_limit": "a large venue (a park) can sit > 300 m from a correct street address and grade unverifiable; the blind manual audit measures how often the oracle is wrong",
-  "oracle": "Qloo is the oracle for both arms (the bias the blind manual audit checks); B-sym runs arm A's address pipeline on Rekindle's own cards",
+  "known_limit": "a large venue (a park) can sit > 300 m from a correct street address and grade unverifiable; the manual audit measures how often the oracle is wrong",
+  "oracle": "Qloo is the oracle for both arms (the bias the manual audit checks); B-sym runs arm A's address pipeline on Rekindle's own cards",
   "ablation_pool": "B / B- / B-4: distinct places Qloo returned to outing queries that carry an R-ALC deny tag or keyword, counted before R-KIND or any other rule",
   "ablation_plan": "outing cards in the final plan whose place is in that flagged pool"
  },

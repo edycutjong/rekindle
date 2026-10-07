@@ -277,8 +277,33 @@ def grade_rekindle(run, p, in_recovery, verify, symmetry):
     return summary, rows, sym
 
 
+# Definitions printed beside every number (README, DEMO, /judge). `--definitions-only` rewrites just this block in an
+# existing results file, so a wording fix never needs a new live run.
+DEFINITIONS = {
+    "killer_number": "of the outing venues in each arm's plans across the seeded profiles, the share that are unverifiable, closed at the slot, or serve alcohol to a patient in recovery",
+    "unverifiable": "A / B-sym: the stated address does not geocode (Nominatim) or no Qloo /search place within 1 mile matches the name within 300 m. B: the card's entity id is not returned by Qloo /entities",
+    "closed_at_slot": "known Qloo hours that do not cover the slot (or permanently closed)",
+    "alcohol": "in-recovery profiles only: the matched Qloo record carries an R-ALC deny tag or keyword",
+    "unknown_hours": "matched, but Qloo has no hours for that day (separate column, not in the headline)",
+    "beyond_radius": "matched place farther from the patient's point than the case's distance cap (separate column, not in the headline)",
+    "known_limit": "a large venue (a park) can sit > 300 m from a correct street address and grade unverifiable; the manual audit measures how often the oracle is wrong",
+    "oracle": "Qloo is the oracle for both arms (the bias the manual audit checks); B-sym runs arm A's address pipeline on Rekindle's own cards",
+    "ablation_pool": "B / B- / B-4: distinct places Qloo returned to outing queries that carry an R-ALC deny tag or keyword, counted before R-KIND or any other rule",
+    "ablation_plan": "outing cards in the final plan whose place is in that flagged pool",
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
+    if "--definitions-only" in sys.argv:
+        out = os.path.join(ROOT, "bench", "results.json")
+        d = json.load(open(out))
+        d["definitions"] = DEFINITIONS
+        with open(out, "w") as f:
+            json.dump(d, f, indent=1, ensure_ascii=False)
+            f.write("\n")
+        print(f"definitions rewritten in {out} (numbers untouched)")
+        return
     ap.add_argument("--base", required=True)
     ap.add_argument("--out", default=os.path.join(ROOT, "bench", "results.json"))
     ap.add_argument("--only", default="")
@@ -385,18 +410,7 @@ def main():
         "model_arm_a": os.environ.get("QWEN_MODEL", "qwen3.8-flash") + " (enable_thinking=false, temperature 0.2)",
         "profiles": len(profiles),
         "in_recovery_profiles": sum(1 for p in profiles if rec(p)),
-        "definitions": {
-            "killer_number": "of the outing venues in each arm's plans across the seeded profiles, the share that are unverifiable, closed at the slot, or serve alcohol to a patient in recovery",
-            "unverifiable": "A / B-sym: the stated address does not geocode (Nominatim) or no Qloo /search place within 1 mile matches the name within 300 m. B: the card's entity id is not returned by Qloo /entities",
-            "closed_at_slot": "known Qloo hours that do not cover the slot (or permanently closed)",
-            "alcohol": "in-recovery profiles only: the matched Qloo record carries an R-ALC deny tag or keyword",
-            "unknown_hours": "matched, but Qloo has no hours for that day (separate column, not in the headline)",
-            "beyond_radius": "matched place farther from the patient's point than the case's distance cap (separate column, not in the headline)",
-            "known_limit": "a large venue (a park) can sit > 300 m from a correct street address and grade unverifiable; the blind manual audit measures how often the oracle is wrong",
-            "oracle": "Qloo is the oracle for both arms (the bias the blind manual audit checks); B-sym runs arm A's address pipeline on Rekindle's own cards",
-            "ablation_pool": "B / B- / B-4: distinct places Qloo returned to outing queries that carry an R-ALC deny tag or keyword, counted before R-KIND or any other rule",
-            "ablation_plan": "outing cards in the final plan whose place is in that flagged pool",
-        },
+        "definitions": DEFINITIONS,
         "arms": by_arm,
         "ablation_in_recovery": ablation,
         "latency": lat,
