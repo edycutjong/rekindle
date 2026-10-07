@@ -30,6 +30,6 @@ security-scan:
 	@echo "=== NPM AUDIT (all deps) ==="
 	npm audit --audit-level=high || true
 	@echo "=== LICENSE CHECK ==="
-	npx -y license-checker --production --failOn "GPL-3.0;AGPL-3.0" --summary || true
+	npm run license
 	@echo "=== GITLEAKS (full history) ==="
 	gitleaks git --no-banner --redact . || true

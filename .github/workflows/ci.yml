@@ -73,8 +73,8 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: npm audit, all dependencies (advisory)
         run: npm audit --audit-level=high || echo "::warning::dev-dependency advisories (see log); production tree is clean"
-      - name: License compliance (no GPL-3.0 / AGPL-3.0 in production)
-        run: npx -y license-checker --production --failOn "GPL-3.0;AGPL-3.0" --summary
+      - name: License compliance (production licenses must be on the allowlist; any GPL/AGPL fails)
+        run: npm run license
 
   # ── STAGE 3: Build ───────────────────────────────────────────
   build:

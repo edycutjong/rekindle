@@ -25,6 +25,7 @@
     "lint:fix": "eslint --fix",
     "test:coverage": "vitest run --coverage",
     "audit": "npm audit --omit=dev --audit-level=high",
+    "license": "npx -y license-checker@25.0.1 --production --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;0BSD;CC-BY-4.0;LGPL-3.0-or-later;AFL-2.1 OR BSD-3-Clause\" --summary",
     "ci": "npm run audit && npm run check && npm run test:coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
