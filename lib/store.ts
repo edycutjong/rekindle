@@ -170,6 +170,9 @@ export const PlanDoc = z.object({
   origin: z.enum(["agent", "toggle", "replan"]).default("agent"),
   /** set on a rated week once it has been re-planned: the week that came from its ratings (one re-plan per week) */
   next_plan_id: z.string().nullable().default(null),
+  /** set on a draft week once a constraint toggle replaced it: the newer week (the old one can no longer be approved,
+   *  printed, toggled or re-planned; QA round 3) */
+  superseded_by: z.string().nullable().default(null),
   /** re-plan diff against the rated week it came from (origin "replan", and toggles/swaps of that week) */
   diff: ReplanDiffDoc.nullable().default(null),
   /** bench runs only (scripts/bench.py, bench namespace + bench/ prefix): the arm and the verifier-input pool audit */
@@ -347,6 +350,7 @@ export function planDocFromToggle(
     latency_ms: o.ms,
     origin: "toggle",
     next_plan_id: null,
+    superseded_by: null,
     toggle: { changed: o.changed, struck: o.struck, refilled: o.refilled, ms: o.ms },
     cards: w.slots.flatMap((s) => {
       if (!s.card) return [];

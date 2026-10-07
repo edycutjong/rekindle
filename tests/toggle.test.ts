@@ -3,7 +3,10 @@ import { makeLlm } from "../lib/llm";
 import { recheckConstraints } from "../lib/plan";
 import type { QlooCallLog, QlooClient } from "../lib/qloo";
 import { latestReceipts, percentile, summarise } from "../lib/receipts";
-import { caseFromSeed, runPlanForCase, toggleConstraints } from "../lib/service";
+import { caseFromSeed, latestVersion, planRunState, runPlanForCase, toggleConstraints } from "../lib/service";
+import { actOnCard, approveWeek } from "../lib/gate";
+import { errorResponse } from "../lib/http";
+import { printSheet } from "../lib/view";
 import { cardFromDoc, MemoryStore, PlanDoc } from "../lib/store";
 import { replayClient } from "./replay";
 import { POST as toggleRoute } from "../app/api/plans/[id]/constraints/route";
@@ -50,8 +53,8 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     for (const old of plan.cards.filter((x) => !struckDays.has(x.day_name))) expect(next.cards.find((x) => x.day_name === old.day_name)?.qloo_entity_id).toBe(old.qloo_entity_id);
     // I3 after the toggle: every outing on the new week passes R-ALC with in_recovery set
     for (const card of next.cards.filter((x) => x.rung !== "home")) expect(recheckConstraints(cardFromDoc(card), { inRecovery: true, needQuiet: false, needWheelchair: false, maxMeters: nc.max_meters, priceMax: nc.price_max }).filter((r) => r.verdict !== "PASS")).toEqual([]);
-    // the old plan and its case are untouched (the history stays consistent)
-    expect(await store.getPlan(plan.id)).toEqual(doctored);
+    // the old plan and its case are untouched apart from the pointer to the week that replaced it
+    expect(await store.getPlan(plan.id)).toEqual({ ...doctored, superseded_by: next.id });
     expect((await store.getCase(plan.case_id))!.in_recovery).toBe(false);
     // the new plan's call log carries the parent's calls plus the refill's
     const calls = (await store.getCalls(next.id))!.calls;
@@ -78,8 +81,8 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     const r = await toggleConstraints({ store, planId: plan.id, patch: { max_meters: 800 }, qloo: loggingReplay });
     expect(r.plan.refusals.filter((x) => x.struck_by_toggle && x.rule === "R-NEAR").length).toBe(far.length);
     for (const c of r.plan.cards.filter((x) => x.rung !== "home")) expect(c.distance_m!).toBeLessThanOrEqual(800);
-    const same = await toggleConstraints({ store, planId: plan.id, patch: { in_recovery: false }, qloo: loggingReplay });
-    expect(same.plan.id).toBe(plan.id);
+    const same = await toggleConstraints({ store, planId: r.plan.id, patch: { in_recovery: false }, qloo: loggingReplay });
+    expect(same.plan.id).toBe(r.plan.id);
   });
 
   it("coverage refusal → widening the radius (loosening) retries only the empty outing slots, live", async () => {
@@ -108,6 +111,35 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     const { store, plan } = await mayaWeek();
     await store.putPlan({ ...plan, status: "approved" });
     await expect(toggleConstraints({ store, planId: plan.id, patch: { in_recovery: true }, qloo: loggingReplay })).rejects.toThrow(/draft/);
+  });
+});
+
+describe("a toggle replaces the week it was applied to (QA round 3)", () => {
+  it("the pre-toggle draft can no longer be approved, acted on, toggled or printed; links resolve to the newest version", async () => {
+    const { store, plan } = await mayaWeek();
+    const { plan: p2, case: c2 } = await toggleConstraints({ store, planId: plan.id, patch: { in_recovery: true }, qloo: loggingReplay });
+    const { plan: p3 } = await toggleConstraints({ store, planId: p2.id, patch: { max_meters: 800 }, qloo: loggingReplay });
+    const old = (await store.getPlan(plan.id))!;
+    expect(old.superseded_by).toBe(p2.id);
+    // approve the parent → 409 with the newer week's id, and nothing is stamped
+    const err = await approveWeek({ store, planId: plan.id }).catch((e) => e);
+    const res = errorResponse(err);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ superseded_by: p2.id });
+    expect((await store.getPlan(plan.id))!.status).toBe("draft");
+    await expect(actOnCard({ store, planId: plan.id, cardId: plan.cards[0]!.id, action: "approve" })).rejects.toThrow(/replaced by a constraint change/);
+    await expect(toggleConstraints({ store, planId: plan.id, patch: { need_quiet: true }, qloo: loggingReplay })).rejects.toThrow(/replaced by a constraint change/);
+    // even an approved-before-the-fix superseded week prints nothing
+    expect(printSheet({ ...old, status: "approved", cards: old.cards.map((c) => ({ ...c, clinician_action: "approved" as const })) }).printable).toBe(false);
+    // /plans/<old> and /cases/<old case> resolve to the newest version; the toggled case opens its own week
+    expect((await latestVersion(store, old)).id).toBe(p3.id);
+    const run = await planRunState(store, c2.id);
+    expect(run && "plan" in run && run.plan.id).toBe(p2.id);
+    // the newest version is approvable
+    expect((await approveWeek({ store, planId: p3.id })).status).toBe("approved");
+    // receipts list only the newest version (it carries the replaced weeks' calls too)
+    const r = await latestReceipts(store, { limit: 5 }, 10_000_000);
+    expect(r.plans.map((x) => x.plan.id)).toEqual([p3.id]);
   });
 });
 

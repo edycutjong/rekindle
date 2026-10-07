@@ -42,12 +42,15 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
   const limit = o.limit ?? 5;
   const key = `${o.planId ?? ""}|${limit}`;
   if (cache && cache.key === key && now - cache.at < 20_000) return cache.r;
-  const ids = o.planId ? [o.planId] : await store.listPlanIds(limit);
+  // over-read: weeks a constraint toggle replaced are skipped in the list (their newer version carries their calls too)
+  const ids = o.planId ? [o.planId] : await store.listPlanIds(limit * 4);
   const plans: PlanReceipt[] = [];
   for (const id of ids) {
+    if (plans.length >= limit) break;
     const [plan, calls] = await Promise.all([store.getPlan(id), store.getCalls(id)]);
     // the injected-outage demo sends no request; it is not a receipt of Qloo's behaviour
     if (!plan || plan.fault) continue;
+    if (!o.planId && plan.superseded_by) continue;
     const refusals = realRefusals(plan.refusals, plan.cards);
     plans.push({
       plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: refusals.length, refusals_by_rule: countRules(refusals), review: plan.review.length },

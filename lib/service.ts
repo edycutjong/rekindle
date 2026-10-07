@@ -219,6 +219,7 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const parent = await o.store.getPlan(o.planId);
   if (!parent) throw new NotFound(`plan ${o.planId} not found`);
   if (parent.status !== "draft") throw new Conflict("only a draft week can change constraints");
+  assertCurrent(parent);
   const c = await o.store.getCase(parent.case_id);
   if (!c) throw new NotFound(`case ${parent.case_id} not found`);
   const changed = Object.fromEntries(Object.entries(o.patch).filter(([k, v]) => v !== undefined && c[k as keyof CaseDoc] !== v)) as Record<string, boolean | number>;
@@ -234,7 +235,32 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   await o.store.putPlan(doc);
   const merged = callsDoc(doc.id, calls);
   await o.store.putCalls({ plan_id: doc.id, calls: [...prior, ...merged.calls] });
+  // the new case's week 1 is this plan: /cases/<new id> opens it instead of starting a fresh agent run
+  const now = new Date().toISOString();
+  await o.store.putRun({ case_id: next.id, status: "done", plan_id: doc.id, started_at: now, updated_at: now });
+  // the pre-toggle week is replaced, not a second live draft (QA round 3: it could still be approved and printed with
+  // the venues the toggle struck)
+  await o.store.putPlan(PlanDoc.parse({ ...parent, superseded_by: doc.id }));
   return { plan: doc, case: next };
+}
+
+/** message of the 409 for any write to a week a constraint toggle replaced */
+export const SUPERSEDED = "this week was replaced by a constraint change; open the newer version";
+
+/** Refuse a write to a week that a constraint toggle replaced (409 with the newer week's id). */
+export function assertCurrent(plan: PlanDoc): void {
+  if (plan.superseded_by) throw new Conflict(SUPERSEDED, { superseded_by: plan.superseded_by });
+}
+
+/** Follow `superseded_by` to the newest version of a week (the plan itself when it was never replaced). */
+export async function latestVersion(store: Store, plan: PlanDoc, maxHops = 50): Promise<PlanDoc> {
+  let cur = plan;
+  for (let i = 0; i < maxHops && cur.superseded_by; i++) {
+    const next = await store.getPlan(cur.superseded_by).catch(() => null);
+    if (!next) break;
+    cur = next;
+  }
+  return cur;
 }
 
 /**

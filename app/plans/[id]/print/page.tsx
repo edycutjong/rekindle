@@ -47,7 +47,12 @@ export default async function PrintPage({ params }: { params: Promise<{ id: stri
           </p>
         </header>
 
-        {!sheet.printable ? (
+        {plan.superseded_by ? (
+          <p className={s.notice} data-testid="print-superseded">
+            This version of the week was replaced by a constraint change and does not print.{" "}
+            <Link href={`/plans/${plan.superseded_by}/print`}>Open the newer version</Link>.
+          </p>
+        ) : !sheet.printable ? (
           <p className={s.notice} data-testid="print-draft">
             This week is still a draft. The sheet prints once the clinician approves the week, so nothing reaches the patient unchecked.
           </p>

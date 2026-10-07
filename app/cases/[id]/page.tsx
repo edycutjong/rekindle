@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -5,9 +6,17 @@ import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
 import { storeFor } from "@/lib/scope";
-import { planRunState } from "@/lib/service";
+import { latestVersion, planRunState } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const c = await storeFor({ headers: await headers() })
+    .getCase(id)
+    .catch(() => null);
+  return { title: c ? `Week 1 · ${c.label} · Rekindle` : "Not found · Rekindle", robots: { index: false } };
+}
 
 /**
  * A case without a plan yet: the Workbench runs week 1 live on arrival and moves to /plans/:id when it is saved. A case
@@ -23,7 +32,8 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   if (!c) notFound();
   // week 1 already saved for this case (a reopened link, a reload after the run): show it, never run it again
   const state = await planRunState(store, id);
-  if (state && "plan" in state) redirect(`/plans/${state.plan.id}`);
+  // (its newest version, when a constraint toggle replaced it)
+  if (state && "plan" in state) redirect(`/plans/${(await latestVersion(store, state.plan)).id}`);
   return (
     <div className={r.wrap}>
       <SiteHeader />

@@ -390,8 +390,9 @@ export interface PrintRow {
  * no strikes, no trace, no explainability weights, no rule IDs. A week that is still a draft prints nothing:
  * nothing reaches the patient without the clinician's approval (spec, decision condition 1).
  */
-export function printSheet(plan: Pick<PlanDoc, "status" | "cards">): { printable: boolean; rows: PrintRow[] } {
-  if (plan.status === "draft") return { printable: false, rows: [] };
+export function printSheet(plan: Pick<PlanDoc, "status" | "cards"> & { superseded_by?: string | null }): { printable: boolean; rows: PrintRow[] } {
+  // a week a constraint toggle replaced never prints, even if it was approved before the fix (QA round 3)
+  if (plan.status === "draft" || plan.superseded_by) return { printable: false, rows: [] };
   const rows = plan.cards
     .filter((c) => c.clinician_action === "approved")
     .sort((a, b) => a.day - b.day || a.hour - b.hour)

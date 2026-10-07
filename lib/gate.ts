@@ -17,7 +17,7 @@ import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
 import { findAtHome, findOutings, placeSocial, recheckKept, type Card, type HomeType, type SlotSpec, type ToolContext } from "./plan";
 import { diffWeeks, historyFromRatings, keptCandidate, type KeptNote, type Rating } from "./replan";
-import { Conflict, NotFound, reclaimableRun, refreshDiff, RUN_STALE_MS, runningConflict, type RunPlanOptions } from "./service";
+import { assertCurrent, Conflict, latestVersion, NotFound, reclaimableRun, refreshDiff, RUN_STALE_MS, runningConflict, type RunPlanOptions } from "./service";
 import { callsDoc, cardFromDoc, cardToDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, weekPlanFromDoc, type CardDoc, type RefusalDoc, type Store } from "./store";
 
 export type CardAction = "approve" | "unapprove" | "swap" | "remove";
@@ -30,6 +30,7 @@ type QlooFactory = (onCall: (l: QlooCallLog) => void) => QlooClient;
 async function draftPlan(store: Store, planId: string): Promise<PlanDoc> {
   const plan = await store.getPlan(planId);
   if (!plan) throw new NotFound(`plan ${planId} not found`);
+  assertCurrent(plan);
   if (plan.status !== "draft") throw new Conflict("this week is already approved; the clinician gate is closed");
   return plan;
 }
@@ -131,6 +132,7 @@ export interface RatingInput {
 export async function rateWeek(o: { store: Store; planId: string; ratings: RatingInput[] }): Promise<PlanDoc> {
   const plan = await o.store.getPlan(o.planId);
   if (!plan) throw new NotFound(`plan ${o.planId} not found`);
+  assertCurrent(plan);
   if (plan.status === "draft") throw new Conflict("approve the week before rating it");
   if (plan.next_plan_id) throw new Conflict("this week was already re-planned; its ratings are locked");
   const byId = new Map(o.ratings.map((r) => [r.card_id, r]));
@@ -159,14 +161,16 @@ export const ratingsOf = (plan: PlanDoc): Rating[] => plan.cards.filter((c) => c
 export async function replanPrecheck(store: Store, planId: string, now = Date.now(), o: { ownClaim?: boolean } = {}): Promise<{ parent: PlanDoc; existing: PlanDoc | null }> {
   const parent = await store.getPlan(planId);
   if (!parent) throw new NotFound(`plan ${planId} not found`);
+  assertCurrent(parent);
+  // the week already made (or its newest version, if a constraint toggle replaced it since)
   if (parent.next_plan_id) {
     const existing = await store.getPlan(parent.next_plan_id);
-    if (existing) return { parent, existing };
+    if (existing) return { parent, existing: await latestVersion(store, existing) };
   }
   const run = await store.getReplanRun(planId).catch(() => null);
   if (run?.status === "done" && run.plan_id) {
     const existing = await store.getPlan(run.plan_id);
-    if (existing) return { parent, existing };
+    if (existing) return { parent, existing: await latestVersion(store, existing) };
   }
   // the caller that holds the claim (the route claimed before opening the stream) is not blocked by its own marker
   if (!o.ownClaim && run?.status === "running" && now - Date.parse(run.started_at) < RUN_STALE_MS) throw runningConflict("this week is already being re-planned", run);

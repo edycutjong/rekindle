@@ -31,6 +31,8 @@ interface Streamed {
 interface Failure {
   message: string;
   status?: number;
+  /** a 409 on a week a constraint toggle replaced: the newer week */
+  superseded_by?: string;
 }
 
 /** incremental SSE reader over a fetch body */
@@ -137,7 +139,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       });
       if (!got) throw new Error("the stream ended before the plan was saved");
     } catch (err) {
-      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status, superseded_by: (err as { superseded_by?: string }).superseded_by });
       if (rated) {
         // nothing was re-planned: put the rated week back on the sheet
         setPlan(rated);
@@ -164,8 +166,8 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       const before = new Set(plan.refusals.map((r) => `${r.day_name}|${r.qloo_entity_id}|${r.rule}`));
       try {
         const res = await fetch(`/api/plans/${plan.id}/constraints`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(patch) });
-        const b = (await res.json()) as { plan?: PlanDoc; case?: CaseDoc; error?: string };
-        if (!res.ok || !b.plan || !b.case) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });
+        const b = (await res.json()) as { plan?: PlanDoc; case?: CaseDoc; error?: string; superseded_by?: string };
+        if (!res.ok || !b.plan || !b.case) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status, superseded_by: b.superseded_by });
         setCase(b.case);
         setPlan(b.plan);
         setFresh(new Set(b.plan.refusals.filter((r) => !before.has(`${r.day_name}|${r.qloo_entity_id}|${r.rule}`)).map((r) => `${r.day_name}|${r.qloo_entity_id}|${r.rule}`)));
@@ -175,7 +177,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         if (t && next.id !== plan.id) setLive((l) => [...(l.length ? l : traceFromPlan(plan)), ...traceFromPlan(next).slice(0, 1)]);
         setNotice(toggleNotice(plan, c, b.plan, b.case));
       } catch (err) {
-        setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+        setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status, superseded_by: (err as { superseded_by?: string }).superseded_by });
       } finally {
         setPhase("idle");
       }
@@ -186,8 +188,8 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   /** one JSON request that returns `{ plan }`; errors land in the failure box */
   const send = useCallback(async (url: string, method: string, body?: unknown) => {
     const res = await fetch(url, { method, ...(body !== undefined ? { headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {}) });
-    const b = (await res.json().catch(() => ({}))) as { plan?: PlanDoc; error?: string; swap?: { found: boolean; ms: number; calls: number } };
-    if (!res.ok || !b.plan) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });
+    const b = (await res.json().catch(() => ({}))) as { plan?: PlanDoc; error?: string; superseded_by?: string; swap?: { found: boolean; ms: number; calls: number } };
+    if (!res.ok || !b.plan) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status, superseded_by: b.superseded_by });
     return b as { plan: PlanDoc; swap?: { found: boolean; ms: number; calls: number } };
   }, []);
 
@@ -210,7 +212,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         }
         if (action === "remove" && before) setNotice(`${before.name} removed; ${before.day_name} is left empty for this week.`);
       } catch (err) {
-        setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+        setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status, superseded_by: (err as { superseded_by?: string }).superseded_by });
       } finally {
         setSwapping(null);
         setPhase("idle");
@@ -229,7 +231,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       setPlan(r.plan);
       setNotice(`Week approved: ${r.plan.cards.length} activities stamped. After each one, rate pleasure (P) and mastery (M) from 0 to 10.`);
     } catch (err) {
-      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status, superseded_by: (err as { superseded_by?: string }).superseded_by });
     } finally {
       setPhase("idle");
     }
@@ -249,7 +251,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       setNotice(`${ratingsSaved(r.plan)} activities rated.`);
       return r.plan;
     } catch (err) {
-      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status, superseded_by: (err as { superseded_by?: string }).superseded_by });
       return null;
     } finally {
       setPhase("idle");
@@ -359,6 +361,14 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         <div className={s.errorBox} role="alert">
           <p>
             <strong>{failure.status === 429 ? "Capacity reached." : "The plan could not finish."}</strong> {failure.message}
+            {failure.superseded_by && (
+              <>
+                {" "}
+                <a className={s.link} href={`/plans/${failure.superseded_by}`} data-testid="superseded-link">
+                  Open the newer version
+                </a>
+              </>
+            )}
           </p>
           <p>
             No week is invented when this happens. <Link className={s.link} href="/integrations/qloo">See the receipts of the latest live runs</Link>
