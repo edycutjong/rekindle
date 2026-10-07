@@ -19,7 +19,8 @@ import type { QlooClient } from "./qloo";
 import { DAYS, type DayName } from "./verify";
 import { EMPTY_HISTORY, findAtHome, findOutings, HOME_TYPES, ladder, placeSocial, type Card, type CaseRow, type HomeType, type PlanHistory, type Refusal, type SlotSpec, type ToolContext, type ToolResult, type WeekPlan } from "./plan";
 
-export type RoutedBy = "llm" | "fallback";
+/** `kept`: a re-plan keeps the top-rated (≥ 7) activity in its slot after a live re-check (lib/plan.ts recheckKept) */
+export type RoutedBy = "llm" | "fallback" | "kept";
 export type ToolName = "findAtHome" | "findOutings" | "placeSocial";
 
 export interface AgentSlot {
@@ -75,6 +76,8 @@ export interface AgentOptions {
   maxSteps?: number;
   /** bench ablation only (arms B−/B−4) and the pool audit; never set on the public path */
   toolOptions?: Pick<ToolContext, "alcoholScreen" | "excludeTagSet" | "onPool">;
+  /** re-plan only: verified cards placed before routing (their slots are not offered to the model) */
+  pinned?: { card: Card; params?: Record<string, unknown> }[];
 }
 
 const WORD_LIMIT = 25;
@@ -210,6 +213,22 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   let submitCalls = 0;
 
   emit({ type: "start", week, slots: skeleton.map((s) => ({ day: s.day, hour: s.hour, rung: s.rung })), llm: opts.llms.map((l) => `${l.provider}:${l.modelId}`) });
+
+  // re-plan: the kept activity takes its own slot before the model routes anything (same day, same rung)
+  for (const p of opts.pinned ?? []) {
+    const slot = skeleton.find((s) => s.day === p.card.slot.day && s.rung === p.card.rung);
+    if (!slot || claimed.has(slot.day)) continue;
+    const at: SlotSpec = { ...slot, ...(p.card.slot.homeType ? { homeType: p.card.slot.homeType } : {}) };
+    const card: Card = { ...p.card, slot: at };
+    claimed.add(slot.day);
+    ctx.used.add(card.entity_id);
+    ctx.seen.add(card.entity_id);
+    if (card.rung !== "home") ctx.usedPlaces?.add(card.entity_id);
+    const toolName: ToolName = slot.rung === "home" ? "findAtHome" : slot.rung === "solo" ? "findOutings" : "placeSocial";
+    const params = { day: slot.day, kept: true, ...(p.params ?? {}) };
+    filled.set(slot.day, { slot: at, card, routedBy: "kept", tool: toolName, params });
+    emit({ type: "tool", tool: toolName, day: slot.day, params, routedBy: "kept", ms: 0, returned: 1, card: { entity_id: card.entity_id, name: card.name, hour: card.hour }, refusals: {}, review: 0 });
+  }
 
   const record = (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, r: ToolResult & { cell?: string }, routedBy: RoutedBy, ms: number) => {
     refusals.push(...r.refusals);

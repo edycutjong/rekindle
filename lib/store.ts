@@ -82,7 +82,7 @@ export const CardDoc = z.object({
   coaching: z.string().default(""),
   coaching_by: z.enum(["llm", "template"]).optional(),
   /** who placed the card: the LLM, the deterministic fallback, a constraint-toggle refill, or a clinician swap */
-  routed_by: z.enum(["llm", "fallback", "toggle", "swap"]).default("llm"),
+  routed_by: z.enum(["llm", "fallback", "toggle", "swap", "kept"]).default("llm"),
   tool: z.string().optional(),
   tool_params: z.record(z.string(), z.unknown()).default({}),
   clinician_action: z.enum(["approved", "removed", "swapped"]).nullable().default(null),
@@ -111,9 +111,13 @@ export type RefusalDoc = z.infer<typeof RefusalDoc>;
 export const ReplanDiffDoc = z.object({
   /** the rated week this one was re-planned from */
   from_plan_id: z.string(),
-  kept: z.array(z.object({ day: day, name: z.string() })),
+  kept: z.array(z.object({ day: day, name: z.string(), reason: z.string().optional() })),
   added: z.array(z.object({ day: day, name: z.string(), because: z.array(z.object({ name: z.string(), score: z.number() })) })),
   removed: z.array(z.object({ day: day, name: z.string(), reason: z.string() })),
+  /** rated ≥ 7 last week and not kept: this week's Qloo signals */
+  signals: z.array(z.object({ day: day, name: z.string(), reason: z.string() })).default([]),
+  /** the live re-check of the top-rated activity (kept in its slot, or why not) */
+  kept_check: z.object({ entity_id: z.string(), name: z.string(), ok: z.boolean(), detail: z.string() }).nullable().default(null),
   /** every week-2 card whose explainability names a rekindled (≥ 7) entity; `top` = it is that card's strongest input */
   ember: z.array(z.object({ from: z.string(), from_id: z.string(), to: z.string(), to_id: z.string(), day: day, score: z.number(), top: z.boolean() })),
 });

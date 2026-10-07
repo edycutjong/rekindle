@@ -49,6 +49,23 @@ export function ReplanSummary({ prev, diff, threads }: { prev: PlanDoc; diff: No
       <p className={s.diffSummary}>
         Week {prev.week + 1}: {diff.kept.length} kept · {diff.added.length} new · {threads.length} rekindled by a rating
       </p>
+      {diff.kept.filter((k) => k.reason).map((k) => (
+        <p key={k.day + k.name} className={s.reason} data-testid="kept-note">
+          Kept: <span className={s.ember}>{k.name}</span> — {k.reason}
+        </p>
+      ))}
+      {diff.signals.length > 0 && (
+        <div className={s.leaving} data-testid="signal-list">
+          <h3>Now a signal for week {prev.week + 1}</h3>
+          <ul>
+            {diff.signals.map((r) => (
+              <li key={r.day + r.name}>
+                <span className={s.ember}>{r.name}</span> <span className={s.reason}>{r.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {diff.removed.length > 0 && (
         <div className={s.leaving}>
           <h3>Leaving out</h3>

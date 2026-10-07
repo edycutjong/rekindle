@@ -199,8 +199,8 @@ export async function refreshDiff(store: Store, plan: PlanDoc): Promise<PlanDoc>
   if (!plan.diff) return plan;
   const from = await store.getPlan(plan.diff.from_plan_id);
   if (!from) return plan;
-  const d = diffWeeks(weekPlanFromDoc(from), weekPlanFromDoc(plan), plan.history);
-  return PlanDoc.parse({ ...plan, diff: { from_plan_id: from.id, ...d } });
+  const d = diffWeeks(weekPlanFromDoc(from), weekPlanFromDoc(plan), plan.history, plan.diff.kept_check);
+  return PlanDoc.parse({ ...plan, diff: { from_plan_id: from.id, kept_check: plan.diff.kept_check, ...d } });
 }
 
 export class NotFound extends Error {

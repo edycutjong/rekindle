@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { changedRatings, clampScore, coverageRefusal, emberLabel, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
+import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -113,7 +113,7 @@ describe("gate + re-plan view helpers", () => {
       from_plan_id: "w1",
       kept: [],
       added: [],
-      removed: [],
+      removed: [], signals: [], kept_check: null,
       ember: [
         { from: "Dun-Well", from_id: "D", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
         { from: "Fleabag", from_id: "F", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
@@ -180,5 +180,12 @@ describe("patient print view (ui.md 7)", () => {
     expect(p.rows[0]).toEqual({ day: "Monday", time: "19:00 · about 10 minutes", activity: "Lucy Dacus", kind: "artist", where: "at home", how: "Put on one song." });
     expect(p.rows[1].where).toBe("222 Montrose Ave Brooklyn, NY 11206");
     expect(JSON.stringify(p.rows)).not.toMatch(/0\.54|R-|Bridgers/);
+  });
+});
+
+describe("kept activity on a re-plan (QA round 1)", () => {
+  it("only a kept card carries the ember 'kept' mark, with the rating it got", () => {
+    expect(keptLabel({ routed_by: "kept", tool_params: { day: "thursday", kept: true, rated: 9 } })).toBe("↻ kept from last week, rated 9 · re-checked live");
+    expect(keptLabel({ routed_by: "llm", tool_params: {} })).toBeNull();
   });
 });

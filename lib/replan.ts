@@ -40,9 +40,12 @@ export function historyFromRatings(prevHistory: PlanHistory, cards: readonly Car
 }
 
 export interface ReplanDiff {
-  kept: { day: DayName; name: string }[];
+  /** `reason` is set on the activity kept because it was rated ≥ 7 (re-checked live) */
+  kept: { day: DayName; name: string; reason?: string }[];
   added: { day: DayName; name: string; because: { name: string; score: number }[] }[];
   removed: { day: DayName; name: string; reason: string }[];
+  /** rated ≥ 7 in the previous week but not on this one: they are this week's Qloo signals (not "leaving out") */
+  signals: { day: DayName; name: string; reason: string }[];
   /**
    * Week-2 cards whose explainability names a rekindled (≥ 7) entity. Qloo spreads explainability across every signal
    * entity, so almost every week-2 card names every rekindled entity; `top` marks the stronger claim — the rekindled
@@ -51,14 +54,22 @@ export interface ReplanDiff {
   ember: { from: string; from_id: string; to: string; to_id: string; day: DayName; score: number; top: boolean }[];
 }
 
-export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory): ReplanDiff {
+/** The live re-check of the top-rated activity on a re-plan (lib/plan.ts recheckKept), stored with the diff. */
+export interface KeptNote {
+  entity_id: string;
+  name: string;
+  ok: boolean;
+  detail: string;
+}
+
+export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory, keptNote: KeptNote | null = null): ReplanDiff {
   const ids1 = new Set(w1.slots.flatMap((s) => (s.card ? [s.card.entity_id] : [])));
   const ids2 = new Set(w2.slots.flatMap((s) => (s.card ? [s.card.entity_id] : [])));
   const rek = new Map(h.rekindled.map((r) => [r.entity_id, r.name]));
-  const out: ReplanDiff = { kept: [], added: [], removed: [], ember: [] };
+  const out: ReplanDiff = { kept: [], added: [], removed: [], signals: [], ember: [] };
   for (const s of w2.slots) {
     if (!s.card) continue;
-    if (ids1.has(s.card.entity_id)) out.kept.push({ day: s.slot.day, name: s.card.name });
+    if (ids1.has(s.card.entity_id)) out.kept.push({ day: s.slot.day, name: s.card.name, ...(rek.has(s.card.entity_id) ? { reason: keptNote?.entity_id === s.card.entity_id && keptNote.ok ? `rated ≥7 — ${keptNote.detail}` : "rated ≥7 — kept" } : {}) });
     else out.added.push({ day: s.slot.day, name: s.card.name, because: s.card.why.map((w) => ({ name: w.name, score: w.score })) });
     const best = Math.max(0, ...s.card.why.map((w) => w.score));
     for (const w of s.card.why) {
@@ -68,7 +79,12 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory): ReplanDif
   }
   for (const s of w1.slots) {
     if (!s.card || ids2.has(s.card.entity_id)) continue;
-    out.removed.push({ day: s.slot.day, name: s.card.name, reason: h.lowRated.includes(s.card.entity_id) ? "rated ≤3 — excluded" : rek.has(s.card.entity_id) ? "rated ≥7 — now a Qloo signal for this week" : "replaced by a re-planned pick" });
+    if (rek.has(s.card.entity_id)) {
+      const why = keptNote && keptNote.entity_id === s.card.entity_id && !keptNote.ok ? `not kept: ${keptNote.detail}; ` : "";
+      out.signals.push({ day: s.slot.day, name: s.card.name, reason: `rated ≥7 — ${why}now a Qloo signal for this week` });
+      continue;
+    }
+    out.removed.push({ day: s.slot.day, name: s.card.name, reason: h.lowRated.includes(s.card.entity_id) ? "rated ≤3 — excluded" : "replaced by a re-planned pick" });
   }
   return out;
 }
@@ -84,6 +100,19 @@ export function seedRatings(w: WeekPlan): Rating[] | null {
     { entity_id: outs[0].entity_id, pleasure: 8, mastery: 6 },
     { entity_id: outs[outs.length - 1].entity_id, pleasure: 2, mastery: 3 },
   ];
+}
+
+/**
+ * Which activity a re-plan tries to keep: the highest pleasure ≥ 7 (ties: an outing before an at-home dose, then the
+ * higher Qloo affinity). One per week, so the rest of the week stays new.
+ */
+export function keptCandidate<T extends { entity_id: string; rung: string; affinity: number }>(cards: readonly T[], ratings: readonly Rating[]): { card: T; pleasure: number } | null {
+  const byId = new Map(cards.map((c) => [c.entity_id, c]));
+  const ranked = ratings
+    .filter((r) => r.pleasure >= 7 && byId.has(r.entity_id))
+    .map((r) => ({ card: byId.get(r.entity_id)!, pleasure: r.pleasure }))
+    .sort((a, b) => b.pleasure - a.pleasure || Number(b.card.rung !== "home") - Number(a.card.rung !== "home") || b.card.affinity - a.card.affinity);
+  return ranked[0] ?? null;
 }
 
 function dedupe<T>(xs: T[], key: (x: T) => string): T[] {

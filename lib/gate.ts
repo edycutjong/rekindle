@@ -15,8 +15,8 @@
 import { runAgent, templateCoaching } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
-import { findAtHome, findOutings, placeSocial, type HomeType, type SlotSpec, type ToolContext } from "./plan";
-import { diffWeeks, historyFromRatings, type Rating } from "./replan";
+import { findAtHome, findOutings, placeSocial, recheckKept, type Card, type HomeType, type SlotSpec, type ToolContext } from "./plan";
+import { diffWeeks, historyFromRatings, keptCandidate, type KeptNote, type Rating } from "./replan";
 import { Conflict, NotFound, refreshDiff, type RunPlanOptions } from "./service";
 import { callsDoc, cardFromDoc, cardToDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, weekPlanFromDoc, type CardDoc, type RefusalDoc, type Store } from "./store";
 
@@ -189,10 +189,20 @@ export async function replanWeek(o: Omit<RunPlanOptions, "caseId"> & { planId: s
   const qloo = (o.qloo ?? qlooFromEnv)(onCall);
   const llms: LlmHandle[] = o.llms ?? llmChainFromEnv();
   const week = parent.week + 1;
-  const agent = await runAgent({ qloo, case: caseRowFromDoc(c), week, history, llms, onEvent: (e) => e.type !== "plan" && o.onEvent?.(e) });
+  const row = caseRowFromDoc(c);
+  // BA schedules an enjoyed activity again: the top-rated (≥ 7) one keeps its slot if a live re-check passes it there
+  const cand = keptCandidate(parent.cards.map(cardFromDoc), ratings);
+  let pinned: { card: Card; params: Record<string, unknown> }[] = [];
+  let keptNote: KeptNote | null = null;
+  if (cand) {
+    const k = await recheckKept(qloo, row, history, cand.card);
+    keptNote = { entity_id: cand.card.entity_id, name: cand.card.name, ok: !!k.card, detail: k.detail };
+    if (k.card) pinned = [{ card: k.card, params: { rated: cand.pleasure } }];
+  }
+  const agent = await runAgent({ qloo, case: row, week, history, llms, pinned, onEvent: (e) => e.type !== "plan" && o.onEvent?.(e) });
   const base = planDocFromAgent(agent, { caseId: c.id, history, calls: calls.length, parentPlanId: parent.id });
-  const diff = diffWeeks(weekPlanFromDoc(parent), weekPlanFromDoc(base), history);
-  const doc = PlanDoc.parse({ ...base, origin: "replan", diff: { from_plan_id: parent.id, ...diff } });
+  const diff = diffWeeks(weekPlanFromDoc(parent), weekPlanFromDoc(base), history, keptNote);
+  const doc = PlanDoc.parse({ ...base, origin: "replan", diff: { from_plan_id: parent.id, kept_check: keptNote, ...diff } });
   await o.store.putPlan(doc);
   await o.store.putCalls(callsDoc(doc.id, calls));
   await o.store.putPlan(PlanDoc.parse({ ...parent, next_plan_id: doc.id }));

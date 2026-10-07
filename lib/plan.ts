@@ -419,6 +419,48 @@ function qlooDown(e: unknown): string {
   return "Qloo unavailable — slot left empty";
 }
 
+/* ------------------------------------------------------------------ re-plan: keep what she enjoyed */
+
+export interface KeptCheck {
+  card: Card | null;
+  /** what the clinician reads in the re-plan diff */
+  detail: string;
+}
+
+/**
+ * Behavioural activation schedules an enjoyed activity again. On a re-plan, the top-rated (≥ 7) activity of the
+ * previous week returns in its own slot only if Qloo still knows it and the verifier passes it there today: one live
+ * GET /entities lookup (hours, tags, location, price), then the same rules as any candidate (R-OPEN at the slot,
+ * R-NEAR from the patient's point, R-PRICE, R-ALC, R-KIND, R-QUIET, R-ACCESS, R-HIST). The week-1 why line is kept:
+ * /entities returns no explainability. A failed re-check leaves the slot to the agent and says why.
+ */
+export async function recheckKept(qloo: QlooClient, c: CaseRow, h: PlanHistory, card: Card): Promise<KeptCheck> {
+  let list: QlooEntity[];
+  try {
+    list = (await qloo.entities([card.entity_id])).results ?? [];
+  } catch (e) {
+    return { card: null, detail: `re-check unavailable (${e instanceof QlooError ? e.status || "network" : "error"})` };
+  }
+  const e = list.find((x) => x.entity_id === card.entity_id);
+  if (!e) return { card: null, detail: "Qloo /entities no longer returns it" };
+  const at = `${card.slot.day.slice(0, 3)} ${String(card.hour).padStart(2, "0")}:00`;
+  const sets = histSets(h);
+  if (card.rung === "home") {
+    const v = verifyCard(e, { kind: "home", constraints: c, ...sets, seenIds: new Set([e.entity_id]) });
+    if (v.verdict !== "PASS") return { card: null, detail: `re-check failed: ${v.reasons.map((r) => `${r.rule} ${r.detail}`).join("; ")}` };
+    return { card: { ...card, verdict: "PASS", checks: v.checks }, detail: "kept, re-checked live with Qloo /entities" };
+  }
+  const loc = e.location as { lat?: number; lon?: number; latitude?: number; longitude?: number } | undefined;
+  const lat = loc?.lat ?? loc?.latitude;
+  const lon = loc?.lon ?? loc?.longitude;
+  const distance = typeof lat === "number" && typeof lon === "number" ? haversine(c.lat, c.lon, lat, lon) : undefined;
+  const ent: QlooEntity = { ...e, query: { ...(e.query ?? {}), distance } };
+  const v = verifyCard(ent, { kind: "outing", constraints: c, ...sets, seenIds: new Set([e.entity_id]), slot: { day: card.slot.day, hour: card.hour } });
+  if (v.verdict !== "PASS") return { card: null, detail: `re-check for ${at} failed: ${v.reasons.map((r) => `${r.rule} ${r.detail}`).join("; ")}` };
+  const fresh = toCard(ent, card.slot, card.hour, "PASS", v.checks, loveNames(c, h), distance);
+  return { card: { ...fresh, ...(card.movedFrom !== undefined ? { movedFrom: card.movedFrom } : {}), why: card.why, ...(card.geohash ? { geohash: card.geohash } : {}) }, detail: `kept, re-checked live for ${at} with Qloo /entities` };
+}
+
 /* ------------------------------------------------------------------ week (deterministic routing) */
 
 /**

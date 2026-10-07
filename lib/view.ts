@@ -231,6 +231,13 @@ export function emberThreads(diff: NonNullable<PlanDoc["diff"]> | null, prevCard
 /** Inline ember label (and the mobile form of the thread): "← because she rated Dun-Well Doughnuts 8 · 0.41" */
 export const emberLabel = (l: EmberLink) => `← because of ${l.from}${l.rated !== null ? `, rated ${l.rated}` : ""} · ${l.score.toFixed(2)}`;
 
+/** Ember mark on the activity a re-plan kept: "↻ kept: rated 9 last week · re-checked live" */
+export function keptLabel(c: Pick<CardDoc, "routed_by" | "tool_params">): string | null {
+  if (c.routed_by !== "kept") return null;
+  const rated = typeof c.tool_params.rated === "number" ? `, rated ${c.tool_params.rated}` : "";
+  return `↻ kept from last week${rated} · re-checked live`;
+}
+
 /** The notice after a swap: what left the slot and what (if anything) replaced it. */
 export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pick<PlanDoc, "cards">, swap: { found: boolean; ms: number; calls: number }): string {
   const now = plan.cards.find((c) => c.day_name === before.day_name);

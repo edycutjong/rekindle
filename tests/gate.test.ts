@@ -9,8 +9,6 @@ import { replayClient } from "./replay";
 import { captured } from "./fixtures";
 import { verifyCard } from "../lib/verify";
 import type { QlooEntity } from "../lib/qloo";
-
-const ALL_CAPTURED = new Map<string, QlooEntity>(["maya-thu-recovery-off", "athome-artist", "athome-podcast", "athome-book", "athome-tv_show"].flatMap((n) => captured(n).map((e) => [e.entity_id, e] as const)));
 import { PATCH as cardRoute } from "../app/api/plans/[id]/cards/[cardId]/route";
 import { POST as approveRoute } from "../app/api/plans/[id]/approve/route";
 import { POST as ratingsRoute } from "../app/api/plans/[id]/ratings/route";
@@ -19,11 +17,19 @@ import { POST as replanRoute } from "../app/api/plans/[id]/replan/route";
 /** deterministic route only (every LLM provider "down"), so these tests exercise the gate, not routing */
 const downLlm = () => makeLlm("qwen", { QWEN_API_KEY: "k" }, (async () => new Response("{}", { status: 400 })) as unknown as typeof fetch)!;
 
+/** every captured entity by id: what a live GET /entities would return for an entity Qloo knows (re-plan re-check) */
+const ALL_CAPTURED = new Map<string, QlooEntity>(["maya-thu-recovery-off", "athome-artist", "athome-podcast", "athome-book", "athome-tv_show"].flatMap((n) => captured(n).map((e) => [e.entity_id, e] as const)));
+
 const loggingReplay =
-  (seen: QlooParams[] = []) =>
+  (seen: QlooParams[] = [], entityPatch: (e: QlooEntity) => QlooEntity = (e) => e) =>
   (onCall: (l: QlooCallLog) => void): QlooClient => {
     const inner = replayClient(seen);
     return {
+      async entities(ids: string[]) {
+        const results = ids.flatMap((id) => (ALL_CAPTURED.has(id) ? [entityPatch(ALL_CAPTURED.get(id)!)] : []));
+        onCall({ path: "/entities", params: { entity_ids: ids.join(",") }, status: 200, ms: 1, n_results: results.length, attempts: 1, at: new Date().toISOString() });
+        return { results };
+      },
       async insights(p: QlooParams) {
         const r = await inner.insights(p);
         onCall({ path: "/v2/insights", params: Object.fromEntries(Object.entries(p).map(([k, v]) => [k, String(v)])), status: 200, ms: 1, n_results: r.results.entities?.length ?? 0, attempts: 1, at: new Date().toISOString() });
@@ -218,6 +224,37 @@ describe("clinician gate (lib/gate.ts)", () => {
     expect(w2.cards.map((c) => c.qloo_entity_id)).not.toContain(home.qloo_entity_id);
     const e = ALL_CAPTURED.get(home.qloo_entity_id)!;
     expect(verifyCard(e, { kind: "home", constraints: { maxMeters: 1500, priceMax: 2, inRecovery: false, needQuiet: false, needWheelchair: false }, struck: new Set([home.qloo_entity_id]) }).reasons).toEqual([{ rule: "R-HIST", verdict: "REFUSE", detail: "removed by the clinician before" }]);
+  });
+
+  it("the top-rated (≥ 7) activity is kept in its slot after a live /entities re-check; the other ≥ 7 is a signal, not 'leaving out'", async () => {
+    const r = await ratedWeek();
+    const seen: QlooParams[] = [];
+    const { plan: w2 } = await replanWeek({ store: r.store, planId: r.plan.id, qloo: loggingReplay(seen), llms: [downLlm()] });
+    const top = r.outs[0]; // rated 9
+    const kept = w2.cards.find((c) => c.qloo_entity_id === top.qloo_entity_id)!;
+    expect(kept).toBeDefined();
+    expect(kept).toMatchObject({ day_name: top.day_name, hour: top.hour, routed_by: "kept", verdict: "PASS" });
+    expect(kept.tool_params).toMatchObject({ kept: true, rated: 9 });
+    expect(kept.checks.map((x) => x.rule)).toEqual(expect.arrayContaining(["R-OPEN", "R-NEAR", "R-HIST", "R-KIND"]));
+    expect(w2.cards.filter((c) => c.qloo_entity_id === top.qloo_entity_id)).toHaveLength(1);
+    expect(w2.diff!.kept_check).toMatchObject({ entity_id: top.qloo_entity_id, ok: true });
+    expect(w2.diff!.kept).toContainEqual(expect.objectContaining({ name: top.name, reason: expect.stringMatching(/^rated ≥7 — kept, re-checked live/) }));
+    // the other ≥ 7 activity is either back (Qloo returned it again) or listed as this week's signal — never "leaving out"
+    const other = [...w2.diff!.kept, ...w2.diff!.signals].find((x) => x.name === r.home[0].name);
+    expect(other?.reason).toMatch(/^rated ≥7 — (kept|now a Qloo signal for this week)/);
+    expect(w2.diff!.removed.some((x) => /≥7/.test(x.reason))).toBe(false);
+    const calls = (await r.store.getCalls(w2.id))!.calls;
+    expect(calls.filter((c) => c.path === "/entities")).toHaveLength(1);
+  });
+
+  it("a kept activity that fails its re-check (closed at the slot today) is not placed; the diff says why", async () => {
+    const r = await ratedWeek();
+    const top = r.outs[0];
+    const closed = (e: QlooEntity) => (e.entity_id === top.qloo_entity_id ? { ...e, properties: { ...e.properties, hours: { [top.day_name]: [{ opens: null, closes: null, closed: true }] } } } : e);
+    const { plan: w2 } = await replanWeek({ store: r.store, planId: r.plan.id, qloo: loggingReplay([], closed), llms: [downLlm()] });
+    expect(w2.cards.some((c) => c.routed_by === "kept")).toBe(false);
+    expect(w2.diff!.kept_check).toMatchObject({ ok: false, detail: expect.stringMatching(/re-check for \w{3} \d\d:00 failed: R-OPEN/) });
+    expect(w2.diff!.signals).toContainEqual(expect.objectContaining({ name: top.name, reason: expect.stringMatching(/^rated ≥7 — not kept: re-check .* failed: R-OPEN .*; now a Qloo signal/) }));
   });
 
   it("removing a week-2 card refreshes its diff (it no longer counts as added)", async () => {
