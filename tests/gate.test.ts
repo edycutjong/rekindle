@@ -13,6 +13,8 @@ import { PATCH as cardRoute } from "../app/api/plans/[id]/cards/[cardId]/route";
 import { POST as approveRoute } from "../app/api/plans/[id]/approve/route";
 import { POST as ratingsRoute } from "../app/api/plans/[id]/ratings/route";
 import { POST as replanRoute } from "../app/api/plans/[id]/replan/route";
+import { POST as casesRoute } from "../app/api/cases/route";
+import { POST as constraintsRoute } from "../app/api/plans/[id]/constraints/route";
 
 /** deterministic route only (every LLM provider "down"), so these tests exercise the gate, not routing */
 const downLlm = () => makeLlm("qwen", { QWEN_API_KEY: "k" }, (async () => new Response("{}", { status: 400 })) as unknown as typeof fetch)!;
@@ -300,6 +302,24 @@ describe("gate routes", () => {
     const one = await replanRoute(req(`/api/plans/${plan.id}/replan`, "POST"), ctx(plan.id));
     expect(one.status).toBe(409);
     expect(((await one.json()) as { error: string }).error).toMatch(/at least 3.*1 rated/);
+  });
+
+  it("a malformed JSON body is a 400 'invalid JSON' on every write route, never a 500 (QA round 1)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const store = storeFromEnv();
+    const { plan } = await mayaWeek(store);
+    const bad = (url: string, method: string) => new Request(`http://x${url}`, { method, body: "{bad", headers: { "content-type": "application/json", "x-forwarded-for": `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } });
+    const responses = [
+      await casesRoute(bad("/api/cases", "POST")),
+      await constraintsRoute(bad(`/api/plans/${plan.id}/constraints`, "POST"), ctx(plan.id)),
+      await ratingsRoute(bad(`/api/plans/${plan.id}/ratings`, "POST"), ctx(plan.id)),
+      await cardRoute(bad(`/api/plans/${plan.id}/cards/${plan.cards[0].id}`, "PATCH"), { params: Promise.resolve({ id: plan.id, cardId: plan.cards[0].id }) }),
+    ];
+    for (const r of responses) {
+      expect(r.status).toBe(400);
+      expect(await r.json()).toEqual({ error: "invalid JSON" });
+    }
   });
 
   it("re-plan streams SSE ending in the stored week 2; a repeat returns it as JSON", async () => {
