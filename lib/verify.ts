@@ -89,7 +89,8 @@ const SHORT: Record<DayName, string> = { monday: "Mon", tuesday: "Tue", wednesda
 
 function dayIntervals(hours: WeekHours | undefined | null, day: DayName): DayHours[] | null {
   if (!hours) return null;
-  const v = (hours as Record<string, DayHours[] | DayHours | undefined>)[day] ?? (hours as Record<string, any>)[day[0].toUpperCase() + day.slice(1)];
+  const h = hours as Record<string, DayHours[] | DayHours | undefined | null>;
+  const v = h[day] ?? h[day[0].toUpperCase() + day.slice(1)];
   if (v === undefined || v === null) return null;
   return Array.isArray(v) ? v : [v];
 }
@@ -317,7 +318,7 @@ const KIND_ALLOW_EXACT = new Set([
   "book_store", "comic_book_store", "used_book_store", "library", "public_library", "record_store", "music_store",
   "tea_house", "tea_store", "tea_market_place", "coffee_shop", "cafe", "espresso_bar", "cat_cafe",
   "bakery", "donut_shop", "patisserie", "pastry_shop", "dessert_shop", "ice_cream_shop", "cake_shop", "cookie_shop", "bagel_shop", "juice_shop", "japanese_confectionery_shop", "chocolate_shop",
-  "restaurant", "diner", "sandwich_shop", "salad_shop", "noodle_shop",
+  "diner", "sandwich_shop", "salad_shop", "noodle_shop",
   "movie_theater", "cinema", "performing_arts_theater", "concert_hall", "live_music_venue", "theater_company", "opera_house",
   "cultural_center", "cultural_landmark", "historical_landmark", "historical_place", "aquarium", "zoo", "planetarium",
   "meditation_center", "yoga_studio", "dance_school", "ice_skating_rink", "climbing_gym", "bowling_alley",
@@ -325,15 +326,23 @@ const KIND_ALLOW_EXACT = new Set([
 ]);
 /** `<cuisine>_restaurant` and `restaurant:<cuisine>` are allowed except drinking or food-retail genres. */
 const KIND_FOOD_DENY = new Set(["bar", "cocktail_bar", "wine_bar", "sports_bar", "lounge_bar", "gay_bar", "bar_grill", "distillery", "butcher_shop", "cheese_shop", "takeout", "delivery", "fast_food"]);
+/**
+ * Categories that disqualify a place even when Qloo also tags it with the generic `restaurant` category
+ * (D1 capture: The Meat Hook and Marlow & Daughters are butchers tagged `restaurant`; P9 returned tattoo studios).
+ */
+const KIND_HARD_DENY = new Set(["butcher_shop", "restaurant:butcher_shop", "meat_products_store", "liquor_store", "tattoo_shop", "body_piercing_shop", "smoke_shop", "hotel", "motel", "night_club", "gay_night_club"]);
 const KIND_DENY_HINT = /tattoo|clothing|boutique|jewel|hotel|motel|butcher|meat_products|liquor|smoke_shop|grocery|supermarket|department_store|shopping_mall|shoe_store|salon|spa$|personal_care|bank|pharmacy|gas_station|car_|motorcycle|night_club|bar$/;
 
 export function activityKind(e: Pick<QlooEntity, "tags">): { ok: boolean; matched?: string; categories: string[] } {
   const cats: string[] = [];
   for (const id of tagIds(e)) {
-    let m = /^urn:tag:(?:category|genre):place:(.+)$/.exec(id);
+    const m = /^urn:tag:(?:category|genre):place:(.+)$/.exec(id);
     if (!m) continue;
     cats.push(m[1]);
   }
+  const hard = cats.find((c) => KIND_HARD_DENY.has(c));
+  if (hard) return { ok: false, categories: [hard, ...cats.filter((c) => c !== hard)] };
+  // the generic `restaurant` category alone is not enough: Qloo puts it on butchers and grocers too
   for (const c of cats) {
     if (KIND_ALLOW_EXACT.has(c)) return { ok: true, matched: c, categories: cats };
     const food = /^restaurant:(.+)$/.exec(c)?.[1] ?? /^(.+)_restaurant$/.exec(c)?.[1];
