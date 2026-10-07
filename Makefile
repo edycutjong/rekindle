@@ -5,7 +5,7 @@ help:
 	@echo "make check          typecheck + lint + tests + seed/docs/kitchen checks (no keys)"
 	@echo "make ci             prod-dependency audit + check + coverage"
 	@echo "make e2e            Playwright against a local keyless next start (run npm run build first)"
-	@echo "make e2e-live       Playwright against https://rekindle-one.vercel.app, live Qloo calls"
+	@echo "make e2e-live       Playwright against https://rekindle.edycu.dev, live Qloo calls"
 	@echo "make lighthouse     Lighthouse CI on /, /judge, /cases/new (run npm run build first)"
 	@echo "make security-scan  prod npm audit + license allowlist + gitleaks over full history (all blocking)"
 

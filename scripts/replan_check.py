@@ -13,7 +13,7 @@ For every arm-B week-1 plan in bench/results.json:
     (b) contains 0 entities sharing an ID with the <= 3-rated one.
   Also reported per profile: the ember margin on each new card = (top rekindled weight) - (best original-love weight).
 
-Usage: BENCH_TOKEN=... python3 scripts/replan_check.py --base https://rekindle-one.vercel.app [--results bench/results.json] [--out bench/replan.json]
+Usage: BENCH_TOKEN=... python3 scripts/replan_check.py --base https://rekindle.edycu.dev [--results bench/results.json] [--out bench/replan.json]
 """
 import argparse, json, os, re, statistics, sys, time, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor

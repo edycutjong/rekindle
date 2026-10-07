@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 /**
  * Live half of the core journey, against a real deployment only:
- *   E2E_BASE_URL=https://rekindle-one.vercel.app E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
+ *   E2E_BASE_URL=https://rekindle.edycu.dev E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
  * Every card comes from live Qloo calls; the full click path (toggle, gate, ratings, re-plan, print) is scripts/ui_smoke.py.
  */
 test.skip(!process.env.E2E_LIVE, "set E2E_LIVE=1 and E2E_BASE_URL to a deployment with keys");

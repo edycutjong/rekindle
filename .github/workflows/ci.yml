@@ -205,4 +205,4 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Production health (informational; Vercel deploys main via its Git integration)
         run: |
-          curl -s --max-time 20 https://rekindle-one.vercel.app/api/health | tee -a "$GITHUB_STEP_SUMMARY" || true
+          curl -s --max-time 20 https://rekindle.edycu.dev/api/health | tee -a "$GITHUB_STEP_SUMMARY" || true

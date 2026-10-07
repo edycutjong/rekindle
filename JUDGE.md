@@ -1,6 +1,6 @@
 # For judges
 
-This file mirrors the top of [`/judge`](https://rekindle-one.vercel.app/judge) on the live app (the claim, the path, the receipts, the reproduce command, the limitations and the links); the page adds the six edge states with live start buttons and the full bench. No login, no keys, no cloning. Every case is fictional.
+This file mirrors the top of [`/judge`](https://rekindle.edycu.dev/judge) on the live app (the claim, the path, the receipts, the reproduce command, the limitations and the links); the page adds the six edge states with live start buttons and the full bench. No login, no keys, no cloning. Every case is fictional.
 
 ## The claim
 
@@ -8,9 +8,9 @@ This file mirrors the top of [`/judge`](https://rekindle-one.vercel.app/judge) o
 
 ## The 30-second path
 
-1. Open **https://rekindle-one.vercel.app** and click **Plan Maya's week, live**. The agent trace lists each Qloo call as it happens; the week arrives in about 20 s.
+1. Open **https://rekindle.edycu.dev** and click **Plan Maya's week, live**. The agent trace lists each Qloo call as it happens; the week arrives in about 20 s.
 2. Click **In recovery**. Alcohol-serving venues are struck in place with their rule (`R-ALC …`) and those slots are refilled live.
-3. Open [`/judge`](https://rekindle-one.vercel.app/judge) for the six edge states (each with a live start button) and the bench, and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) for every Qloo request behind the latest plans (the key is never shown).
+3. Open [`/judge`](https://rekindle.edycu.dev/judge) for the six edge states (each with a live start button) and the bench, and [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) for every Qloo request behind the latest plans (the key is never shown).
 
 The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [DEMO.md](DEMO.md), about 4 minutes.
 
@@ -39,8 +39,8 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 
 ```bash
 # the product, live: plans call Qloo and the routing model; nothing on this path is replayed
-python3 scripts/ui_smoke.py https://rekindle-one.vercel.app /tmp/shots live
-E2E_BASE_URL=https://rekindle-one.vercel.app E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
+python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live
+E2E_BASE_URL=https://rekindle.edycu.dev E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
 # the bench, against a live deployment (needs BENCH_TOKEN and model keys): see DEMO.md "Bench (reproduce)"
 ```
 
@@ -57,6 +57,6 @@ The full list is in the [README](README.md) (Limitations).
 
 ## Links
 
-- Live app: https://rekindle-one.vercel.app · receipts: https://rekindle-one.vercel.app/judge
+- Live app: https://rekindle.edycu.dev · receipts: https://rekindle.edycu.dev/judge
 - Repository: https://github.com/edycutjong/rekindle
 - Architecture (generated from the code): [ARCHITECTURE.md](ARCHITECTURE.md) · Qloo DX report: [DX-REPORT.md](DX-REPORT.md)

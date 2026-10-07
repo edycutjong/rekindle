@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Judge receipts · Rekindle" };
 
 const REPO = "https://github.com/edycutjong/rekindle";
-const LIVE = "https://rekindle-one.vercel.app";
+const LIVE = "https://rekindle.edycu.dev";
 const rigor: Rigor = rigorJson;
 
 const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ?? slug;

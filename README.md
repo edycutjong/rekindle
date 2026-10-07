@@ -7,8 +7,8 @@
 
   <br/>
 
-  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://rekindle-one.vercel.app)
-  [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-f59e0b?style=for-the-badge)](https://rekindle-one.vercel.app/judge)
+  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://rekindle.edycu.dev)
+  [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-f59e0b?style=for-the-badge)](https://rekindle.edycu.dev/judge)
   [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-8b5cf6?style=for-the-badge)](https://qloo.devpost.com/)
 
   <br/>
@@ -24,7 +24,7 @@
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
 
   <p>
-    <a href="https://rekindle-one.vercel.app"><b>Try it live: rekindle-one.vercel.app</b></a> (no login, fictional cases) ·
+    <a href="https://rekindle.edycu.dev"><b>Try it live: rekindle.edycu.dev</b></a> (no login, fictional cases) ·
     <a href="JUDGE.md">For judges</a> ·
     <a href="DEMO.md">Demo steps + bench</a> ·
     <a href="DX-REPORT.md">Qloo DX report</a> ·
@@ -49,7 +49,7 @@ The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, 
 ## 🔍 For judges
 
 - **Click path (about 4 min):** [DEMO.md](DEMO.md). The short version: open the live app → **Plan Maya's week, live** → toggle **In recovery** → **swap** a card → **Approve week** → rate 3 cards → **Re-plan week 2** → **Patient sheet**.
-- **Receipts:** [`/judge`](https://rekindle-one.vercel.app/judge). It has the six edge states with live start buttons (loading, refused, REVIEW, empty, coverage refusal, Qloo unavailable), plus the bench, ablation and re-plan N/N, all read from the committed `bench/*.json`.
+- **Receipts:** [`/judge`](https://rekindle.edycu.dev/judge). It has the six edge states with live start buttons (loading, refused, REVIEW, empty, coverage refusal, Qloo unavailable), plus the bench, ablation and re-plan N/N, all read from the committed `bench/*.json`.
 - **Nothing on the default path is replayed.** Every plan, re-plan, swap and toggle calls Qloo live; plans and re-plans also call the routing model. Captured Qloo responses are used only in unit tests (`tests/replay.ts`).
 - **One page for you:** [JUDGE.md](JUDGE.md) mirrors `/judge`: the claim, a 30-second path, the receipts, the real reproduce command and the limitations.
 
@@ -115,13 +115,13 @@ Rekindle depends on these parts of the Qloo API:
 - `urn:heatmap` with `output.heatmap.boundary=urn:geohash` → `filter.location.geohash` for the social outing;
 - four at-home entity types;
 - `/entities` to re-check, live, the enjoyed activity a re-plan keeps in its slot;
-- `/search` and `/v2/tags` at intake ([`/cases/new`](https://rekindle-one.vercel.app/cases/new)).
+- `/search` and `/v2/tags` at intake ([`/cases/new`](https://rekindle.edycu.dev/cases/new)).
 
 <!-- arch:qloo:start -->
-The plan loop (every plan, re-plan, swap and toggle) can send up to 15 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (19 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
+The plan loop (every plan, re-plan, swap and toggle) can send up to 15 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (19 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
 <!-- arch:qloo:end -->
 
-The Qloo requests behind the latest plans (or any one plan, via `/integrations/qloo?plan=<id>`) are shown on [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo), without the key. Intake lookups (`/search`, `/v2/tags`) are not logged there.
+The Qloo requests behind the latest plans (or any one plan, via `/integrations/qloo?plan=<id>`) are shown on [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo), without the key. Intake lookups (`/search`, `/v2/tags`) are not logged there.
 
 ## 📊 Engineering Rigor
 
@@ -208,8 +208,8 @@ make security-scan     # prod npm audit + license allowlist + gitleaks over the 
 
 # ── live: real Qloo + model calls ──────────────
 npm run e2e:live                                                             # Playwright live-plan spec
-python3 scripts/ui_smoke.py https://rekindle-one.vercel.app /tmp/shots live  # the whole click path, 18 gates
-python3 scripts/edge_states.py https://rekindle-one.vercel.app /tmp/shots live
+python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live  # the whole click path, 18 gates
+python3 scripts/edge_states.py https://rekindle.edycu.dev /tmp/shots live
 ```
 
 **6-stage pipeline** ([`ci.yml`](.github/workflows/ci.yml)): Quality → Security (parallel) → Build → E2E + Performance → Deploy gate. Vercel deploys `main`.

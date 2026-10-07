@@ -1,6 +1,6 @@
 # Demo: click path and bench
 
-Live app: **https://rekindle-one.vercel.app**. You do not need to log in. Every case is fictional.
+Live app: **https://rekindle.edycu.dev**. You do not need to log in. Every case is fictional.
 Every plan, re-plan, swap and toggle below calls Qloo live; plans and re-plans also call the routing model. Nothing on the default path is replayed.
 
 ## Click path (about 4 minutes)
@@ -33,9 +33,9 @@ Every number below comes from the committed bench files. The table is pasted in 
 ```bash
 # 1. plans for every arm on a live deployment (bench token = its own quota and its own store prefix)
 BENCH_TOKEN=… QWEN_API_KEY=… QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1 QWEN_MODEL=qwen3.8-flash \
-  python3 scripts/bench.py --base https://rekindle-one.vercel.app --out bench/results.json
+  python3 scripts/bench.py --base https://rekindle.edycu.dev --out bench/results.json
 # 2. re-plan responsiveness on arm B's week-1 plans
-BENCH_TOKEN=… python3 scripts/replan_check.py --base https://rekindle-one.vercel.app
+BENCH_TOKEN=… python3 scripts/replan_check.py --base https://rekindle.edycu.dev
 # 3. manual audit sample (20 A + 20 B venues, fixed seed); fill the verdicts, then summarise
 python3 scripts/manual_audit.py sample && python3 scripts/manual_audit.py summary --auditor "…" --method "…"
 # 4. paste the numbers into README.md and DEMO.md
@@ -114,6 +114,6 @@ Excluded (week 1 too thin to rate): ruth, omar, hana, cal. Low-rated entities ba
 
 ```bash
 pip install playwright && playwright install chromium
-python3 scripts/ui_smoke.py https://rekindle-one.vercel.app /tmp/shots live    # the click path above; exits 1 on a failed gate
-python3 scripts/edge_states.py https://rekindle-one.vercel.app /tmp/shots live # the six edge states from /judge
+python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live    # the click path above; exits 1 on a failed gate
+python3 scripts/edge_states.py https://rekindle.edycu.dev /tmp/shots live # the six edge states from /judge
 ```

@@ -4,7 +4,7 @@ import { defineConfig, devices } from "@playwright/test";
  * Two modes:
  *  - default (CI): builds nothing itself, starts `next start` with NO provider keys, and checks that the product
  *    renders, refuses honestly without Qloo (no week is invented), and lays out at 375 / 768 / 1440 px.
- *  - E2E_BASE_URL=https://rekindle-one.vercel.app E2E_LIVE=1: the same suites plus e2e/live-plan.spec.ts against
+ *  - E2E_BASE_URL=https://rekindle.edycu.dev E2E_LIVE=1: the same suites plus e2e/live-plan.spec.ts against
  *    a real deployment (live Qloo + model calls). Nothing is mocked in either mode.
  */
 const external = process.env.E2E_BASE_URL;

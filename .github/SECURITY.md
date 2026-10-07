@@ -3,7 +3,7 @@
 ## Supported versions
 | Version | Supported |
 |---|---|
-| latest (`main`, deployed at https://rekindle-one.vercel.app) | ✅ |
+| latest (`main`, deployed at https://rekindle.edycu.dev) | ✅ |
 
 ## Reporting a vulnerability
 Please **do not** open a public issue. Report privately:

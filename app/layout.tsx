@@ -7,7 +7,7 @@ const body = Atkinson_Hyperlegible({ variable: "--font-atkinson", weight: ["400"
 const data = IBM_Plex_Mono({ variable: "--font-plex-mono", weight: ["400", "500"], subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rekindle-one.vercel.app"),
+  metadataBase: new URL("https://rekindle.edycu.dev"),
   title: "Rekindle",
   description:
     "A behavioral-activation planning agent for clinicians: a verified, clinician-approved week of real activities built from what a patient used to love, via Qloo.",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     siteName: "Rekindle",
     description:
       "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from pleasure ratings.",
-    url: "https://rekindle-one.vercel.app",
+    url: "https://rekindle.edycu.dev",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Rekindle" }],
     locale: "en_US",
     type: "website",

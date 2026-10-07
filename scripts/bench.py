@@ -19,7 +19,7 @@ Every run uses the bench token: its own daily quota and the bench/ store prefix 
 Maya is set in recovery for every arm, so 10 profiles are in recovery.
 
 Usage: BENCH_TOKEN=... QWEN_API_KEY=... QWEN_BASE_URL=... QWEN_MODEL=qwen3.8-flash \\
-       python3 scripts/bench.py --base https://rekindle-one.vercel.app --out bench/results.json [--only maya,theo] [--arms A,B,B-,B-4]
+       python3 scripts/bench.py --base https://rekindle.edycu.dev --out bench/results.json [--only maya,theo] [--arms A,B,B-,B-4]
 """
 import argparse, json, os, re, statistics, sys, threading, time, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor

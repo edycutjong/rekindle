@@ -151,7 +151,7 @@ def readme_qloo() -> str:
     return (
         f"The plan loop (every plan, re-plan, swap and toggle) can send up to {len(pp)} distinct Qloo parameters to {' and '.join(f'`{e}`' for e in pe)}; "
         "which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and "
-        "[`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. "
+        "[`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) counts what the latest live plans actually sent. "
         f"Intake, the health check and the bench grader add {' and '.join(f'`{e}`' for e in oe)} "
         f"and {len(op)} more parameters ({len(ap)} in all, to {len(ae)} endpoints). Both lists are generated from the code in "
         "[ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface)."
