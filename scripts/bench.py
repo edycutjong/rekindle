@@ -269,7 +269,10 @@ def grade_rekindle(run, p, in_recovery, verify, symmetry):
         "pool": {"pools": plan["bench"]["pools"], "entities": plan["bench"]["pool_entities"], "alcohol_refuse": len(flagged), "alcohol_review": sum(1 for x in plan["bench"]["pool_alcohol"] if x["verdict"] == "REVIEW"), "flagged": [{"name": x["name"], "hits": x["hits"][:4]} for x in flagged.values()]},
         "plan_alcohol_leak": sum(1 for c in outings if c["qloo_entity_id"] in flagged),
     }
+    placed = {(c["day_name"], c["qloo_entity_id"]) for c in plan["cards"]}
     for r in plan["refusals"]:
+        if r["rule"] == "R-OPEN" and (r["day_name"], r["qloo_entity_id"]) in placed:
+            continue  # re-slotted and placed that day: a move, not a refusal (plans stored before the fix carry it)
         summary["refusals_by_rule"][r["rule"]] = summary["refusals_by_rule"].get(r["rule"], 0) + 1
     return summary, rows, sym
 

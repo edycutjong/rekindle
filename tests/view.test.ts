@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
 import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
-import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
+import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
   id: "c1",
@@ -72,6 +72,14 @@ describe("ledger view helpers (lib/view.ts)", () => {
     expect(s.thursday.map((x) => x.name)).toEqual(["The Meat Hook", "Patisserie Tomoko"]);
     expect(strikeReason(s.thursday[1])).toBe("R-OPEN · closes 18:00 · slot 18:00 · → moved to 15:00");
     expect(strikeReason(s.thursday[0])).toMatch(/^R-ALC · craft_beer · struck when a constraint changed$/);
+  });
+
+  it("a stored R-OPEN 'refusal' of the venue placed that day is a move: never struck under itself, never counted", () => {
+    const r = (o: Partial<PlanDoc["refusals"][number]>) => ({ id: "r", plan_id: "p", qloo_entity_id: "C", name: "Ceremonia Bakeshop", rule: "R-OPEN", detail: "closes 15:00 · slot 18:00", verdict: "REFUSE" as const, day_name: "thursday" as const, hour: 18, moved_to: 13, ...o });
+    const cards = [{ qloo_entity_id: "C", day_name: "thursday" }] as unknown as PlanDoc["cards"];
+    const refusals = [r({}), r({ qloo_entity_id: "Z", name: "Zebra Bar", rule: "R-KIND", detail: "not an activity: bar" }), r({ day_name: "friday" })];
+    expect(strikesByDay({ cards, refusals }).thursday.map((x) => x.name)).toEqual(["Zebra Bar"]);
+    expect(realRefusals(refusals, cards).map((x) => `${x.day_name}:${x.name}`)).toEqual(["thursday:Zebra Bar", "friday:Ceremonia Bakeshop"]);
   });
 
   it("one strike per venue per day: a venue refused by two rules shows once, naming the other rule", () => {

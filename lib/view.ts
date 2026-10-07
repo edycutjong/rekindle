@@ -74,10 +74,20 @@ export interface Strike {
   also: string[];
 }
 
+/**
+ * Refusals that are real refusals: an R-OPEN miss whose venue was re-slotted to another hour and placed that day is a
+ * move (the card says "moved from 18:00"), not a refusal. Plans stored before moves stopped being recorded as R-OPEN
+ * refusals still carry them; they are dropped here so a venue is never struck under itself or counted as refused.
+ */
+export function realRefusals<R extends Pick<PlanDoc["refusals"][number], "rule" | "qloo_entity_id" | "day_name">>(refusals: R[], cards: Pick<PlanDoc["cards"][number], "qloo_entity_id" | "day_name">[]): R[] {
+  const placed = new Set(cards.map((c) => `${c.day_name}|${c.qloo_entity_id}`));
+  return refusals.filter((r) => !(r.rule === "R-OPEN" && placed.has(`${r.day_name}|${r.qloo_entity_id}`)));
+}
+
 export function strikesByDay(plan: Pick<PlanDoc, "refusals" | "cards">): Record<DayName, Strike[]> {
   const out = Object.fromEntries(DAYS.map((d) => [d, [] as Strike[]])) as Record<DayName, Strike[]>;
   // refusals struck by a constraint toggle first: they are the ones that just changed on the sheet
-  const ordered = [...plan.refusals].sort((a, b) => Number(!!b.struck_by_toggle) - Number(!!a.struck_by_toggle));
+  const ordered = [...realRefusals(plan.refusals, plan.cards)].sort((a, b) => Number(!!b.struck_by_toggle) - Number(!!a.struck_by_toggle));
   for (const r of ordered) {
     const key = `${r.day_name}|${r.qloo_entity_id}`;
     const prev = out[r.day_name].find((x) => x.key === key);

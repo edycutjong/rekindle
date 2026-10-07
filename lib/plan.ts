@@ -346,15 +346,17 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
     // re-slot: refused only by R-OPEN with known hours → latest open free hour that day
     const onlyOpen = v.reasons.length === 1 && v.reasons[0].rule === "R-OPEN" && slotStatus(e.properties?.hours, slot.day, slot.hour).status === "CLOSED" && e.properties?.is_closed !== true;
     const moved = onlyOpen ? reslotHour(e.properties?.hours, slot.day, DAY_HOURS.filter((x) => x !== slot.hour)) : null;
-    for (const r of v.reasons) refusals.push({ day: slot.day, hour: slot.hour, entity_id: e.entity_id, name: e.name, rule: r.rule, detail: r.detail, verdict: r.verdict, ...(moved !== null ? { movedTo: moved } : {}) });
     if (moved !== null) {
       const v2 = verifyCard(ent, { ...base, slot: { day: slot.day, hour: moved } });
       if (v2.verdict === "PASS") {
+        // a move, not a refusal: the card carries `movedFrom` ("moved from 18:00 (closed then)") and the venue is never
+        // struck under itself or counted as an R-OPEN refusal
         ctx.used.add(e.entity_id);
         ctx.usedPlaces?.add(e.entity_id);
         return { card: toCard(ent, slot, moved, "PASS", v2.checks, names, distance), refusals, review, returned: list.length };
       }
     }
+    for (const r of v.reasons) refusals.push({ day: slot.day, hour: slot.hour, entity_id: e.entity_id, name: e.name, rule: r.rule, detail: r.detail, verdict: r.verdict });
   }
   const queried = !o.geohash && !o.center ? Math.min(o.narrowMeters ?? ctx.case.maxMeters, ctx.case.maxMeters) : null;
   // The LLM may narrow the radius (I6: it can only tighten). If that narrowed query verifies nothing, retry once at the

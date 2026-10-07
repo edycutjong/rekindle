@@ -67,7 +67,20 @@ describe("tools over captured responses", () => {
     const r = await findOutings(ctx({ ...MAYA, inRecovery: true }, replayClient(seen)), { day: "thursday", hour: 18, rung: "solo" });
     expect(seen).toHaveLength(1);
     expect(r.card).toMatchObject({ name: "Dun-Well Doughnuts", hour: 15, movedFrom: 18 });
-    expect(r.refusals[0]).toMatchObject({ name: "Dun-Well Doughnuts", rule: "R-OPEN", detail: "closes 18:00 · slot 18:00", movedTo: 15 });
+    // a move, not a refusal: the placed venue is never struck under itself or counted as R-OPEN
+    expect(r.refusals.filter((x) => x.entity_id === r.card!.entity_id)).toEqual([]);
+  });
+
+  it("no plan has the same venue placed and refused on the same day (moves are not refusals), across toggles", async () => {
+    const q = replayClient([]);
+    for (const c of [MAYA, { ...MAYA, inRecovery: true }]) {
+      const w1 = await planWeek(q, c, 1);
+      const w1r = await applyConstraints(q, w1, { ...c, inRecovery: true, needQuiet: true });
+      for (const w of [w1, w1r]) {
+        const placed = new Set(w.slots.flatMap((s) => (s.card ? [`${s.slot.day}|${s.card.entity_id}`] : [])));
+        expect(w.refusals.filter((x) => placed.has(`${x.day}|${x.entity_id}`))).toEqual([]);
+      }
+    }
   });
 
   it("an LLM-narrowed radius that verifies nothing is retried once at the case radius before the slot is left empty", async () => {

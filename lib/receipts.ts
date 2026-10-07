@@ -4,6 +4,7 @@
  * logs, so every number on the page comes from a stored call.
  */
 import type { PlanDoc, QlooCallsDoc, Store } from "./store";
+import { realRefusals } from "./view";
 
 export interface PlanReceipt {
   plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number };
@@ -47,8 +48,9 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     const [plan, calls] = await Promise.all([store.getPlan(id), store.getCalls(id)]);
     // the injected-outage demo sends no request; it is not a receipt of Qloo's behaviour
     if (!plan || plan.fault) continue;
+    const refusals = realRefusals(plan.refusals, plan.cards);
     plans.push({
-      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: plan.refusals.length, refusals_by_rule: countRules(plan.refusals), review: plan.review.length },
+      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: refusals.length, refusals_by_rule: countRules(refusals), review: plan.review.length },
       calls: calls?.calls ?? [],
     });
   }
