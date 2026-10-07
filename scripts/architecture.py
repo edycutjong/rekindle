@@ -7,7 +7,9 @@ Rewrites everything between `<!-- generated:start -->` and `<!-- generated:end -
   - lib/*.ts               each module's header comment (first sentence) + line count
   - lib/verify.ts          the rule table in its header comment (R-ID … R-HIST)
   - lib/agent.ts           the typed tools offered to the model (`<name>: tool({`)
-  - lib/qloo.ts / lib/plan.ts / lib/replan.ts / lib/resolve.ts / lib/venue.ts   the Qloo parameters the code sends
+  - lib/*.ts that call the Qloo client   the Qloo endpoints + parameters, split into the plan loop (what
+                                          /integrations/qloo shows) and intake / health / bench grader
+  and the README line between `<!-- arch:qloo:start -->` and `<!-- arch:qloo:end -->`.
 
   python3 scripts/architecture.py          rewrite ARCHITECTURE.md in place
   python3 scripts/architecture.py --check  exit 1 if ARCHITECTURE.md is stale (no write)
@@ -95,22 +97,64 @@ def tools() -> list[str]:
     return [f"Tools offered to the model (`lib/agent.ts`): {', '.join(f'`{n}`' for n in names)}."]
 
 
-def qloo_params() -> list[str]:
-    found: set[str] = set()
-    for name in ["plan.ts", "replan.ts", "resolve.ts", "venue.ts", "qloo.ts", "health.ts", "gate.ts"]:
+# what each QlooClient method sends besides the params a caller passes (lib/qloo.ts)
+METHOD = {"insights": ("/v2/insights", set()), "entities": ("/entities", {"entity_ids"}), "search": ("/search", {"query", "types", "take"}), "tags": ("/v2/tags", {"filter.query", "take"})}
+# the judged loop: plan, re-plan, swap, constraint toggle (what /integrations/qloo shows)
+PRODUCT = ["plan.ts", "replan.ts", "gate.ts", "agent.ts", "service.ts"]
+# intake (/api/resolve), health (/api/health) and the bench-only venue grader (/api/verify-venue)
+OTHER = ["resolve.ts", "health.ts", "venue.ts"]
+
+
+def surface(files: list[str]) -> tuple[set[str], set[str]]:
+    params: set[str] = set()
+    endpoints: set[str] = set()
+    for name in files:
         src = (ROOT / "lib" / name).read_text()
-        found |= set(re.findall(r'"((?:filter|signal|feature|output|operator|bias|diversify)\.[a-z_.]+)"', src))
+        calls = set(re.findall(r"\.(insights|entities|search|tags)\(", src))
+        if not calls:
+            continue
+        params |= set(re.findall(r'"((?:filter|signal|feature|output|operator|bias|diversify)\.[a-z_.]+)"', src))
         if re.search(r"\btake\b\s*[:=]", src):
-            found.add("take")
-    endpoints = set()
-    for name in ["qloo.ts", "venue.ts"]:
-        endpoints |= set(re.findall(r'"(/(?:v2/insights|v2/tags|search|entities))', (ROOT / "lib" / name).read_text()))
-    p = sorted(found)
+            params.add("take")
+        for c in calls:
+            endpoints.add(METHOD[c][0])
+            params |= METHOD[c][1]
+    return params, endpoints
+
+
+def qloo_surface() -> dict:
+    pp, pe = surface(PRODUCT)
+    op, oe = surface(OTHER)
+    return {"product": (sorted(pp), sorted(pe)), "other": (sorted(op - pp), sorted(oe - pe)), "all": (sorted(pp | op), sorted(pe | oe))}
+
+
+def ticks(xs) -> str:
+    return ", ".join(f"`{x}`" for x in xs)
+
+
+def qloo_params() -> list[str]:
+    q = qloo_surface()
+    (pp, pe), (op, oe), (ap, ae) = q["product"], q["other"], q["all"]
     return [
-        f"Qloo endpoints called (`lib/qloo.ts`, `lib/venue.ts`): {', '.join(f'`{e}`' for e in sorted(endpoints))}.",
+        f"Plan loop (plan, re-plan, swap, constraint toggle; `lib/plan.ts`, `lib/gate.ts`): {len(pp)} distinct Qloo parameters to {ticks(pe)}: {ticks(pp)}.",
         "",
-        f"Qloo parameters the code sends ({len(p)}, grepped from `lib/`): " + ", ".join(f"`{x}`" for x in p) + ".",
+        f"Intake (`lib/resolve.ts`), health (`lib/health.ts`) and the bench-only venue grader (`lib/venue.ts`) add {ticks(oe) or 'no endpoint'} and {len(op)} more parameters: {ticks(op)}.",
+        "",
+        f"In all: {len(ap)} distinct parameters to {len(ae)} endpoints ({ticks(ae)}).",
     ]
+
+
+def readme_qloo() -> str:
+    q = qloo_surface()
+    (pp, pe), (op, oe), (ap, ae) = q["product"], q["other"], q["all"]
+    return (
+        f"The plan loop (every plan, re-plan, swap and toggle) can send up to {len(pp)} distinct Qloo parameters to {' and '.join(f'`{e}`' for e in pe)}; "
+        "which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and "
+        "[`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. "
+        f"Intake, the health check and the bench grader add {' and '.join(f'`{e}`' for e in oe)} "
+        f"and {len(op)} more parameters ({len(ap)} in all, to {len(ae)} endpoints). Both lists are generated from the code in "
+        "[ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface)."
+    )
 
 
 def generated() -> str:
@@ -142,20 +186,27 @@ def generated() -> str:
     return "\n".join(parts)
 
 
+README = ROOT / "README.md"
+RS, RE_ = "<!-- arch:qloo:start -->", "<!-- arch:qloo:end -->"
+
+
 def main() -> int:
+    readme = README.read_text()
+    new_readme = readme[: readme.index(RS) + len(RS)] + "\n" + readme_qloo() + "\n" + readme[readme.index(RE_):] if RS in readme else readme
     doc = DOC.read_text()
     if START not in doc or END not in doc:
         print("ARCHITECTURE.md has no generated markers", file=sys.stderr)
         return 1
     new = doc[: doc.index(START) + len(START)] + "\n" + generated() + "\n" + doc[doc.index(END):]
     if "--check" in sys.argv:
-        if new != doc:
-            print("ARCHITECTURE.md is stale: run python3 scripts/architecture.py", file=sys.stderr)
+        if new != doc or new_readme != readme:
+            print("ARCHITECTURE.md or the README Qloo-surface line is stale: run python3 scripts/architecture.py", file=sys.stderr)
             return 1
-        print("ARCHITECTURE.md is current")
+        print("ARCHITECTURE.md and the README Qloo-surface line are current")
         return 0
     DOC.write_text(new)
-    print("ARCHITECTURE.md regenerated")
+    README.write_text(new_readme)
+    print("ARCHITECTURE.md and README Qloo-surface line regenerated")
     return 0
 
 

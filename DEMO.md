@@ -1,7 +1,7 @@
 # Demo: click path and bench
 
 Live app: **https://rekindle-one.vercel.app**. You do not need to log in. Every case is fictional.
-Every click below calls Qloo and the routing model live. Nothing on the default path is replayed.
+Every plan, re-plan, swap and toggle below calls Qloo live; plans and re-plans also call the routing model. Nothing on the default path is replayed.
 
 ## Click path (about 4 minutes)
 
