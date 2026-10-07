@@ -6,6 +6,11 @@ The section between the `generated` markers below is rebuilt from the source tre
 
 ## The one flow
 
+<p align="center"><img src="docs/assets/architecture.png" alt="Rekindle architecture: the clinician's browser posts a case to the Next.js API; the agent loop asks the LLM only for routing and coaching, calls typed tools that query Qloo live, and every candidate passes a deterministic verifier (PASS, REFUSE, REVIEW) before the week is stored; the clinician approves, rates, and the re-plan feeds ratings back into the same loop." width="100%"></p>
+
+<details>
+<summary><b>The one flow as a Mermaid diagram</b> (click to expand)</summary>
+
 ```mermaid
 flowchart LR
   subgraph Clinician["Clinician (browser)"]
@@ -43,6 +48,8 @@ flowchart LR
   RP --> D
   G --> P
 ```
+
+</details>
 
 ## Truth boundary
 

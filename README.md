@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/icon.svg" alt="Rekindle icon" width="112" height="112">
+  <img src="docs/assets/icon-animated.svg" alt="Rekindle icon" width="144" height="144">
   <h1>Rekindle 🕯️</h1>
   <p><b>A behavioural-activation planning agent for clinicians.</b><br>
   It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.</p>
@@ -77,6 +77,11 @@ Every card carries a **because** line with Qloo's per-love explainability weight
 
 ## 🏗️ Architecture & Tech Stack
 
+<p align="center"><img src="docs/assets/architecture.png" alt="Rekindle architecture: the clinician's browser posts a case to the Next.js API; the agent loop asks the LLM only for routing and coaching, calls typed tools that query Qloo live, and every candidate passes a deterministic verifier (PASS, REFUSE, REVIEW) before the week is stored; the clinician approves, rates, and the re-plan feeds ratings back into the same loop." width="100%"></p>
+
+<details>
+<summary><b>Mermaid version of this diagram</b> (click to expand)</summary>
+
 ```mermaid
 flowchart LR
   C[Clinician] -->|loves · point · constraints| A[LLM tool loop<br/>lib/agent.ts]
@@ -87,6 +92,8 @@ flowchart LR
   L --> G[Approve · swap · remove<br/>lib/gate.ts]
   G --> R[P/M ratings] -->|≥7 signal · ≤3 exclude<br/>lib/replan.ts| A
 ```
+
+</details>
 
 - **Next.js 15** (App Router, TypeScript) on Vercel. The UI and API routes are one deploy, and week plans stream to the browser as Server-Sent Events.
 - **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call in a 6 s window after the 20 s routing budget, and the first valid answer wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
