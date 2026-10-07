@@ -29,7 +29,7 @@ It turns what a depressed patient used to love into a week of real, open, nearby
 ## 🎯 The number
 
 <!-- bench:killer:start -->
-**73.4% vs 0.0%.** Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were unverifiable, closed at the slot, or served alcohol to a patient in recovery; Rekindle: 0 of 66 (Qloo-graded, `bench/results.json`, run 2026-10-07 13:11 UTC).
+**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC).
 <!-- bench:killer:end -->
 
 The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, the B-sym noise floor, the alcohol-screen ablation, latency, and re-plan responsiveness. It also says how to read it. Qloo grades both arms, and the manual audit was not blind.

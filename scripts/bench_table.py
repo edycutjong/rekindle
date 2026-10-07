@@ -27,12 +27,16 @@ def pct(x):
 
 
 def killer(r) -> str:
-    a, b = r["arms"]["A"], r["arms"]["B"]
+    # same grader first (QA round 1): arm A is graded by the address pipeline (Nominatim + /search name match), and so
+    # is B-sym (Rekindle's own cards through that pipeline); B by Qloo ID is 0 by construction and is stated second
+    a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
     return (
-        f"**{pct(a['violation_rate'])} vs {pct(b['violation_rate'])}.** Across {r['profiles']} fictional profiles, "
-        f"{a['violation']} of {a['outing_venues']} outing venues in plans from the same LLM asked for named places were unverifiable, "
-        f"closed at the slot, or served alcohol to a patient in recovery; Rekindle: {b['violation']} of {b['outing_venues']} "
-        f"(Qloo-graded, `bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
+        f"**{pct(a['violation_rate'])} vs {pct(bs['violation_rate'])} through the same address pipeline** "
+        f"({pct(b['violation_rate'])} when Rekindle's cards are checked by their Qloo ID). Across {r['profiles']} fictional profiles, "
+        f"{a['violation']} of {a['outing_venues']} outing venues in plans from the same LLM asked for named places were wrong: "
+        f"{a['unverifiable']} unverifiable, {a['closed_at_slot']} closed at the slot, {a['alcohol']} serving alcohol to a patient in recovery. "
+        f"Rekindle: {bs['violation']} of {bs['outing_venues']} through the same pipeline ("
+        f"{'all ' if bs['unverifiable'] == bs['violation'] else ''}{bs['unverifiable']} unverifiable, i.e. geocode or name-match misses on venues Qloo verified), {b['violation']} of {b['outing_venues']} by Qloo ID (`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
     )
 
 
