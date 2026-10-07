@@ -4,7 +4,7 @@ import { useState } from "react";
 import s from "./rekindle.module.css";
 
 /** Clone a fictional seeded case for this visitor, then open it; the plan runs live on the case page. */
-export function StartCase({ slug, label, primary = false }: { slug: string; label: string; primary?: boolean }) {
+export function StartCase({ slug, label, primary = false, fault = false }: { slug: string; label: string; primary?: boolean; fault?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export function StartCase({ slug, label, primary = false }: { slug: string; labe
       const r = await fetch(`/api/cases/seed/${encodeURIComponent(slug)}`, { method: "POST" });
       const b = (await r.json()) as { case?: { id: string }; error?: string };
       if (!r.ok || !b.case) throw new Error(b.error ?? `HTTP ${r.status}`);
-      router.push(`/cases/${b.case.id}`);
+      router.push(`/cases/${b.case.id}${fault ? "?fault=qloo_unreachable" : ""}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -23,7 +23,7 @@ export function StartCase({ slug, label, primary = false }: { slug: string; labe
   }
   return (
     <>
-      <button type="button" className={primary ? s.btn : `${s.btn} ${s.btnQuiet}`} onClick={start} disabled={busy} data-testid={`start-${slug}`}>
+      <button type="button" className={primary ? s.btn : `${s.btn} ${s.btnQuiet}`} onClick={start} disabled={busy} data-testid={`start-${slug}${fault ? "-outage" : ""}`}>
         {busy ? "Opening the case…" : label}
       </button>
       {err && (

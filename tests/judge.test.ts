@@ -1,0 +1,67 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { benchRows, loadJudgeData, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
+import { countRules, summarise } from "../lib/receipts";
+
+const arm = (o: Partial<BenchResults["arms"][string]> = {}) => ({ outing_venues: 10, errors: 0, violation: 3, violation_rate: 0.3, unverifiable: 2, closed_at_slot: 1, alcohol: 0, alcohol_denominator: 5, unknown_hours: 1, ...o });
+const bench = {
+  generated_by: "scripts/bench.py",
+  finished_at: "2026-10-07T13:00:00+00:00",
+  base: "https://x",
+  model_arm_a: "m",
+  profiles: 20,
+  in_recovery_profiles: 10,
+  definitions: { killer_number: "k", unverifiable: "u", oracle: "o", ablation_pool: "p" },
+  arms: { B: arm({ violation: 0, violation_rate: 0 }), A: arm(), "B-4": arm({ alcohol: 4 }) },
+  ablation_in_recovery: {},
+  latency: {},
+  coverage_refusals_arm_b: [{ profile: "cal", empty_outings: [{ day: "sunday", rung: "social", reason: "none" }] }],
+  plans: [
+    { profile: "maya", arm: "B", review: 1, refusals_by_rule: {} },
+    { profile: "ruby", arm: "B-", review: 2, refusals_by_rule: {} },
+    { profile: "theo", arm: "B", review: 0, refusals_by_rule: {} },
+  ],
+  errors: [],
+} satisfies BenchResults;
+
+describe("/judge view model", () => {
+  it("orders arms A first and puts the manual-audit rate beside the Qloo-graded one", () => {
+    const audit: AuditResults = { generated_by: "scripts/manual_audit.py", finished_at: "t", auditor: "a", method: "m", arms: { A: { sampled: 20, checked: 18, inconclusive: 2, violations: 9, rate: 0.5, not_found: 4, closed_at_slot: 5, alcohol: 0 } } };
+    const rows = benchRows(bench, audit);
+    expect(rows.map((x) => x.arm)).toEqual(["A", "B", "B-4"]);
+    expect(rows[0]).toMatchObject({ rate: "30.0%", violations: 3, alcohol: "0 / 5", audited: "50.0% (9/18, 2 inconclusive)" });
+    expect(rows[1]!.audited).toBe("not audited yet");
+    expect(rows[2]!.audited).toBe("—");
+    expect(benchRows(bench, null)[0]!.audited).toBe("not audited yet");
+  });
+  it("finds the profiles that showed REVIEW / coverage in arm B only", () => {
+    expect(profilesWith(bench, "review")).toEqual(["maya"]);
+    expect(profilesWith(bench, "coverage")).toEqual(["cal"]);
+    expect(profilesWith(null, "review")).toEqual([]);
+  });
+  it("formats rates and never invents one", () => {
+    expect(pctLabel(0)).toBe("0.0%");
+    expect(pctLabel(null)).toBe("—");
+    expect(pctLabel(undefined)).toBe("—");
+  });
+  it("loads committed outputs and reports a missing file as null (rendered as not run yet)", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "judge-"));
+    writeFileSync(path.join(dir, "results.json"), JSON.stringify(bench));
+    const d = await loadJudgeData(dir);
+    expect(d.bench?.profiles).toBe(20);
+    expect(d.replan).toBeNull();
+    expect(d.audit).toBeNull();
+  });
+  it("counts refusals by rule and totals them across plans", () => {
+    expect(countRules([{ rule: "R-ALC" }, { rule: "R-OPEN" }, { rule: "R-ALC" }])).toEqual({ "R-ALC": 2, "R-OPEN": 1 });
+    const plan = (rules: Record<string, number>, review: number) => ({
+      plan: { id: "p", case_id: "c", week: 1, created_at: "t", llm_provider: null, llm_model: null, latency_ms: 1, origin: "agent" as const, cards: 7, refusals: 3, refusals_by_rule: rules, review },
+      calls: [],
+    });
+    const t = summarise([plan({ "R-ALC": 2 }, 1), plan({ "R-ALC": 1, "R-NEAR": 4 }, 0)]);
+    expect(t.refusals_by_rule).toEqual({ "R-ALC": 3, "R-NEAR": 4 });
+    expect(t.review).toBe(1);
+  });
+});

@@ -10,7 +10,7 @@ import type { CardAction } from "@/lib/gate";
 import type { ConstraintPatch } from "@/lib/service";
 import type { CaseDoc, PlanDoc } from "@/lib/store";
 import { DAYS, type DayName } from "@/lib/verify";
-import { changedRatings, emberThreads, ratedCount, stampLabel, strikesByDay, swapNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
+import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, stampLabel, strikesByDay, swapNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
 import { AgentTrace } from "./AgentTrace";
 import { CaseStrip } from "./CaseStrip";
 import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
@@ -53,7 +53,7 @@ async function readSse(res: Response, on: (event: string, data: unknown) => void
   }
 }
 
-export function Workbench({ initialCase, initialPlan, previousPlan = null }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null }) {
+export function Workbench({ initialCase, initialPlan, previousPlan = null, fault = null }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null; fault?: "qloo_unreachable" | null }) {
   const [c, setCase] = useState(initialCase);
   const [plan, setPlan] = useState<PlanDoc | null>(initialPlan);
   /** the rated week this one was re-planned from (shown above the ledger with the ember threads) */
@@ -82,7 +82,11 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null }: { i
       setPlan(null);
     }
     try {
-      const res = await fetch(rated ? `/api/plans/${rated.id}/replan` : `/api/cases/${c.id}/plan`, { method: "POST" });
+      const res = await fetch(
+        rated ? `/api/plans/${rated.id}/replan` : `/api/cases/${c.id}/plan`,
+        // the labelled outage demo (/judge) asks the server to run with an unreachable Qloo client; never on a re-plan
+        !rated && fault ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fault }) } : { method: "POST" },
+      );
       if (!res.ok || !res.body) {
         const b = (await res.json().catch(() => ({}))) as { error?: string };
         throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });
@@ -130,7 +134,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null }: { i
     } finally {
       setPhase("idle");
     }
-  }, [c.id]);
+  }, [c.id, fault]);
 
   useEffect(() => {
     if (initialPlan || started.current) return;
@@ -251,6 +255,8 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null }: { i
   }, [saveRatings, run]);
 
   const mode: "draft" | "rate" | "locked" | null = !plan ? null : plan.status === "draft" ? "draft" : plan.next_plan_id ? "locked" : "rate";
+  const coverage = useMemo(() => (plan ? coverageRefusal(plan, c) : null), [plan, c]);
+  const outage = useMemo(() => (plan ? outageState(plan) : null), [plan]);
   const threads = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards) : []), [plan, prev]);
 
   const days: DayView[] = useMemo(() => {
@@ -334,6 +340,43 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null }: { i
               </>
             )}
           </p>
+        </div>
+      )}
+      {outage && phase === "idle" && (
+        <div className={s.outageBox} role="alert" data-testid="outage-banner">
+          <p>
+            <strong>Qloo unavailable.</strong> {outage.slots} slot{outage.slots === 1 ? " was" : "s were"} left empty because Qloo did not answer. Nothing on this
+            sheet was suggested by the model on its own: a slot is filled only by a Qloo entity that passed the verifier.
+          </p>
+          {outage.injected && (
+            <p className={s.reason}>
+              Labelled demo: this run was started from /judge with an unreachable Qloo host on purpose, so no request reached Qloo. It is excluded from the receipts.
+            </p>
+          )}
+        </div>
+      )}
+      {coverage && phase === "idle" && (
+        <div className={s.coverageBox} role="note" data-testid="coverage-refusal">
+          <p>
+            <strong>Coverage refusal.</strong> {coverage.headline} The empty slots stay empty rather than hold an unverified suggestion.
+          </p>
+          <ul>
+            {coverage.slots.map((x) => (
+              <li key={x.day} className={s.reason}>
+                {x.line}
+              </li>
+            ))}
+          </ul>
+          {coverage.widen && plan?.status === "draft" ? (
+            <p>
+              <button type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={phase !== "idle"} onClick={() => void toggle({ max_meters: coverage.widen! })} data-testid="widen-radius">
+                Widen to {distanceLabel(coverage.widen).slice(1)} with clinician consent
+              </button>{" "}
+              <span className={s.reason}>re-checks the week and retries only the empty outings, live</span>
+            </p>
+          ) : (
+            <p className={s.reason}>{coverage.widen ? "The week is approved; widen the radius on a new draft." : "Already at the widest radius: this area is outside what Qloo can verify for these constraints."}</p>
+          )}
         </div>
       )}
       <div className={s.grid}>

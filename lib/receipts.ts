@@ -6,13 +6,13 @@
 import type { PlanDoc, QlooCallsDoc, Store } from "./store";
 
 export interface PlanReceipt {
-  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number };
+  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number };
   calls: QlooCallsDoc["calls"];
 }
 
 export interface Receipts {
   plans: PlanReceipt[];
-  totals: { calls: number; non200: number; endpoints: string[]; params: string[]; p50: number | null; p95: number | null };
+  totals: { calls: number; non200: number; endpoints: string[]; params: string[]; p50: number | null; p95: number | null; refusals_by_rule: Record<string, number>; review: number };
 }
 
 /** parameters that carry product meaning; transport-only keys are not counted as depth */
@@ -29,7 +29,10 @@ export function summarise(plans: PlanReceipt[]): Receipts["totals"] {
   const endpoints = [...new Set(all.map((c) => c.path))].sort();
   const params = [...new Set(all.flatMap((c) => Object.keys(c.params_json)).filter((k) => !NOT_PRODUCT.has(k)))].sort();
   const ms = all.map((c) => c.ms);
-  return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95) };
+  const refusals_by_rule: Record<string, number> = {};
+  for (const p of plans) for (const [k, v] of Object.entries(p.plan.refusals_by_rule ?? {})) refusals_by_rule[k] = (refusals_by_rule[k] ?? 0) + v;
+  const review = plans.reduce((n, p) => n + (p.plan.review ?? 0), 0);
+  return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95), refusals_by_rule, review };
 }
 
 let cache: { at: number; key: string; r: Receipts } | null = null;
@@ -45,11 +48,18 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     // the injected-outage demo sends no request; it is not a receipt of Qloo's behaviour
     if (!plan || plan.fault) continue;
     plans.push({
-      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: plan.refusals.length },
+      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: plan.refusals.length, refusals_by_rule: countRules(plan.refusals), review: plan.review.length },
       calls: calls?.calls ?? [],
     });
   }
   const r = { plans, totals: summarise(plans) };
   cache = { at: now, key, r };
   return r;
+}
+
+/** refusals grouped by the rule recorded on each strike (verifier rules and the clinician's swap/remove) */
+export function countRules(refusals: Pick<PlanDoc["refusals"][number], "rule">[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const r of refusals) out[r.rule] = (out[r.rule] ?? 0) + 1;
+  return out;
 }

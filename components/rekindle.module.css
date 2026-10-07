@@ -842,3 +842,29 @@
   line-height: 1.3;
   color: var(--ink);
 }
+
+/* ------------------------------------------------------------ edge states (D10) */
+/* Qloo unavailable: the slot is left empty with the reason; a solid ink rule, not the dashed "left empty" box */
+.outage {
+  border-style: solid;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.outageBox,
+.coverageBox {
+  margin: 0 0 12px;
+  background: var(--paper);
+  padding: 10px 14px;
+  border: 1px solid var(--ink);
+}
+.coverageBox {
+  border-style: dashed;
+}
+.outageBox p,
+.coverageBox p {
+  margin: 0 0 6px;
+}
+.coverageBox ul {
+  margin: 0 0 8px;
+  padding-left: 18px;
+}

@@ -1,0 +1,22 @@
+.states {
+  margin: 8px 0 28px;
+  padding-left: 22px;
+  max-width: 900px;
+}
+.states li {
+  margin-bottom: 12px;
+}
+.go {
+  display: block;
+  margin-top: 6px;
+}
+.def {
+  color: var(--muted);
+  max-width: 900px;
+  font-size: 16px;
+  margin: 10px 0 24px;
+}
+.big {
+  font: 40px/1.1 var(--font-data);
+  margin: 4px 0;
+}

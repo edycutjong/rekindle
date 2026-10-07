@@ -11,7 +11,8 @@ export function SiteHeader() {
       </Link>
       <nav className={s.siteNav} aria-label="Site">
         <Link href="/">Cases</Link>
-        <Link href="/integrations/qloo">Qloo receipts</Link>
+        <Link href="/judge">Judge receipts</Link>
+        <Link href="/integrations/qloo">Qloo calls</Link>
       </nav>
     </header>
   );
