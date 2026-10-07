@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="rk-title">
+  <title id="rk-title">Rekindle — a schedule slot with a refused venue struck through and a venue underlined in ember, its rating 8 on a tab over the corner</title>
+  <defs>
+    <linearGradient id="rk-kindle" x1="78" y1="0" x2="404" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="var(--primary, #9A968E)"/>
+      <stop offset=".15" stop-color="var(--accent, #C4501A)"/>
+      <stop offset="1" stop-color="var(--accent, #C4501A)"/>
+    </linearGradient>
+    <mask id="rk-rimgap" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512"><rect width="512" height="512" fill="#fff"/><rect x="432" y="355" width="28.5" height="9.5" fill="#000"/><rect x="355" y="432" width="9.5" height="28.5" fill="#000"/></mask>
+    <filter id="rk-warm" x="-12%" y="-70%" width="124%" height="240%"><feGaussianBlur stdDeviation="8.5"/></filter>
+  </defs>
+  <rect x="22" y="22" width="424" height="424" rx="78" fill="var(--paper, #FBF8F1)" stroke="var(--ink, #26221D)" stroke-width="28" mask="url(#rk-rimgap)"/>
+  <g stroke="var(--rule, #DCD2BF)" stroke-width="4"><line x1="58" y1="219" x2="410" y2="219"/><line x1="58" y1="345" x2="410" y2="345"/></g>
+  <rect x="95" y="126.5" width="209.5" height="41" rx="11" fill="var(--ink, #26221D)"/><rect x="319" y="126.5" width="54" height="41" rx="11" fill="var(--ink, #26221D)"/>
+  <path d="M87.7 180.3 C 172.9 178, 284 178, 356.3 177.9 C 371.1 177.8, 384 177.3, 394.2 176.8 C 401.6 176.4, 406.3 178.9, 405.9 182.6 C 405.5 186.8, 401.2 189.4, 395.2 190 C 378.5 192.3, 365.5 200.2, 339.6 202 C 274.8 206.7, 172.9 204.4, 93.2 203.4 C 74.7 203, 71 181.2, 87.7 180.3 Z" fill="var(--accent, #C4501A)" opacity=".38" filter="url(#rk-warm)" transform="translate(0 5.5)"/>
+  <path d="M87.7 180.3 C 172.9 178, 284 178, 356.3 177.9 C 371.1 177.8, 384 177.3, 394.2 176.8 C 401.6 176.4, 406.3 178.9, 405.9 182.6 C 405.5 186.8, 401.2 189.4, 395.2 190 C 378.5 192.3, 365.5 200.2, 339.6 202 C 274.8 206.7, 172.9 204.4, 93.2 203.4 C 74.7 203, 71 181.2, 87.7 180.3 Z" fill="url(#rk-kindle)"/>
+  <rect x="100" y="265" width="138" height="31" rx="6" fill="none" stroke="var(--before-firm, #8C8880)" stroke-width="10"/><rect x="263" y="265" width="105" height="31" rx="6" fill="none" stroke="var(--before-firm, #8C8880)" stroke-width="10"/>
+  <path d="M66.4 293.4 L397.1 243.7 C 411.3 241.3, 415 263.2, 400.7 265.6 L71.8 326.2 C 52.1 329.5, 46.6 296.7, 66.4 293.4 Z" fill="var(--before-firm, #8C8880)"/>
+  <rect x="371" y="371" width="126" height="126" rx="12" fill="var(--paper, #FBF8F1)" stroke="var(--accent, #C4501A)" stroke-width="14"/><path d="M434 477.3L434 477.3Q426.4 477.3 420.6 475.5Q414.7 473.6 410.6 470.4Q406.5 467.1 404.4 462.6Q402.3 458.1 402.3 452.9L402.3 452.9Q402.3 444.7 407 439.7Q411.7 434.7 419 432.7L419 432.7L419 431.7Q412.8 429.5 408.8 424.8Q404.8 420.1 404.8 412.8L404.8 412.8Q404.8 408.0 406.8 403.9Q408.7 399.8 412.4 396.9Q416.1 393.9 421.5 392.3Q426.9 390.7 434 390.7L434 390.7Q441.0 390.7 446.4 392.3Q451.9 393.9 455.6 396.9Q459.3 399.8 461.2 403.9Q463.2 408.0 463.2 412.8L463.2 412.8Q463.2 420.1 459.2 424.8Q455.2 429.5 449 431.7L449 431.7L449 432.7Q456.3 434.7 461 439.7Q465.7 444.7 465.7 452.9L465.7 452.9Q465.7 458.1 463.6 462.6Q461.5 467.1 457.4 470.4Q453.3 473.6 447.4 475.5Q441.6 477.3 434 477.3ZM434 463.5L434 463.5Q440.2 463.5 443.5 460.7Q446.8 457.8 446.8 452.9L446.8 452.9L446.8 450.5Q446.8 445.4 443.6 442.6Q440.4 439.8 434 439.8L434 439.8Q427.6 439.8 424.4 442.6Q421.2 445.4 421.2 450.5L421.2 450.5L421.2 452.9Q421.2 457.8 424.5 460.7Q427.8 463.5 434 463.5ZM434 426.6L434 426.6Q440 426.6 443.1 423.8Q446.2 421.1 446.2 416.4L446.2 416.4L446.2 414.6Q446.2 409.9 443.1 407.2Q439.9 404.5 434 404.5L434 404.5Q428.1 404.5 424.9 407.2Q421.8 409.9 421.8 414.6L421.8 414.6L421.8 416.4Q421.8 421.1 424.9 423.8Q428 426.6 434 426.6Z" fill="var(--accent, #C4501A)"/>
+</svg>
