@@ -67,7 +67,7 @@ Rekindle depends on these parts of the Qloo API:
 - `/search` and `/v2/tags` at intake ([`/cases/new`](https://rekindle-one.vercel.app/cases/new)).
 
 <!-- arch:qloo:start -->
-The plan loop (every plan, re-plan, swap and toggle) can send up to 16 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (20 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
+The plan loop (every plan, re-plan, swap and toggle) can send up to 15 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (19 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
 <!-- arch:qloo:end -->
 
 The Qloo requests behind the latest plans (or any one plan, via `/integrations/qloo?plan=<id>`) are shown on [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo), without the key. Intake lookups (`/search`, `/v2/tags`) are not logged there.

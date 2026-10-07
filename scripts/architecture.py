@@ -93,16 +93,19 @@ def doc_comment_raw(src: str) -> str:
 
 def tools() -> list[str]:
     src = (ROOT / "lib" / "agent.ts").read_text()
-    names = re.findall(r"^\s+(\w+): tool\(\{", src, re.M)
+    names = list(dict.fromkeys(re.findall(r"^\s+(\w+): tool\(\{", src, re.M)))
     return [f"Tools offered to the model (`lib/agent.ts`): {', '.join(f'`{n}`' for n in names)}."]
 
 
 # what each QlooClient method sends besides the params a caller passes (lib/qloo.ts)
-METHOD = {"insights": ("/v2/insights", set()), "entities": ("/entities", {"entity_ids"}), "search": ("/search", {"query", "types", "take"}), "tags": ("/v2/tags", {"filter.query", "take"})}
+METHOD = {"insights": ("/v2/insights", set()), "entities": ("/entities", {"entity_ids"}), "search": ("/search", {"query", "types"}), "tags": ("/v2/tags", {"filter.query"})}
+# pagination / page-size keys are transport, not product depth: the same rule as lib/receipts.ts NOT_PRODUCT, so the
+# counts here and on /integrations/qloo use one definition (QA round 3: `take` was counted here and not there)
+TRANSPORT = {"take", "page", "offset"}
 # the judged loop: plan, re-plan, swap, constraint toggle (what /integrations/qloo shows)
 PRODUCT = ["plan.ts", "replan.ts", "gate.ts", "agent.ts", "service.ts"]
 # intake (/api/resolve), health (/api/health) and the bench-only venue grader (/api/verify-venue)
-OTHER = ["resolve.ts", "health.ts", "venue.ts"]
+OTHER = ["resolve.ts", "intake.ts", "health.ts", "venue.ts"]
 
 
 def surface(files: list[str]) -> tuple[set[str], set[str]]:
@@ -114,12 +117,10 @@ def surface(files: list[str]) -> tuple[set[str], set[str]]:
         if not calls:
             continue
         params |= set(re.findall(r'"((?:filter|signal|feature|output|operator|bias|diversify)\.[a-z_.]+)"', src))
-        if re.search(r"\btake\b\s*[:=]", src):
-            params.add("take")
         for c in calls:
             endpoints.add(METHOD[c][0])
             params |= METHOD[c][1]
-    return params, endpoints
+    return params - TRANSPORT, endpoints
 
 
 def qloo_surface() -> dict:
@@ -138,9 +139,9 @@ def qloo_params() -> list[str]:
     return [
         f"Plan loop (plan, re-plan, swap, constraint toggle; `lib/plan.ts`, `lib/gate.ts`): {len(pp)} distinct Qloo parameters to {ticks(pe)}: {ticks(pp)}.",
         "",
-        f"Intake (`lib/resolve.ts`), health (`lib/health.ts`) and the bench-only venue grader (`lib/venue.ts`) add {ticks(oe) or 'no endpoint'} and {len(op)} more parameters: {ticks(op)}.",
+        f"Intake (`lib/resolve.ts`, `lib/intake.ts`), health (`lib/health.ts`) and the bench-only venue grader (`lib/venue.ts`) add {ticks(oe) or 'no endpoint'} and {len(op)} more parameters: {ticks(op)}.",
         "",
-        f"In all: {len(ap)} distinct parameters to {len(ae)} endpoints ({ticks(ae)}).",
+        f"In all: {len(ap)} distinct parameters to {len(ae)} endpoints ({ticks(ae)}). Page-size and pagination keys (`take`, `page`, `offset`) are not counted, here or on /integrations/qloo.",
     ]
 
 
