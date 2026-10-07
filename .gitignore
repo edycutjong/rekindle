@@ -38,3 +38,13 @@ graphify-out/
 
 # blind-audit answer key: kitchen only until the external audit returns (scripts/manual_audit.py)
 bench/manual_audit_key.csv
+
+# generated media stays in the project kitchen (root-anchored: docs/assets/ IS tracked, README art)
+/assets/
+
+# Playwright
+/blob-report/
+/playwright/.cache/
+
+# Lighthouse CI
+.lighthouseci/
