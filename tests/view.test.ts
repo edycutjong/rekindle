@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
+import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -205,5 +205,16 @@ describe("constraint toggle notice (QA round 1: widen copy)", () => {
     expect(toggleNotice(before, caseA, after(["monday"], { struck: 2, refilled: 2, ms: 3000 }), { ...caseA, in_recovery: true })).toBe("2 outings struck in place and 2 slots refilled live · 3.0 s");
     expect(toggleNotice(before, caseA, after(["monday"], { struck: 0, refilled: 0, ms: 500 }), { ...caseA, in_recovery: true })).toBe("Every placed outing still passes the new constraint (0.5 s).");
     expect(toggleNotice(before, caseA, before, caseA)).toBe("No change to the week.");
+  });
+});
+
+describe("REVIEW boxes (QA round 1: the same venue twice)", () => {
+  it("dedupes review items by entity across the week (first day wins) and drops one already placed", () => {
+    const r = (id: string, day: CardDoc["day_name"], d: number) => ({ qloo_entity_id: id, day_name: day, day: d, name: id }) as unknown as CardDoc;
+    const plan = { cards: [{ qloo_entity_id: "PLACED" }] as unknown as CardDoc[], review: [r("VL", "sunday", 6), r("VL", "saturday", 5), r("VL", "sunday", 6), r("VL2", "sunday", 6), r("PLACED", "friday", 4)] };
+    const by = reviewsByDay(plan);
+    expect(by.saturday.map((x) => x.qloo_entity_id)).toEqual(["VL"]);
+    expect(by.sunday.map((x) => x.qloo_entity_id)).toEqual(["VL2"]);
+    expect(by.friday).toEqual([]);
   });
 });

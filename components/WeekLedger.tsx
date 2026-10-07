@@ -73,6 +73,7 @@ function DayColumn({ d }: { d: DayView }) {
         <div key={r.id} className={s.review} data-testid="review">
           <div className={s.rung}>review · clinician decides</div>
           <div className={s.sname}>{r.name}</div>
+          {r.address && <div className={s.addr}>{r.address}</div>}
           <div className={s.reason}>{r.checks.filter((x) => x.verdict === "REVIEW").map((x) => `${x.rule} · ${x.detail}`).join(" · ")}</div>
         </div>
       ))}

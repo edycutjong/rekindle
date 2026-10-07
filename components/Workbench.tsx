@@ -10,7 +10,7 @@ import type { CardAction } from "@/lib/gate";
 import type { ConstraintPatch } from "@/lib/service";
 import type { CaseDoc, PlanDoc } from "@/lib/store";
 import { DAYS, type DayName } from "@/lib/verify";
-import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, stampLabel, strikesByDay, swapNotice, toggleNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
+import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, reviewsByDay, stampLabel, strikesByDay, swapNotice, toggleNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
 import { AgentTrace } from "./AgentTrace";
 import { CaseStrip } from "./CaseStrip";
 import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
@@ -255,6 +255,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
 
   const days: DayView[] = useMemo(() => {
     const strikes = plan ? strikesByDay(plan) : null;
+    const reviews = plan ? reviewsByDay(plan) : null;
     return DAYS.map((day) => {
       const card = plan?.cards.find((x) => x.day_name === day) ?? null;
       const empty = plan?.empty_slots.find((x) => x.day_name === day) ?? null;
@@ -267,7 +268,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         partial: plan ? null : (streamed.cards[day] ?? null),
         empty: plan ? (empty?.reason ?? null) : (streamed.empty[day] ?? null),
         strikes: strikes?.[day] ?? [],
-        review: plan?.review.filter((r) => r.day_name === day) ?? [],
+        review: reviews?.[day] ?? [],
         pending: !plan && phase === "streaming",
         recheck: phase === "toggling" && !!card && card.rung !== "home",
         fresh,

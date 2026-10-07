@@ -90,6 +90,22 @@ export function strikesByDay(plan: Pick<PlanDoc, "refusals" | "cards">): Record<
   return out;
 }
 
+/**
+ * REVIEW boxes per day, deduplicated across the week by entity_id (the same venue can be screened on two days, and the
+ * social fallback ladder can see it twice) and never one that is already placed as a card. First day wins.
+ */
+export function reviewsByDay(plan: Pick<PlanDoc, "review" | "cards">): Record<DayName, CardDoc[]> {
+  const out = Object.fromEntries(DAYS.map((d) => [d, [] as CardDoc[]])) as Record<DayName, CardDoc[]>;
+  const placed = new Set(plan.cards.map((c) => c.qloo_entity_id));
+  const seen = new Set<string>();
+  for (const r of [...plan.review].sort((a, b) => a.day - b.day)) {
+    if (placed.has(r.qloo_entity_id) || seen.has(r.qloo_entity_id)) continue;
+    seen.add(r.qloo_entity_id);
+    out[r.day_name].push(r);
+  }
+  return out;
+}
+
 /** Long rule details (R-ALC can list a dozen tags) are cut to the first two items; the full text goes in a title. */
 export function shortDetail(detail: string, max = 2): string {
   const items = detail.split(", ");
