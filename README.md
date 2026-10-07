@@ -132,7 +132,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Tests named for the defect they pin | 36 (probes P8–P23, bench B5 / D9, QA rounds 1–3, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 92.7% lines · 79.9% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
-| Lighthouse (/, /judge, /cases/new, desktop) | 100 performance · 100 accessibility · 100 best practices · 100 SEO (local run, 2026-10-07) | `lighthouserc.json` |
+| Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO across the last two CI runs (cdb9070: 100 on all three pages; 6672043: performance 97 on /) | CI Stage 5, [run 37659782037](https://github.com/edycutjong/rekindle/actions/runs/37659782037) (thresholds in `lighthouserc.json`; accessibility < 0.9 fails) |
 | Plan latency, hosted | p50 17.43 s · p95 20.61 s (bench run; it predates later plan-path changes, see the caveat under The number) | `bench/results.json` |
 
 ### Attacks defeated
