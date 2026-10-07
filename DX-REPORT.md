@@ -5,8 +5,9 @@ What we ran into while building Rekindle on the Qloo hackathon API, each with a 
 - **Created:** 2026-10-07 13:32 UTC. **Send-by for the Discord #api-help post (finding 1):** 2026-10-19.
 - **Discord #api-help message:** not posted yet. A person on the team posts it; the link goes here once it exists.
 - **Evidence:** every number below comes from one run of [`scripts/dx-repro.ts`](scripts/dx-repro.ts), saved as
-  [`spike/dx-repro.json`](spike/dx-repro.json) (run 2026-10-07T13:32Z), unless the line names another committed file.
-  Finding 8 uses [`bench/results.json`](bench/results.json).
+  [`spike/dx-repro.json`](spike/dx-repro.json) (run 2026-10-07T15:05Z; findings 1–7 match the first run at 13:32Z),
+  unless the line names another committed file. Finding 8 is read live from `/entities` by the same script and matches
+  the capture [`fixtures/qloo_captured/2026-10-07-maya-thu-recovery-on-14tags.json`](fixtures/qloo_captured/2026-10-07-maya-thu-recovery-on-14tags.json).
 - **Host:** `https://hackathon.api.qloo.com`, header `X-Api-Key`. All calls are GET.
 
 ```bash
@@ -25,7 +26,7 @@ Shared parameters used below: `$SIG` = `signal.interests.entities=AFBC71A7-9439-
 | 5 | `filter.location.query` treats "Brooklyn" as a loose area | Correctness | WKT `POINT` + `filter.location.radius` |
 | 6 | Response shapes differ between endpoints | Friction | Normalise in `lib/qloo.ts` |
 | 7 | Explainability lists entity signals only, never tag signals | Friction | Tag-driven picks are explained by tag membership |
-| 8 | Butchers carry the generic `restaurant` category | Correctness | R-KIND refuses `butcher_shop` |
+| 8 | Butchers carry the generic `genre:place:restaurant` tag | Correctness | R-KIND reads the `category:place:` slugs and refuses `butcher_shop` |
 
 ## 1. Heatmap locality boundary returns 500
 
@@ -109,10 +110,21 @@ curl -G https://hackathon.api.qloo.com/search -H "X-Api-Key: $QLOO_API_KEY" \
   The D1 spike measured that change: Japanese or ramen places in the top 10 went from 0 to 4 (`spike/qloo-spike.json`, I3).
 - **Effect on us:** a card's "because" line shows the per-love weights for entity loves. A pick driven by a tag love is explained by the place carrying that tag, which is a deterministic check and not a Qloo weight.
 
-## 8. Butchers carry the generic `restaurant` category
+## 8. Butchers carry the generic `genre:place:restaurant` tag
 
-- The Meat Hook and Marlow & Daughters (butchers) carry `urn:tag:category:place:restaurant` (D1 capture, `fixtures/qloo_captured/`).
-- **Effect on us:** R-KIND treats a bare `restaurant` category as not enough, and refuses `butcher_shop` / `meat_products_store` even when another category passes.
+```bash
+curl -G https://hackathon.api.qloo.com/entities -H "X-Api-Key: $QLOO_API_KEY" \
+  --data-urlencode "entity_ids=012DAD9B-33CE-4251-AB15-AB2CB702C920,F22DCC94-6BC4-47C9-BE4C-E65E0C4A10B9"
+```
+
+- **Observed:** The Meat Hook and Marlow & Daughters (butchers) both carry `urn:tag:genre:place:restaurant` and
+  `urn:tag:genre:place:restaurant:butcher_shop`. Their `category:place:` tags say shop: The Meat Hook
+  `meat_products_store`, `fruit_and_vegetable_store`, `butcher_shop`; Marlow & Daughters `grocery_store`, `butcher_shop`.
+  Neither carries `urn:tag:category:place:restaurant` (`spike/dx-repro.json` → `F8_shop_restaurant_genre`).
+- So a "restaurant" signal or filter on the genre tag returns shops. Both butchers came back to a Thursday outing query
+  for Maya's loves (the capture above).
+- **Effect on us:** R-KIND decides by the `category:place:` slugs, not by the restaurant genre, and refuses
+  `butcher_shop` / `meat_products_store` even when another category passes.
   Since B6 it also refuses any drinking-establishment category (`bar`, `beer_hall`, `brewery`…) for every case, after the bench placed "TeKu Tavern + Café" (`cafe` + `bar` + `beer_hall`) for a profile not in recovery.
 
 ## What worked well

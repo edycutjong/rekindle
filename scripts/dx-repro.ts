@@ -18,6 +18,9 @@ const OUT = process.argv.includes("--out") ? process.argv[process.argv.indexOf("
 const BRIDGERS = "AFBC71A7-9439-4AB0-AB68-D14B11AAF836";
 const FLEABAG = "878680F2-2C8D-4D7A-8288-BEA75D38A843";
 const RAMEN = "urn:tag:genre:place:restaurant:ramen";
+/** the two butchers in the Maya captures (fixtures/qloo_captured/2026-10-07-maya-thu-recovery-on-14tags.json) */
+const MEAT_HOOK = "012DAD9B-33CE-4251-AB15-AB2CB702C920";
+const MARLOW = "F22DCC94-6BC4-47C9-BE4C-E65E0C4A10B9";
 const WILLIAMSBURG = "POINT(-73.9571 40.7081)";
 
 async function get(path: string, params: Record<string, string | number>) {
@@ -108,6 +111,17 @@ async function main() {
   // F7: explainability names entity signals only — a tag signal never appears in the per-input split
   const ex = ents((await get("/v2/insights", maya)).body)[0] as unknown as { query?: { explainability?: Record<string, unknown> } } | undefined;
   out.F7_explainability = { keys: Object.keys(ex?.query?.explainability ?? {}), has_tag_input: JSON.stringify(ex?.query?.explainability ?? {}).includes(RAMEN) };
+
+  // F8: shops in the restaurant genre — the butchers carry the generic genre tag `genre:place:restaurant` (plus
+  // `genre:place:restaurant:butcher_shop`), while their categories say shop; read live from /entities
+  const butchers = ents((await get("/entities", { entity_ids: [MEAT_HOOK, MARLOW].join(",") })).body);
+  const tagIds = (e: QlooEntity) => (e.tags ?? []).map((x) => String((x as { id?: string; tag_id?: string }).id ?? (x as { tag_id?: string }).tag_id ?? ""));
+  out.F8_shop_restaurant_genre = butchers.map((e) => ({
+    name: e.name,
+    categories: tagIds(e).filter((x) => x.startsWith("urn:tag:category:place:")).map((x) => x.slice("urn:tag:category:place:".length)),
+    restaurant_genre_tags: tagIds(e).filter((x) => x.startsWith("urn:tag:genre:place:restaurant")),
+    has_category_restaurant: tagIds(e).includes("urn:tag:category:place:restaurant"),
+  }));
 
   const json = JSON.stringify(out, null, 1);
   if (OUT) writeFileSync(OUT, json + "\n");

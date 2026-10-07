@@ -1,6 +1,6 @@
 {
  "generated_by": "scripts/dx-repro.ts",
- "at": "2026-10-07T13:32:36.714Z",
+ "at": "2026-10-07T15:05:24.342Z",
  "base": "https://hackathon.api.qloo.com",
  "F1_heatmap_locality": {
   "locality": {
@@ -211,5 +211,32 @@
    "signal.interests.entities"
   ],
   "has_tag_input": false
- }
+ },
+ "F8_shop_restaurant_genre": [
+  {
+   "name": "The Meat Hook",
+   "categories": [
+    "meat_products_store",
+    "fruit_and_vegetable_store",
+    "butcher_shop"
+   ],
+   "restaurant_genre_tags": [
+    "urn:tag:genre:place:restaurant",
+    "urn:tag:genre:place:restaurant:butcher_shop"
+   ],
+   "has_category_restaurant": false
+  },
+  {
+   "name": "Marlow & Daughters",
+   "categories": [
+    "grocery_store",
+    "butcher_shop"
+   ],
+   "restaurant_genre_tags": [
+    "urn:tag:genre:place:restaurant",
+    "urn:tag:genre:place:restaurant:butcher_shop"
+   ],
+   "has_category_restaurant": false
+  }
+ ]
 }
