@@ -5,6 +5,7 @@
  *                  signal.interests.tags
  *   pleasure ≤ 3 → the entity goes to filter.exclude.entities (and R-HIST); its distinctive genre tags (not shared
  *                  with any ≥ 7 card) go to filter.exclude.tags
+ *   clinician strike (swapped out / removed at the gate) → filter.exclude.entities (and R-HIST) in every later week
  *   mastery is recorded and shown; it does not change Qloo signals.
  */
 import type { Card, PlanHistory, WeekPlan } from "./plan";
@@ -21,7 +22,7 @@ export function specificGenreTags(tags: readonly string[]): string[] {
   return tags.filter((t) => t.startsWith("urn:tag:genre:place:") && t !== "urn:tag:genre:place:restaurant").sort((a, b) => b.split(":").length - a.split(":").length);
 }
 
-export function historyFromRatings(prevHistory: PlanHistory, cards: readonly Card[], ratings: readonly Rating[]): PlanHistory {
+export function historyFromRatings(prevHistory: PlanHistory, cards: readonly Card[], ratings: readonly Rating[], struck: readonly string[] = []): PlanHistory {
   const byId = new Map(cards.map((c) => [c.entity_id, c]));
   const high = ratings.filter((r) => r.pleasure >= 7).map((r) => byId.get(r.entity_id)).filter((c): c is Card => !!c);
   const low = ratings.filter((r) => r.pleasure <= 3).map((r) => byId.get(r.entity_id)).filter((c): c is Card => !!c);
@@ -33,6 +34,8 @@ export function historyFromRatings(prevHistory: PlanHistory, cards: readonly Car
     lowRated: [...new Set([...prevHistory.lowRated, ...low.map((c) => c.entity_id)])],
     excludeTags: [...new Set([...prevHistory.excludeTags, ...excludeTags])],
     signalTags: [...new Set([...prevHistory.signalTags, ...signalTags])].filter((t) => !excludeTags.includes(t)),
+    // the clinician's own refusals (swap / remove) are remembered: never brought back by a later week
+    struck: [...new Set([...(prevHistory.struck ?? []), ...struck])].filter((id) => !high.some((c) => c.entity_id === id)),
   };
 }
 

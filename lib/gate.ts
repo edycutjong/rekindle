@@ -179,7 +179,8 @@ export async function replanWeek(o: Omit<RunPlanOptions, "caseId"> & { planId: s
   const ratings = ratingsOf(parent);
   const c = await o.store.getCase(parent.case_id);
   if (!c) throw new NotFound(`case ${parent.case_id} not found`);
-  const history = historyFromRatings(parent.history, parent.cards.map(cardFromDoc), ratings);
+  const struck = parent.refusals.filter((r) => r.by_clinician).map((r) => r.qloo_entity_id);
+  const history = historyFromRatings(parent.history, parent.cards.map(cardFromDoc), ratings, struck);
   const calls: QlooCallLog[] = [];
   const onCall = (l: QlooCallLog) => {
     calls.push(l);

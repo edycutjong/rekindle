@@ -111,9 +111,15 @@ export interface PlanHistory {
   excludeTags: string[];
   /** extra tag signals from ≥ 7 places */
   signalTags: string[];
+  /** entities the clinician swapped out or removed in an earlier week → filter.exclude.entities + R-HIST */
+  struck?: string[];
 }
 
-export const EMPTY_HISTORY: PlanHistory = { rekindled: [], lowRated: [], excludeTags: [], signalTags: [] };
+export const EMPTY_HISTORY: PlanHistory = { rekindled: [], lowRated: [], excludeTags: [], signalTags: [], struck: [] };
+
+/** Everything a week must never bring back: rated ≤ 3, or struck by the clinician in an earlier week. */
+export const excludedIds = (h: PlanHistory) => [...h.lowRated, ...(h.struck ?? [])];
+const histSets = (h: PlanHistory) => ({ lowRated: new Set(h.lowRated), struck: new Set(h.struck ?? []) });
 
 /* ------------------------------------------------------------------ ladder */
 
@@ -168,7 +174,7 @@ export function outingParams(c: CaseRow, day: DayName, h: PlanHistory, o: Outing
     "filter.tags": requireTags,
     "operator.filter.tags": requireTags.length > 1 ? "intersection" : undefined,
     "filter.exclude.tags": [...new Set(excludeTags)],
-    "filter.exclude.entities": [...new Set([...h.lowRated, ...(o.excludeEntities ?? [])])],
+    "filter.exclude.entities": [...new Set([...excludedIds(h), ...(o.excludeEntities ?? [])])],
     "feature.explainability": true,
     take: 25,
   };
@@ -189,7 +195,7 @@ export function homeParams(c: CaseRow, type: HomeType, take: number, h: PlanHist
     "filter.type": `urn:entity:${type}`,
     "signal.interests.entities": s.entities,
     "signal.interests.tags": s.tags.filter((t) => !t.includes(":place")), // place tags do not apply to media
-    "filter.exclude.entities": [...new Set([...h.lowRated, ...excludeEntities])],
+    "filter.exclude.entities": [...new Set([...excludedIds(h), ...excludeEntities])],
     "feature.explainability": true,
     take: Math.max(3, Math.min(10, take)),
   };
@@ -274,7 +280,7 @@ export async function findAtHome(ctx: ToolContext, slot: SlotSpec, type: HomeTyp
   list.forEach((e) => ctx.seen.add(e.entity_id));
   for (const e of list) {
     if (ctx.used.has(e.entity_id)) continue;
-    const v = verifyCard(e, { kind: "home", constraints: ctx.case, lowRated: new Set(ctx.history.lowRated), seenIds: ctx.seen });
+    const v = verifyCard(e, { kind: "home", constraints: ctx.case, ...histSets(ctx.history), seenIds: ctx.seen });
     if (v.verdict === "PASS") {
       ctx.used.add(e.entity_id);
       return { card: toCard(e, slot, slot.hour, "PASS", v.checks, names), refusals: [], review: [], returned: list.length };
@@ -294,13 +300,13 @@ export const MAX_REVIEW_PER_SLOT = 2;
  */
 function heldForReview(ctx: ToolContext, slot: SlotSpec, rest: QlooEntity[], names: Map<string, string>, originForDistance: boolean | undefined, already: number): Card[] {
   const out: Card[] = [];
-  const lowRated = new Set(ctx.history.lowRated);
+  const hist = histSets(ctx.history);
   for (const e of rest) {
     if (already + out.length >= MAX_REVIEW_PER_SLOT) break;
     if (ctx.used.has(e.entity_id)) continue;
     const distance = originForDistance && e.location ? haversine(ctx.case.lat, ctx.case.lon, e.location.lat, e.location.lon) : e.query?.distance;
     const ent: QlooEntity = distance !== undefined ? { ...e, query: { ...e.query, distance } } : e;
-    const v = verifyCard(ent, { kind: "outing", constraints: ctx.case, lowRated, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen, slot: { day: slot.day, hour: slot.hour } });
+    const v = verifyCard(ent, { kind: "outing", constraints: ctx.case, ...hist, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen, slot: { day: slot.day, hour: slot.hour } });
     if (v.verdict === "REVIEW") out.push(toCard(ent, slot, slot.hour, "REVIEW", v.checks, names, distance));
   }
   return out;
@@ -319,13 +325,13 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
   ctx.onPool?.({ day: slot.day, hour: slot.hour, rung: slot.rung, entities: list });
   const refusals: Refusal[] = [];
   const review: Card[] = [];
-  const lowRated = new Set(ctx.history.lowRated);
+  const hist = histSets(ctx.history);
   for (const e of list) {
     if (ctx.used.has(e.entity_id)) continue;
     // distance from the patient's point, not from a heatmap cell centre
     const distance = o.originForDistance && e.location ? haversine(ctx.case.lat, ctx.case.lon, e.location.lat, e.location.lon) : e.query?.distance;
     const ent: QlooEntity = distance !== undefined ? { ...e, query: { ...e.query, distance } } : e;
-    const base = { kind: "outing" as const, constraints: ctx.case, lowRated, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen };
+    const base = { kind: "outing" as const, constraints: ctx.case, ...hist, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen };
     const v = verifyCard(ent, { ...base, slot: { day: slot.day, hour: slot.hour } });
     if (v.verdict === "PASS") {
       ctx.used.add(e.entity_id);

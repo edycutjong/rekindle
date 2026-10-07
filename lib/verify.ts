@@ -12,7 +12,7 @@
  *   R-KIND   the place is a behavioural-activation activity category (museum, park, café, restaurant, studio…)
  *   R-QUIET  need_quiet → carries noise_level:qloo:quiet
  *   R-ACCESS need_wheelchair → carries accessibility:place:wheelchair_accessible_entrance
- *   R-HIST   not previously rated ≤ 3
+ *   R-HIST   not previously rated ≤ 3, and not swapped out / removed by the clinician in an earlier week
  */
 import type { DayHours, QlooEntity, WeekHours } from "./qloo";
 import { ALCOHOL_EXCLUDE_14, TAG_QUIET, TAG_WHEELCHAIR } from "./tags";
@@ -48,6 +48,8 @@ export interface VerifyOptions {
   slot?: Slot; // required for outings
   /** entity IDs the patient rated ≤ 3 */
   lowRated?: ReadonlySet<string>;
+  /** entity IDs the clinician swapped out or removed in an earlier week (the gate's refusals are remembered) */
+  struck?: ReadonlySet<string>;
   /** entity IDs Qloo returned in this run; when given, R-ID also requires membership */
   seenIds?: ReadonlySet<string>;
   /** bench ablation only: false disables R-ALC's screen (all other rules stay on) */
@@ -388,6 +390,7 @@ export function verifyCard(e: QlooEntity, opts: VerifyOptions): VerifyResult {
 
   // R-HIST
   if (e?.entity_id && opts.lowRated?.has(e.entity_id)) push("R-HIST", "REFUSE", "rated ≤3 before");
+  else if (e?.entity_id && opts.struck?.has(e.entity_id)) push("R-HIST", "REFUSE", "removed by the clinician before");
   else push("R-HIST", "PASS", "not rated low");
 
   if (opts.kind === "outing") {

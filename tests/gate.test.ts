@@ -6,6 +6,11 @@ import type { QlooCallLog, QlooClient, QlooParams } from "../lib/qloo";
 import { caseFromSeed, runPlanForCase, toggleConstraints } from "../lib/service";
 import { MemoryStore, PlanDoc, storeFromEnv, type Store } from "../lib/store";
 import { replayClient } from "./replay";
+import { captured } from "./fixtures";
+import { verifyCard } from "../lib/verify";
+import type { QlooEntity } from "../lib/qloo";
+
+const ALL_CAPTURED = new Map<string, QlooEntity>(["maya-thu-recovery-off", "athome-artist", "athome-podcast", "athome-book", "athome-tv_show"].flatMap((n) => captured(n).map((e) => [e.entity_id, e] as const)));
 import { PATCH as cardRoute } from "../app/api/plans/[id]/cards/[cardId]/route";
 import { POST as approveRoute } from "../app/api/plans/[id]/approve/route";
 import { POST as ratingsRoute } from "../app/api/plans/[id]/ratings/route";
@@ -189,6 +194,30 @@ describe("clinician gate (lib/gate.ts)", () => {
     expect(seen.length).toBe(n);
     // ratings on the re-planned week are locked
     await expect(rateWeek({ store: r.store, planId: r.plan.id, ratings: [{ card_id: r.home[0].id, pleasure: 1, mastery: 1 }] })).rejects.toThrow(/locked/);
+  });
+
+  it("the clinician's own refusals are remembered: a card swapped out or removed in week 1 never returns in week 2 (QA round 1)", async () => {
+    const store = new MemoryStore();
+    const { plan: w1 } = await mayaWeek(store);
+    const solo = w1.cards.find((c) => c.rung === "solo")!;
+    const home = w1.cards.find((c) => c.rung === "home")!;
+    await actOnCard({ store, planId: w1.id, cardId: solo.id, action: "swap", qloo: loggingReplay() });
+    await actOnCard({ store, planId: w1.id, cardId: home.id, action: "remove" });
+    const approved = await approveWeek({ store, planId: w1.id });
+    const cards = [...approved.cards].sort((a, b) => b.affinity - a.affinity);
+    await rateWeek({ store, planId: w1.id, ratings: cards.slice(0, 3).map((c, i) => ({ card_id: c.id, pleasure: [8, 5, 2][i], mastery: 4 })) });
+    const seen: QlooParams[] = [];
+    const { plan: w2 } = await replanWeek({ store, planId: w1.id, qloo: loggingReplay(seen), llms: [downLlm()] });
+    expect(w2.history.struck).toEqual(expect.arrayContaining([solo.qloo_entity_id, home.qloo_entity_id]));
+    // sent to Qloo as exclusions on every place and at-home request…
+    const asked = seen.filter((p) => p["filter.type"] !== "urn:heatmap");
+    expect(asked.length).toBeGreaterThan(0);
+    for (const p of asked) expect(String(p["filter.exclude.entities"] ?? "")).toContain(solo.qloo_entity_id);
+    // …and refused by the verifier even if Qloo ignored them (the at-home replay does)
+    expect(w2.cards.map((c) => c.qloo_entity_id)).not.toContain(solo.qloo_entity_id);
+    expect(w2.cards.map((c) => c.qloo_entity_id)).not.toContain(home.qloo_entity_id);
+    const e = ALL_CAPTURED.get(home.qloo_entity_id)!;
+    expect(verifyCard(e, { kind: "home", constraints: { maxMeters: 1500, priceMax: 2, inRecovery: false, needQuiet: false, needWheelchair: false }, struck: new Set([home.qloo_entity_id]) }).reasons).toEqual([{ rule: "R-HIST", verdict: "REFUSE", detail: "removed by the clinician before" }]);
   });
 
   it("removing a week-2 card refreshes its diff (it no longer counts as added)", async () => {

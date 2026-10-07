@@ -139,6 +139,7 @@ export const PlanDoc = z.object({
     lowRated: z.array(z.string()),
     excludeTags: z.array(z.string()),
     signalTags: z.array(z.string()),
+    struck: z.array(z.string()).default([]),
   }),
   cards: z.array(CardDoc),
   empty_slots: z.array(z.object({ day_name: day, hour: z.number().int(), rung, reason: z.string(), routed_by: z.string().optional() })),
