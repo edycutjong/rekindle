@@ -82,6 +82,8 @@ export interface Refusal {
   movedTo?: number;
   /** struck from an existing week by a constraint toggle */
   struckByToggle?: boolean;
+  /** struck by the clinician gate (swap / remove), not by a verifier rule */
+  byClinician?: "swapped" | "removed";
 }
 
 export interface SlotOutcome {

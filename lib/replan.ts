@@ -8,6 +8,7 @@
  *   mastery is recorded and shown; it does not change Qloo signals.
  */
 import type { Card, PlanHistory, WeekPlan } from "./plan";
+import type { DayName } from "./verify";
 
 export interface Rating {
   entity_id: string;
@@ -36,11 +37,15 @@ export function historyFromRatings(prevHistory: PlanHistory, cards: readonly Car
 }
 
 export interface ReplanDiff {
-  kept: { day: string; name: string }[];
-  added: { day: string; name: string; because: { name: string; score: number }[] }[];
-  removed: { day: string; name: string; reason: string }[];
-  /** week-2 cards whose explainability names a rekindled (≥ 7) entity */
-  ember: { from: string; to: string; day: string; score: number }[];
+  kept: { day: DayName; name: string }[];
+  added: { day: DayName; name: string; because: { name: string; score: number }[] }[];
+  removed: { day: DayName; name: string; reason: string }[];
+  /**
+   * Week-2 cards whose explainability names a rekindled (≥ 7) entity. Qloo spreads explainability across every signal
+   * entity, so almost every week-2 card names every rekindled entity; `top` marks the stronger claim — the rekindled
+   * entity is that card's highest-weighted input. The UI draws an ember thread only for `top` links.
+   */
+  ember: { from: string; from_id: string; to: string; to_id: string; day: DayName; score: number; top: boolean }[];
 }
 
 export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory): ReplanDiff {
@@ -52,7 +57,11 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory): ReplanDif
     if (!s.card) continue;
     if (ids1.has(s.card.entity_id)) out.kept.push({ day: s.slot.day, name: s.card.name });
     else out.added.push({ day: s.slot.day, name: s.card.name, because: s.card.why.map((w) => ({ name: w.name, score: w.score })) });
-    for (const w of s.card.why) if (rek.has(w.entity_id) && w.score > 0) out.ember.push({ from: rek.get(w.entity_id)!, to: s.card.name, day: s.slot.day, score: w.score });
+    const best = Math.max(0, ...s.card.why.map((w) => w.score));
+    for (const w of s.card.why) {
+      if (!rek.has(w.entity_id) || w.score <= 0) continue;
+      out.ember.push({ from: rek.get(w.entity_id)!, from_id: w.entity_id, to: s.card.name, to_id: s.card.entity_id, day: s.slot.day, score: w.score, top: w.score === best });
+    }
   }
   for (const s of w1.slots) {
     if (!s.card || ids2.has(s.card.entity_id)) continue;

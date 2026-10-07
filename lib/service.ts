@@ -7,7 +7,8 @@ import { runAgent, templateCoaching, type AgentEvent } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
-import { callsDoc, CaseDoc, caseRowFromDoc, newId, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type PlanDoc, type Store } from "./store";
+import { diffWeeks } from "./replan";
+import { callsDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type Store } from "./store";
 
 export interface SeedProfile {
   slug: string;
@@ -113,12 +114,21 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
   const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history);
   const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
-  const doc = planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) });
+  const doc = await refreshDiff(o.store, planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) }));
   await o.store.putCase(next);
   await o.store.putPlan(doc);
   const merged = callsDoc(doc.id, calls);
   await o.store.putCalls({ plan_id: doc.id, calls: [...prior, ...merged.calls] });
   return { plan: doc, case: next };
+}
+
+/** Recompute a re-planned week's diff after its cards changed (clinician swap / remove, constraint toggle). */
+export async function refreshDiff(store: Store, plan: PlanDoc): Promise<PlanDoc> {
+  if (!plan.diff) return plan;
+  const from = await store.getPlan(plan.diff.from_plan_id);
+  if (!from) return plan;
+  const d = diffWeeks(weekPlanFromDoc(from), weekPlanFromDoc(plan), plan.history);
+  return PlanDoc.parse({ ...plan, diff: { from_plan_id: from.id, ...d } });
 }
 
 export class NotFound extends Error {

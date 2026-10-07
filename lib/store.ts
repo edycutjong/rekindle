@@ -81,7 +81,8 @@ export const CardDoc = z.object({
   verdict,
   coaching: z.string().default(""),
   coaching_by: z.enum(["llm", "template"]).optional(),
-  routed_by: z.enum(["llm", "fallback", "toggle"]).default("llm"),
+  /** who placed the card: the LLM, the deterministic fallback, a constraint-toggle refill, or a clinician swap */
+  routed_by: z.enum(["llm", "fallback", "toggle", "swap"]).default("llm"),
   tool: z.string().optional(),
   tool_params: z.record(z.string(), z.unknown()).default({}),
   clinician_action: z.enum(["approved", "removed", "swapped"]).nullable().default(null),
@@ -102,8 +103,21 @@ export const RefusalDoc = z.object({
   hour: z.number().int(),
   moved_to: z.number().int().optional(),
   struck_by_toggle: z.boolean().optional(),
+  /** struck by the clinician gate (swap / remove), not by a verifier rule */
+  by_clinician: z.enum(["swapped", "removed"]).optional(),
 });
 export type RefusalDoc = z.infer<typeof RefusalDoc>;
+
+export const ReplanDiffDoc = z.object({
+  /** the rated week this one was re-planned from */
+  from_plan_id: z.string(),
+  kept: z.array(z.object({ day: day, name: z.string() })),
+  added: z.array(z.object({ day: day, name: z.string(), because: z.array(z.object({ name: z.string(), score: z.number() })) })),
+  removed: z.array(z.object({ day: day, name: z.string(), reason: z.string() })),
+  /** every week-2 card whose explainability names a rekindled (≥ 7) entity; `top` = it is that card's strongest input */
+  ember: z.array(z.object({ from: z.string(), from_id: z.string(), to: z.string(), to_id: z.string(), day: day, score: z.number(), top: z.boolean() })),
+});
+export type ReplanDiffDoc = z.infer<typeof ReplanDiffDoc>;
 
 export const PlanDoc = z.object({
   id: z.string(),
@@ -136,6 +150,10 @@ export const PlanDoc = z.object({
   llm_errors: z.array(z.object({ provider: z.string(), error: z.string() })).default([]),
   /** how this week was produced: the agent run, or a constraint toggle applied to a parent plan */
   origin: z.enum(["agent", "toggle", "replan"]).default("agent"),
+  /** set on a rated week once it has been re-planned: the week that came from its ratings (one re-plan per week) */
+  next_plan_id: z.string().nullable().default(null),
+  /** re-plan diff against the rated week it came from (origin "replan", and toggles/swaps of that week) */
+  diff: ReplanDiffDoc.nullable().default(null),
   /** constraint toggle that produced this plan (origin "toggle") */
   toggle: z
     .object({ changed: z.record(z.string(), z.union([z.boolean(), z.number()])), struck: z.number().int(), refilled: z.number().int(), ms: z.number().int() })
@@ -278,6 +296,7 @@ export function planDocFromToggle(
     qloo_calls: o.calls,
     latency_ms: o.ms,
     origin: "toggle",
+    next_plan_id: null,
     toggle: { changed: o.changed, struck: o.struck, refilled: o.refilled, ms: o.ms },
     cards: w.slots.flatMap((s) => {
       if (!s.card) return [];
@@ -286,7 +305,7 @@ export function planDocFromToggle(
       return [cardToDoc(id, s.card, { coaching: o.coach(s.card), coaching_by: "template", routed_by: "toggle", tool: s.slot.rung === "social" ? "placeSocial" : "findOutings", tool_params: { day: s.slot.day } })];
     }),
     empty_slots: w.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: "toggle" })),
-    refusals: w.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}) })),
+    refusals: w.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}), ...(r.byClinician ? { by_clinician: r.byClinician } : {}) })),
     review: w.review.map((c) => cardToDoc(id, c, { routed_by: "toggle" })),
   });
 }
@@ -304,7 +323,7 @@ export function weekPlanFromDoc(d: PlanDoc): WeekPlan {
       const e = empties.get(dn)!;
       return { slot: { day: dn, hour: e.hour, rung: e.rung }, card: null, empty: e.reason };
     }),
-    refusals: d.refusals.map((r) => ({ day: r.day_name, hour: r.hour, entity_id: r.qloo_entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, ...(r.moved_to !== undefined ? { movedTo: r.moved_to } : {}), ...(r.struck_by_toggle ? { struckByToggle: true } : {}) })),
+    refusals: d.refusals.map((r) => ({ day: r.day_name, hour: r.hour, entity_id: r.qloo_entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, ...(r.moved_to !== undefined ? { movedTo: r.moved_to } : {}), ...(r.struck_by_toggle ? { struckByToggle: true } : {}), ...(r.by_clinician ? { byClinician: r.by_clinician } : {}) })),
     review: d.review.map(cardFromDoc),
     calls: [],
   };
