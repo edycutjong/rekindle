@@ -53,7 +53,7 @@ async function readSse(res: Response, on: (event: string, data: unknown) => void
   }
 }
 
-export function Workbench({ initialCase, initialPlan, previousPlan = null, fault = null }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null; fault?: "qloo_unreachable" | null }) {
+export function Workbench({ initialCase, initialPlan, previousPlan = null, fault = null, canEdit = true }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null; fault?: "qloo_unreachable" | null; canEdit?: boolean }) {
   const [c, setCase] = useState(initialCase);
   const [plan, setPlan] = useState<PlanDoc | null>(initialPlan);
   /** the rated week this one was re-planned from (shown above the ledger with the ember threads) */
@@ -149,10 +149,11 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   }, [c.id, fault]);
 
   useEffect(() => {
-    if (initialPlan || started.current) return;
+    // another visitor's case is read-only: never start a run from here (the server would refuse it with a 403)
+    if (initialPlan || started.current || !canEdit) return;
     started.current = true;
     void run();
-  }, [initialPlan, run]);
+  }, [initialPlan, run, canEdit]);
 
   const toggle = useCallback(
     async (patch: ConstraintPatch) => {
@@ -260,7 +261,22 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
     if (saved) await run(saved);
   }, [saveRatings, run]);
 
-  const mode: "draft" | "rate" | "locked" | null = !plan ? null : plan.status === "draft" ? "draft" : plan.next_plan_id ? "locked" : "rate";
+  const weekMode: "draft" | "rate" | "locked" | null = !plan ? null : plan.status === "draft" ? "draft" : plan.next_plan_id ? "locked" : "rate";
+  // no card actions, toggles, ratings or re-plan on another visitor's case
+  const mode = canEdit ? weekMode : null;
+  const [copying, setCopying] = useState(false);
+  const copyCase = useCallback(async () => {
+    setCopying(true);
+    try {
+      const res = await fetch(`/api/cases/${c.id}/copy`, { method: "POST" });
+      const b = (await res.json().catch(() => ({}))) as { case?: { id: string }; error?: string };
+      if (!res.ok || !b.case) throw new Error(b.error ?? `HTTP ${res.status}`);
+      window.location.assign(`/cases/${b.case.id}`);
+    } catch (err) {
+      setFailure({ message: err instanceof Error ? err.message : String(err) });
+      setCopying(false);
+    }
+  }, [c.id]);
   const coverage = useMemo(() => (plan ? coverageRefusal(plan, c) : null), [plan, c]);
   const outage = useMemo(() => (plan ? outageState(plan) : null), [plan]);
   const threads = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards) : []), [plan, prev]);
@@ -312,7 +328,16 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
 
   return (
     <>
-      <CaseStrip c={c} week={plan?.week ?? (prev ? prev.week + 1 : 1)} disabled={phase !== "idle" || !plan || plan.status !== "draft"} onToggle={toggle} stamp={plan?.approved_at ? stampLabel(plan.approved_at) : null} />
+      <CaseStrip c={c} week={plan?.week ?? (prev ? prev.week + 1 : 1)} disabled={!canEdit || phase !== "idle" || !plan || plan.status !== "draft"} onToggle={toggle} stamp={plan?.approved_at ? stampLabel(plan.approved_at) : null} />
+      {!canEdit && (
+        <div className={s.notice} role="status" data-testid="read-only">
+          {plan ? "Read-only: this case belongs to another visitor (or was made before cases had owners), so its week cannot be changed here." : "Read-only: this case belongs to another visitor, and its week has not been planned yet."}{" "}
+          <button type="button" className={s.btn} onClick={() => void copyCase()} disabled={copying} data-testid="copy-case">
+            {copying ? "Copying…" : "Copy this case"}
+          </button>{" "}
+          plans a fresh week 1 for you from the same fictional intake.
+        </div>
+      )}
       {phase === "streaming" && (
         <p className={s.notice} role="status">
           {prev
@@ -396,7 +421,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       </div>
       <GateBar plan={plan} mode={mode} busy={phase !== "idle"} rated={plan ? ratedCount(plan.cards, pending) : 0} dirty={plan ? changedRatings(plan.cards, pending).length : 0} onApprove={approve} onSave={() => void saveRatings()} onReplan={() => void replan()} />
       <div className={s.bar}>
-        <span>{mode === "draft" || !mode ? "Draft week for clinician review." : "Approved by the clinician."} Fictional case: never enter a real patient&apos;s name.</span>
+        <span>{weekMode === "draft" || !weekMode ? "Draft week for clinician review." : "Approved by the clinician."} Fictional case: never enter a real patient&apos;s name.</span>
         {plan && (
           <span className={s.reason}>
             plan {plan.id.slice(0, 8)} · {plan.origin === "toggle" ? "constraint change" : plan.origin === "replan" ? `re-planned from week ${plan.week - 1}` : "agent run"} · {new Date(plan.created_at).toUTCString().slice(5, 22)} UTC

@@ -50,6 +50,9 @@ export const CaseDoc = z.object({
   is_seed: z.boolean().default(false),
   seed_slug: z.string().optional(),
   loves: z.array(LoveDoc).min(1).max(8),
+  /** SHA-256 of the creating browser's httpOnly `rk_owner` cookie (lib/owner.ts); absent = created before ownership,
+   *  read-only for everyone */
+  owner_hash: z.string().regex(/^[0-9a-f]{64}$/).optional(),
 });
 export type CaseDoc = z.infer<typeof CaseDoc>;
 

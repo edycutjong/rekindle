@@ -1,4 +1,5 @@
 import { errorResponse, json } from "@/lib/http";
+import { ownerForNewCase } from "@/lib/owner";
 import { guard } from "@/lib/ratelimit";
 import { caseFromSeed, SEEDS } from "@/lib/service";
 import { storeFor } from "@/lib/scope";
@@ -19,9 +20,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (!seeded) return json({ error: `unknown seed "${slug}"`, seeds: SEEDS.map((s) => s.slug) }, 404);
     const preset = new URL(req.url).searchParams.get("preset");
     if (preset && preset !== "recovery") return json({ error: `unknown preset "${preset}"` }, 400);
-    const doc = preset === "recovery" ? { ...seeded, in_recovery: true } : seeded;
+    const owner = ownerForNewCase(req);
+    const doc = { ...(preset === "recovery" ? { ...seeded, in_recovery: true } : seeded), owner_hash: owner.owner_hash };
     await storeFor(req).putCase(doc);
-    return json({ case: doc }, 201);
+    return json({ case: doc }, 201, owner.setCookie);
   } catch (e) {
     return errorResponse(e);
   }

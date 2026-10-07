@@ -5,6 +5,7 @@ import { makeLlm } from "../lib/llm";
 import type { QlooCallLog, QlooClient, QlooParams } from "../lib/qloo";
 import { caseFromSeed, runPlanForCase, toggleConstraints } from "../lib/service";
 import { MemoryStore, PlanDoc, storeFromEnv, type Store } from "../lib/store";
+import { ownerHash } from "../lib/owner";
 import { replayClient } from "./replay";
 import { captured } from "./fixtures";
 import { verifyCard } from "../lib/verify";
@@ -16,6 +17,7 @@ import { POST as replanRoute } from "../app/api/plans/[id]/replan/route";
 import { POST as casesRoute } from "../app/api/cases/route";
 import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
 import { POST as planRoute } from "../app/api/cases/[id]/plan/route";
+import { POST as copyRoute } from "../app/api/cases/[id]/copy/route";
 import { planRunState, RUN_STALE_MS } from "../lib/service";
 import { POST as constraintsRoute } from "../app/api/plans/[id]/constraints/route";
 
@@ -43,8 +45,12 @@ const loggingReplay =
     } as unknown as QlooClient;
   };
 
+/** the test visitor's rk_owner cookie; cases made by mayaWeek belong to it */
+const OWNER = "test-owner-token-0123456789abcdef";
+const OWNER_COOKIE = `rk_owner=${OWNER}`;
+
 async function mayaWeek(store: Store = new MemoryStore()) {
-  const c = caseFromSeed("maya")!;
+  const c = { ...caseFromSeed("maya")!, owner_hash: ownerHash(OWNER) };
   await store.putCase(c);
   const plan = await runPlanForCase({ store, caseId: c.id, qloo: loggingReplay(), llms: [downLlm()] });
   return { store, c, plan };
@@ -275,7 +281,7 @@ describe("clinician gate (lib/gate.ts)", () => {
 describe("gate routes", () => {
   afterEach(() => vi.unstubAllEnvs());
   const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
-  const req = (url: string, method: string, body?: unknown) => new Request(`http://x${url}`, { method, ...(body !== undefined ? { body: JSON.stringify(body) } : {}), headers: { "x-forwarded-for": `10.0.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } });
+  const req = (url: string, method: string, body?: unknown) => new Request(`http://x${url}`, { method, ...(body !== undefined ? { body: JSON.stringify(body) } : {}), headers: { cookie: OWNER_COOKIE, "x-forwarded-for": `10.0.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } });
 
   it("validate input (400), 404 unknown plans/cards, 409 out-of-order steps; re-plan refusals never open a stream", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
@@ -307,12 +313,53 @@ describe("gate routes", () => {
     expect(((await one.json()) as { error: string }).error).toMatch(/at least 3.*1 rated/);
   });
 
+  it("plans have owners: the creator's httpOnly rk_owner cookie can change a week; another visitor (or a pre-ownership case) is 403 read-only and can copy the case (QA round 2)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const store = storeFromEnv();
+    // creating a case sets the cookie once and stores only its hash
+    const made = await seedRoute(new Request("http://x/api/cases/seed/maya", { method: "POST", headers: { "x-forwarded-for": "10.7.7.1" } }), { params: Promise.resolve({ slug: "maya" }) });
+    expect(made.status).toBe(201);
+    const set = made.headers.get("set-cookie")!;
+    expect(set).toMatch(/^rk_owner=[A-Za-z0-9_-]{32,64}; Path=\/; HttpOnly; SameSite=Lax/);
+    const token = /^rk_owner=([^;]+)/.exec(set)![1];
+    const mine = ((await made.json()) as { case: { id: string; owner_hash: string } }).case;
+    expect(mine.owner_hash).toBe(ownerHash(token));
+    expect(JSON.stringify(mine)).not.toContain(token);
+    const again = await seedRoute(new Request("http://x/api/cases/seed/cal", { method: "POST", headers: { cookie: `rk_owner=${token}`, "x-forwarded-for": "10.7.7.1" } }), { params: Promise.resolve({ slug: "cal" }) });
+    expect(again.headers.get("set-cookie")).toBeNull();
+
+    const { plan } = await mayaWeek(store);
+    const as = (cookie: string | null) => (url: string, method: string, body?: unknown) => new Request(`http://x${url}`, { method, ...(body !== undefined ? { body: JSON.stringify(body) } : {}), headers: { ...(cookie ? { cookie } : {}), "x-forwarded-for": "10.7.7.2" } });
+    const card = plan.cards[0];
+    for (const who of [null, `rk_owner=${token}`]) {
+      const r = await cardRoute(as(who)(`/api/plans/${plan.id}/cards/${card.id}`, "PATCH", { action: "remove" }), { params: Promise.resolve({ id: plan.id, cardId: card.id }) });
+      expect(r.status).toBe(403);
+      expect(await r.json()).toMatchObject({ read_only: true });
+      expect((await approveRoute(as(who)(`/api/plans/${plan.id}/approve`, "POST"), ctx(plan.id))).status).toBe(403);
+      expect((await constraintsRoute(as(who)(`/api/plans/${plan.id}/constraints`, "POST", { need_quiet: true }), ctx(plan.id))).status).toBe(403);
+    }
+    expect((await store.getPlan(plan.id))!.cards).toHaveLength(plan.cards.length);
+    // the owner can; a pre-ownership case (no owner_hash) is read-only for everyone
+    expect((await cardRoute(as(OWNER_COOKIE)(`/api/plans/${plan.id}/cards/${card.id}`, "PATCH", { action: "approve" }), { params: Promise.resolve({ id: plan.id, cardId: card.id }) })).status).toBe(200);
+    const legacy = caseFromSeed("theo")!;
+    await store.putCase(legacy);
+    expect((await planRoute(as(OWNER_COOKIE)(`/api/cases/${legacy.id}/plan`, "POST"), ctx(legacy.id))).status).toBe(403);
+    // "Copy this case": same fictional intake, a new id, owned by the caller
+    const cp = await copyRoute(as(`rk_owner=${token}`)(`/api/cases/${plan.case_id}/copy`, "POST"), ctx(plan.case_id));
+    expect(cp.status).toBe(201);
+    const copy = ((await cp.json()) as { case: { id: string; owner_hash: string; loves: { qloo_id: string }[] } }).case;
+    expect(copy.id).not.toBe(plan.case_id);
+    expect(copy.owner_hash).toBe(ownerHash(token));
+    expect(copy.loves.map((l) => l.qloo_id)).toEqual((await store.getCase(plan.case_id))!.loves.map((l) => l.qloo_id));
+  });
+
   it("a malformed JSON body is a 400 'invalid JSON' on every write route, never a 500 (QA round 1)", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("VERCEL", "");
     const store = storeFromEnv();
     const { plan } = await mayaWeek(store);
-    const bad = (url: string, method: string) => new Request(`http://x${url}`, { method, body: "{bad", headers: { "content-type": "application/json", "x-forwarded-for": `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } });
+    const bad = (url: string, method: string) => new Request(`http://x${url}`, { method, body: "{bad", headers: { cookie: OWNER_COOKIE, "content-type": "application/json", "x-forwarded-for": `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } });
     const responses = [
       await casesRoute(bad("/api/cases", "POST")),
       await constraintsRoute(bad(`/api/plans/${plan.id}/constraints`, "POST"), ctx(plan.id)),

@@ -63,7 +63,7 @@ export function tokenMatches(given: string | null | undefined, expected: string 
 /** anything with request headers: a Request, or `{ headers: await headers() }` in a server component */
 export type HasHeaders = { headers: Pick<Headers, "get"> };
 
-function cookie(req: HasHeaders, name: string): string | null {
+export function cookie(req: HasHeaders, name: string): string | null {
   const raw = req.headers.get("cookie");
   if (!raw) return null;
   for (const part of raw.split(";")) {

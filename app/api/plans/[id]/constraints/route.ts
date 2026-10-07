@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
+import { assertPlanOwner } from "@/lib/owner";
 import { guard } from "@/lib/ratelimit";
 import { toggleConstraints } from "@/lib/service";
 import { storeFor } from "@/lib/scope";
@@ -22,11 +23,12 @@ const Patch = z
  * case row, strikes the failures in place with their rule, refills only those slots live, and returns the new plan.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const g = await guard(req, "toggle");
-  if (g.deny) return g.deny;
   try {
     const { id } = await params;
     const patch = Patch.parse(await req.json());
+    await assertPlanOwner(req, storeFor(req), id);
+    const g = await guard(req, "toggle");
+    if (g.deny) return g.deny;
     const r = await toggleConstraints({ store: storeFor(req), planId: id, patch });
     return json(r, 200, g.headers);
   } catch (e) {

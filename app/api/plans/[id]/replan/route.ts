@@ -1,5 +1,6 @@
 import { claimReplan, replanPrecheck, replanWeek } from "@/lib/gate";
 import { errorResponse, json, sseResponse } from "@/lib/http";
+import { assertOwner } from "@/lib/owner";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
 
@@ -21,6 +22,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const pre = await replanPrecheck(store, id);
     if (pre.existing) return json({ plan: pre.existing, reused: true });
     parent = pre.parent;
+    const c = await store.getCase(parent.case_id);
+    if (c) assertOwner(req, c);
   } catch (e) {
     return errorResponse(e);
   }

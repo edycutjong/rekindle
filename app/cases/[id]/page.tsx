@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
+import { canWrite } from "@/lib/owner";
 import { storeFor } from "@/lib/scope";
 import { planRunState } from "@/lib/service";
 
@@ -16,7 +17,8 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   const { id } = await params;
   // `?fault=qloo_unreachable` = the labelled Qloo-outage demo linked from /judge (the server sends no Qloo request)
   const fault = (await searchParams).fault === "qloo_unreachable" ? "qloo_unreachable" : null;
-  const store = storeFor({ headers: await headers() });
+  const h = await headers();
+  const store = storeFor({ headers: h });
   const c = await store.getCase(id).catch(() => null);
   if (!c) notFound();
   // week 1 already saved for this case (a reopened link, a reload after the run): show it, never run it again
@@ -26,7 +28,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
     <div className={r.wrap}>
       <SiteHeader />
       <main>
-        <Workbench initialCase={c} initialPlan={null} fault={fault} />
+        <Workbench initialCase={c} initialPlan={null} fault={fault} canEdit={canWrite({ headers: h }, c)} />
       </main>
     </div>
   );

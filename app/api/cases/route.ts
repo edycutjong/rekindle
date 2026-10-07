@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
+import { ownerForNewCase } from "@/lib/owner";
 import { guard } from "@/lib/ratelimit";
 import { wkt } from "@/lib/plan";
 import { storeFor } from "@/lib/scope";
@@ -31,8 +32,10 @@ export async function POST(req: Request) {
   if (g.deny) return g.deny;
   try {
     const b = Intake.parse(await req.json());
+    const owner = ownerForNewCase(req);
     const doc = CaseDoc.parse({
       ...b,
+      owner_hash: owner.owner_hash,
       id: newId(),
       created_at: new Date().toISOString(),
       point_wkt: wkt(b.lon, b.lat),
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
       loves: b.loves.map((l) => ({ id: newId(), weight: 1, ...l })),
     });
     await storeFor(req).putCase(doc);
-    return json({ case: doc }, 201);
+    return json({ case: doc }, 201, owner.setCookie);
   } catch (e) {
     return errorResponse(e);
   }

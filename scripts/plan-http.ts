@@ -23,7 +23,9 @@ async function main() {
   console.log(`case ${c.id} (${c.label}, fictional seed) created in ${Date.now() - t0} ms`);
 
   const t1 = Date.now();
-  const res = await fetch(`${BASE}/api/cases/${c.id}/plan`, { method: "POST" });
+  // the case belongs to this script's rk_owner cookie (set by the seed call); send it back like a browser would
+  const owner = (sr.headers.get("set-cookie") ?? "").split(";")[0];
+  const res = await fetch(`${BASE}/api/cases/${c.id}/plan`, { method: "POST", headers: owner ? { cookie: owner } : {} });
   if (!res.ok || !res.body) throw new Error(`plan → ${res.status}`);
   const reader = res.body.getReader();
   const dec = new TextDecoder();

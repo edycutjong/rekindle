@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { actOnCard } from "@/lib/gate";
 import { errorResponse, json } from "@/lib/http";
+import { assertPlanOwner } from "@/lib/owner";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
 
@@ -18,6 +19,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id, cardId } = await params;
     const { action } = Body.parse(await req.json());
+    await assertPlanOwner(req, storeFor(req), id);
     const g = await guard(req, action === "swap" ? "toggle" : "write");
     if (g.deny) return g.deny;
     const r = await actOnCard({ store: storeFor(req), planId: id, cardId, action });

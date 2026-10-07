@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { errorResponse, json, sseResponse } from "@/lib/http";
-import { guard } from "@/lib/ratelimit";
+import { assertCaseOwner } from "@/lib/owner";
+import { classify, guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
 import { claimWeekOne, planRunState, runPlanForCase } from "@/lib/service";
 
@@ -31,10 +32,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!parsed.success) return json({ error: "invalid body", issues: parsed.error.issues.map((i) => i.message) }, 400);
   const { bench, fault } = parsed.data;
   if (bench && fault) return json({ error: "bench and fault cannot be combined" }, 400);
+  if (bench && classify(req) !== "bench") return json({ error: "bench arms need the bench token" }, 403);
   // one week-1 run per case, checked before the rate limiter: a reload or a second tab never spends another run
   const state = await planRunState(storeFor(req), id);
   if (state && "plan" in state) return json({ plan: state.plan, reused: true });
   if (state) return json({ error: "this case is already being planned (another tab or a reload); its week will be saved when the run ends", running: true, started_at: state.running.started_at }, 409);
+  try {
+    await assertCaseOwner(req, storeFor(req), id);
+  } catch (e) {
+    return errorResponse(e);
+  }
   const g = await guard(req, fault ? "toggle" : "plan");
   if (g.deny) return g.deny;
   if (bench && g.ns !== "bench") return json({ error: "bench arms need the bench token" }, 403);

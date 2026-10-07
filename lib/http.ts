@@ -1,11 +1,13 @@
 /** Small helpers for the route handlers: JSON responses, error mapping, and a Server-Sent Events stream. */
 import { ZodError } from "zod";
+import { Forbidden } from "./owner";
 import { Conflict, NotFound } from "./service";
 
 export const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(body, { status, headers: { ...headers, "cache-control": "no-store" } });
 
 export function errorResponse(e: unknown): Response {
   if (e instanceof NotFound) return json({ error: e.message }, 404);
+  if (e instanceof Forbidden) return json({ error: e.message, read_only: true }, 403);
   if (e instanceof Conflict) return json({ error: e.message, ...e.body }, 409);
   // a malformed body (req.json() throws SyntaxError) is the client's error, not the server's
   if (e instanceof SyntaxError) return json({ error: "invalid JSON" }, 400);

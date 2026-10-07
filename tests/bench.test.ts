@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { POST as planRoute } from "../app/api/cases/[id]/plan/route";
 import { POST as verifyRoute } from "../app/api/verify-venue/route";
+import { ownerHash } from "../lib/owner";
 import { parseSse } from "../lib/http";
 import type { QlooClient, QlooEntity } from "../lib/qloo";
 import { storeFor } from "../lib/scope";
@@ -158,9 +159,9 @@ describe("bench scope + routes", () => {
   it("the outage demo streams over the plan route for an anonymous visitor", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     const store = storeFromEnv();
-    const c = caseFromSeed("maya")!;
+    const c = { ...caseFromSeed("maya")!, owner_hash: ownerHash("outage-visitor-token-0123456789ab") };
     await store.putCase(c);
-    const res = await planRoute(new Request(`http://x/api/cases/${c.id}/plan`, { method: "POST", body: JSON.stringify({ fault: "qloo_unreachable" }), headers: { "x-forwarded-for": "10.9.9.9" } }), { params: Promise.resolve({ id: c.id }) });
+    const res = await planRoute(new Request(`http://x/api/cases/${c.id}/plan`, { method: "POST", body: JSON.stringify({ fault: "qloo_unreachable" }), headers: { cookie: "rk_owner=outage-visitor-token-0123456789ab", "x-forwarded-for": "10.9.9.9" } }), { params: Promise.resolve({ id: c.id }) });
     const frames = parseSse(await res.text());
     const plan = (frames.at(-1)!.data as { plan: PlanDoc }).plan;
     expect(plan.fault).toBe("qloo_unreachable");
