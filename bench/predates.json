@@ -59,6 +59,11 @@
    "commit": "abfcc19",
    "date": "2026-10-07",
    "subject": "Coaching hand-off gets its own window: routing stops once every slot is routed, and the forced submitPlan call runs after it with a 6 s …"
+  },
+  {
+   "commit": "0d6aa30",
+   "date": "2026-10-07",
+   "subject": "Coverage refusal names the binding filter: each empty outing under optional filters gets one live probe (same query without …"
   }
  ]
 }
