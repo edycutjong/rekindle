@@ -22,7 +22,7 @@ It turns what a depressed patient used to love into a week of real, open, nearby
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-26221D">
   <img alt="Qloo Taste AI" src="https://img.shields.io/badge/Qloo-Insights%20API-2E5B4F">
   <img alt="Vercel AI SDK" src="https://img.shields.io/badge/Vercel%20AI%20SDK-tool%20loop-26221D">
-  <img alt="tests" src="https://img.shields.io/badge/tests-158%20passing-2E5B4F">
+  <img alt="tests" src="https://img.shields.io/badge/tests-167%20passing-2E5B4F">
   <img alt="MIT" src="https://img.shields.io/badge/license-MIT-6F675B">
 </p>
 
@@ -101,7 +101,7 @@ Full detail, with route, module and rule tables generated from the code: [ARCHIT
 
 ## ✅ Tests and checks
 
-- **158 tests** (Vitest, 13 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC), constraint toggles, the clinician gate (and its memory across weeks), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers.
+- **167 tests** (Vitest, 13 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC and the coaching hand-off fallback), constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md` and the bench numbers in this README and DEMO.md still match the code and `bench/*.json`.
 - **End-to-end** (Playwright, logged-out, against the live deploy):
   - `scripts/ui_smoke.py` drives the whole flow, including the patient sheet and 375 px layouts.
