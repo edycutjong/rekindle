@@ -22,9 +22,26 @@ export function rankTags(ids: string[]): string[] {
   return ids.map((t, i) => ({ t, i })).sort((a, b) => score(a.t) - score(b.t) || a.i - b.i).map((x) => x.t);
 }
 
+/**
+ * Deterministic screen on text typed into a love box before it is sent to Qloo /search or /v2/tags (decision condition
+ * 1: no health data to Qloo). It refuses clinical vocabulary and personal identifiers; it is a narrow deny list, not a
+ * classifier, so the intake note still tells the clinician to type only the taste. Returns the reason, or null.
+ */
+const HEALTH = /\b(diagnos\w*|phq-?\s?\d*|gad-?\s?7|suicid\w*|ideation|self[- ]?harm\w*|overdos\w*|psychiatr\w*|psychos[ie]s|bipolar|schizo\w*|ptsd|medicat\w*|prescri\w*|ssri|sertraline|fluoxetine|\d+\s?mg|patient|mrn|dob|date of birth)\b/i;
+const EMAIL = /[^\s@]+@[^\s@]+\.[a-z]{2,}/i;
+const PHONE = /(?:\d[\s().-]?){7,}/;
+const ID_NUMBER = /\b\d{3}-\d{2}-\d{4}\b/;
+
+export function screenLoveText(text: string): string | null {
+  if (HEALTH.test(text)) return "this looks like health information; type only the taste (an artist, show, food), never clinical details";
+  if (EMAIL.test(text) || PHONE.test(text) || ID_NUMBER.test(text)) return "this looks like personal contact or ID data; type only the taste";
+  return null;
+}
+
 export async function resolveLove(qloo: QlooClient, text: string, kind: LoveKind): Promise<LoveCandidate[]> {
   const q = text.trim().slice(0, 120);
   if (!q) return [];
+  if (screenLoveText(q)) return [];
   if (kind === "place_tag" || kind === "activity_tag") {
     const r = await qloo.tags(q, { take: 20 });
     const tags = r.results?.tags ?? [];

@@ -88,8 +88,9 @@ export default function Home() {
         </section>
 
         <p className={s.footnote}>
-          Clinician-support only: no diagnosis, no efficacy claims, nothing reaches a patient without a clinician. Every profile here is fictional; taste
-          entities, a map point and constraint filters (such as alcohol-tag exclusions) are sent to Qloo, never a diagnosis, a name or free text.
+          Clinician-support only: no diagnosis, no efficacy claims, nothing reaches a patient without a clinician. Every profile here is fictional. The text typed
+          into an intake love box is sent to Qloo /search or /v2/tags to find matches (type only the taste; clinical words and contact data are refused before any
+          request). Each plan sends taste entities, a map point and constraint filters, such as the alcohol-tag exclusions; the case name is never sent.
         </p>
       </main>
     </div>

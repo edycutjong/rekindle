@@ -8,7 +8,7 @@
  */
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { LoveCandidate, LoveKind } from "@/lib/resolve";
+import { screenLoveText, type LoveCandidate, type LoveKind } from "@/lib/resolve";
 import { CONSTRAINT_FLAGS, priceLabel } from "@/lib/view";
 import s from "./rekindle.module.css";
 import i from "./intake.module.css";
@@ -68,14 +68,17 @@ export function IntakeForm({ points }: { points: IntakePoint[] }) {
     const t = timers.current.get(key);
     if (t) clearTimeout(t);
     if (text.trim().length < 2) return update(key, { candidates: null, status: "idle" });
+    // the same deny list the server applies: health details or contact data are never looked up
+    const refused = screenLoveText(text.trim());
+    if (refused) return update(key, { candidates: null, status: "error", error: refused });
     timers.current.set(
       key,
       setTimeout(async () => {
         update(key, { status: "looking" });
         try {
           const r = await fetch(`/api/resolve?text=${encodeURIComponent(text.trim())}&kind=${kind}`);
-          const b = (await r.json()) as { candidates?: LoveCandidate[]; error?: string };
-          if (!r.ok) throw new Error(b.error ?? `HTTP ${r.status}`);
+          const b = (await r.json()) as { candidates?: LoveCandidate[]; error?: string; issues?: { message: string }[] };
+          if (!r.ok) throw new Error(b.issues?.[0]?.message ?? b.error ?? `HTTP ${r.status}`);
           setRows((rs) => rs.map((x) => (x.key === key && x.text === text && x.kind === kind ? { ...x, candidates: b.candidates ?? [], status: "idle" } : x)));
         } catch (e) {
           update(key, { status: "error", error: e instanceof Error ? e.message : String(e) });
@@ -123,7 +126,7 @@ export function IntakeForm({ points }: { points: IntakePoint[] }) {
         <legend>Fictional first name</legend>
         <input className={i.input} value={label} maxLength={40} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Rosa" data-testid="intake-label" aria-describedby="name-note" />
         <p id="name-note" className={s.reason}>
-          Invent one. Never enter a real patient&apos;s name: only taste entities and a map point are sent to Qloo.
+          Invent one; it stays on this server. Never enter a real patient&apos;s name. What you type into a love box below is sent to Qloo to find matches, so type only the taste.
         </p>
       </fieldset>
 
@@ -131,7 +134,10 @@ export function IntakeForm({ points }: { points: IntakePoint[] }) {
         <legend>
           What she loved before ({confirmed.length} of {MIN_LOVES}–{MAX_LOVES} confirmed)
         </legend>
-        <p className={s.reason}>Type a name, pick what kind it is, then confirm one of Qloo&apos;s matches. Nothing is guessed: an unconfirmed row is left out.</p>
+        <p className={s.reason}>
+          Type a name, pick what kind it is, then confirm one of Qloo&apos;s matches. Nothing is guessed: an unconfirmed row is left out. The text in each box is sent to Qloo
+          /search or /v2/tags to find matches: type only the taste (an artist, a show, a food), never health details or names.
+        </p>
         {rows.map((r, n) => (
           <div key={r.key} className={i.love} data-testid="intake-love">
             <div className={i.loveRow}>

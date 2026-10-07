@@ -2,11 +2,23 @@ import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { qlooFromEnv } from "@/lib/qloo";
-import { LOVE_KINDS, resolveLove } from "@/lib/resolve";
+import { LOVE_KINDS, resolveLove, screenLoveText } from "@/lib/resolve";
 
 export const dynamic = "force-dynamic";
 
-const Q = z.object({ text: z.string().trim().min(1).max(120), kind: z.enum(LOVE_KINDS) });
+// health details or personal data never reach Qloo: refused here, before any request (decision condition 1)
+const Q = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .superRefine((t, ctx) => {
+      const why = screenLoveText(t);
+      if (why) ctx.addIssue({ code: "custom", message: why });
+    }),
+  kind: z.enum(LOVE_KINDS),
+});
 
 /** GET /api/resolve?text=Phoebe%20Bridgers&kind=artist → top 3 Qloo candidates for the clinician to confirm. */
 export async function GET(req: Request) {

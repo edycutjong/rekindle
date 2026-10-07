@@ -126,7 +126,7 @@ npm run dev                    # http://localhost:3000
 
 ## ⚠️ Limitations
 
-- **It is not a clinical tool.** It is clinician support only: no diagnosis, no efficacy claims, no patient logins. Every case in the app is fictional. Taste entities, a map point and constraint filters are sent to Qloo (for example the alcohol-tag exclusions when "in recovery" is on, which a reader of the requests could take as a proxy for that flag); never a diagnosis, a name or free text.
+- **It is not a clinical tool.** It is clinician support only: no diagnosis, no efficacy claims, no patient logins. Every case in the app is fictional. The text typed into an intake love box is sent to Qloo /search or /v2/tags to find matches: the clinician types only the taste (an artist, show, food), and a small deterministic deny list refuses clinical words and contact data before any request (`screenLoveText`, a screen, not a guarantee). Each plan sends taste entities, a map point and constraint filters (for example the alcohol-tag exclusions when "in recovery" is on, which a reader of the requests could take as a proxy for that flag). The case name never leaves the server; the confirmed love's name is Qloo's own.
 - **The plan depends on Qloo's coverage.** In thin areas, outing slots stay empty and the app shows a coverage refusal. It does not guess.
   In the bench, 4 of 20 profiles had too few verified week-1 outings for the re-plan check and are excluded (`bench/replan.json`).
 - **A plan is slow:** p50 is about 17 s from click (see the latency table in DEMO.md). It meets the 30 s gate we set, but not the 15 s we aimed for. The LLM coaching step dominates.
