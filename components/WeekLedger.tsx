@@ -1,6 +1,7 @@
 import type { CardDoc } from "@/lib/store";
 import type { DayName } from "@/lib/verify";
-import { DAY_SHORT, fmtHour, hoursCheck, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type Strike } from "@/lib/view";
+import { DAY_SHORT, emberLabel, fmtHour, hoursCheck, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
+import { CardActions, PMBox, type CardGate } from "./Gate";
 import s from "./rekindle.module.css";
 
 export interface DayView {
@@ -20,6 +21,10 @@ export interface DayView {
   recheck: boolean;
   /** strike keys that appeared in the last toggle (animated once) */
   fresh: Set<string>;
+  /** clinician gate / ratings controls for the card (absent while streaming) */
+  gate?: CardGate | null;
+  /** re-planned week only: the rated week-1 activity that is this card's top-weighted input */
+  ember?: EmberLink | null;
 }
 
 const VISIBLE_STRIKES = 3;
@@ -43,10 +48,13 @@ function DayColumn({ d }: { d: DayView }) {
         {DAY_SHORT[d.day]}
         {d.rung && <span>{d.rung}</span>}
       </div>
-      {d.card && !d.recheck ? (
-        <SlotCard c={d.card} />
-      ) : d.partial || d.recheck ? (
-        <PencilledCard name={d.recheck ? (d.card?.name ?? "") : d.partial!.name} label={d.recheck ? "re-checking against the new constraint" : `${d.rung ?? ""} · ${fmtHour(d.partial!.hour)} · verified`} />
+      {d.card && !d.recheck && !d.gate?.busy ? (
+        <SlotCard c={d.card} g={d.gate ?? undefined} ember={d.ember ?? null} />
+      ) : d.partial || d.recheck || d.gate?.busy ? (
+        <PencilledCard
+          name={d.recheck || d.gate?.busy ? (d.card?.name ?? "") : d.partial!.name}
+          label={d.gate?.busy ? "swapping: same tool, same verifier" : d.recheck ? "re-checking against the new constraint" : `${d.rung ?? ""} · ${fmtHour(d.partial!.hour)} · verified`}
+        />
       ) : d.empty ? (
         <div className={s.empty} data-testid="empty-slot">
           <div className={s.rung}>{d.rung ?? "slot"} · left empty</div>
@@ -77,17 +85,26 @@ function DayColumn({ d }: { d: DayView }) {
   );
 }
 
-export function SlotCard({ c }: { c: CardDoc }) {
+export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: EmberLink | null }) {
   const h = hoursCheck(c);
   const why = whyParts(c.explain_json);
   const checks = passedChecks(c);
+  const approved = c.clinician_action === "approved";
   return (
-    <article className={`${s.slot} ${s.slotEnter}`} data-testid="slot-card" data-entity={c.qloo_entity_id}>
-      <div className={s.rung}>{rungLabel(c)}</div>
+    <article className={`${s.slot} ${s.slotEnter} ${approved ? s.approved : ""}`} data-testid="slot-card" data-entity={c.qloo_entity_id} data-card={c.id} data-approved={approved || undefined}>
+      <div className={s.rung}>
+        {rungLabel(c)}
+        {c.routed_by === "swap" && " · swapped in"}
+      </div>
       <h3 className={s.name}>{c.name}</h3>
       <div className={s.etype}>{typeLabel(c.entity_type)}</div>
       {c.coaching && <p className={s.coach}>{c.coaching}</p>}
       <WhyLine parts={why} />
+      {ember && (
+        <div className={s.emberLabel} data-testid="ember-label">
+          {emberLabel(ember)}
+        </div>
+      )}
       {h && <HoursCheck h={h} geohash={c.rung === "social" ? c.geohash : undefined} />}
       {c.address && <div className={s.addr}>{c.address}</div>}
       {checks.length > 0 && (
@@ -99,7 +116,8 @@ export function SlotCard({ c }: { c: CardDoc }) {
           ))}
         </div>
       )}
-      <PMBox />
+      {g && <CardActions g={g} name={c.name} />}
+      <PMBox g={g} />
     </article>
   );
 }
@@ -127,15 +145,6 @@ export function HoursCheck({ h, geohash }: { h: NonNullable<ReturnType<typeof ho
       {h.slot} {h.ok ? <span className={s.ok}>✓</span> : "?"}
       {h.moved && <div>{h.moved}</div>}
       {geohash && <div>taste cell {geohash}</div>}
-    </div>
-  );
-}
-
-function PMBox() {
-  return (
-    <div className={s.pm} aria-label="Pleasure and mastery, rated after the activity">
-      <span>P</span>
-      <span>M</span>
     </div>
   );
 }

@@ -252,6 +252,7 @@
   letter-spacing: 0.02em;
 }
 .name {
+  hyphens: auto;
   font-size: 20px;
   line-height: 1.25;
   margin: 2px 0 0;
@@ -528,6 +529,260 @@
 .btnQuiet:hover {
   background: var(--bg);
   border-color: var(--ink);
+}
+
+/* ------------------------------------------------------------ clinician gate (ui.md 2, 4) — --stamp only here */
+.approved {
+  border-left: 3px solid var(--stamp);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+.act {
+  min-height: 44px;
+  padding: 0 10px;
+  font: 14px var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.act:hover {
+  border-color: var(--ink);
+  background: var(--bg);
+}
+.act:active {
+  transform: translateY(1px);
+}
+.act:focus-visible,
+.stepBtn:focus-visible,
+.stepVal:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.act:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.actOn {
+  color: var(--stamp);
+  border-color: var(--stamp);
+  font-weight: 700;
+}
+.stamp {
+  font: 14px var(--font-data);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--stamp);
+  border: 2px solid var(--stamp);
+  padding: 2px 10px;
+  transform: rotate(-2deg);
+  display: inline-block;
+}
+.gateBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.gateBar p {
+  margin: 0;
+  flex: 1 1 360px;
+  font-size: 16px;
+}
+.gateBtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btnStamp {
+  background: var(--stamp);
+  border-color: var(--stamp);
+}
+.pm b {
+  color: var(--ink);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ------------------------------------------------------------ ratings (ui.md 5): large 0–10 steppers */
+.rate {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+.stepper {
+  display: grid;
+  grid-template-columns: 22px 44px minmax(44px, 1fr) 44px;
+  align-items: center;
+  gap: 2px;
+}
+.stepLabel {
+  font: 15px var(--font-data);
+  font-weight: 700;
+}
+.stepBtn {
+  height: 44px;
+  font: 20px var(--font-data);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.stepBtn:hover {
+  background: var(--bg);
+}
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.stepVal {
+  height: 44px;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  font: 20px var(--font-data);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.stepVal::-webkit-inner-spin-button,
+.stepVal::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ the ember re-plan (ui.md 6) — --after only here */
+.emberWrap {
+  position: relative;
+  min-width: 0;
+}
+.threads {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.threads path {
+  fill: none;
+  stroke: var(--after);
+  stroke-width: 1.5;
+}
+.threads text {
+  font: 12px var(--font-data);
+  fill: var(--after);
+}
+.ember {
+  text-decoration: underline;
+  text-decoration-color: var(--after);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
+.emberLabel {
+  font: 13px/1.4 var(--font-data);
+  color: var(--after);
+  margin-top: 6px;
+}
+.prevWeek {
+  margin-bottom: 56px;
+}
+.prevHead {
+  font-size: 24px;
+  margin: 0 0 8px;
+}
+.prevHead span {
+  font: 13px var(--font-data);
+  color: var(--muted);
+  margin-left: 8px;
+}
+.prevGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-left: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
+}
+.prevCell {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 8px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  background: var(--paper);
+}
+.prevDay {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  font-size: 15px;
+}
+.prevName {
+  font-size: 16px;
+  line-height: 1.3;
+}
+.prevLow {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--before);
+  text-decoration-thickness: 2px;
+}
+.prevPm {
+  font: 13px var(--font-data);
+  color: var(--muted);
+  margin-top: 2px;
+}
+.replanSummary {
+  margin-top: 16px;
+}
+.diffSummary {
+  font: 14px var(--font-data);
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+.leaving h3 {
+  font-size: 18px;
+  margin: 10px 0 4px;
+}
+.leaving ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 16px;
+}
+@media (max-width: 719px) {
+  .prevGrid {
+    grid-template-columns: 1fr;
+  }
+  .prevWeek {
+    margin-bottom: 20px;
+  }
+  .gateBtns,
+  .gateBtns .btn {
+    width: 100%;
+  }
+}
+@media print {
+  .actions,
+  .gateBar,
+  .threads {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------ responsive (ui.md) */

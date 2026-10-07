@@ -7,7 +7,7 @@ import { storeFromEnv } from "@/lib/store";
 export const dynamic = "force-dynamic";
 
 const score = z.number().int().min(0).max(10);
-const Body = z.object({ ratings: z.array(z.object({ card_id: z.string(), pleasure: score, mastery: score }).strict()).min(1).max(7) }).strict();
+const Body = z.object({ ratings: z.array(z.object({ card_id: z.string(), pleasure: score, mastery: score.nullable().optional() }).strict()).min(1).max(7) }).strict();
 
 /** POST /api/plans/:id/ratings — pleasure / mastery 0–10 for approved cards of an approved week. */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

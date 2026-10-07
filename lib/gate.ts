@@ -123,7 +123,8 @@ export async function approveWeek(o: { store: Store; planId: string }): Promise<
 export interface RatingInput {
   card_id: string;
   pleasure: number;
-  mastery: number;
+  /** optional: a patient may score pleasure only; mastery is recorded and shown, it never changes Qloo signals */
+  mastery?: number | null;
 }
 
 /** POST /api/plans/:id/ratings — pleasure / mastery 0–10 on approved cards of an approved week. */
@@ -140,7 +141,7 @@ export async function rateWeek(o: { store: Store; planId: string; ratings: Ratin
   }
   const cards = plan.cards.map((c) => {
     const r = byId.get(c.id);
-    return r ? { ...c, pleasure: r.pleasure, mastery: r.mastery } : c;
+    return r ? { ...c, pleasure: r.pleasure, mastery: r.mastery ?? null } : c;
   });
   const next = PlanDoc.parse({ ...plan, cards, status: cards.some((c) => c.pleasure !== null) ? "rated" : "approved" });
   await o.store.putPlan(next);

@@ -6,14 +6,19 @@
  */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CardAction } from "@/lib/gate";
 import type { ConstraintPatch } from "@/lib/service";
 import type { CaseDoc, PlanDoc } from "@/lib/store";
 import { DAYS, type DayName } from "@/lib/verify";
-import { strikesByDay, traceFromPlan, traceLine } from "@/lib/view";
+import { changedRatings, emberThreads, ratedCount, stampLabel, strikesByDay, swapNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
 import { AgentTrace } from "./AgentTrace";
 import { CaseStrip } from "./CaseStrip";
+import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
 import s from "./rekindle.module.css";
 import { WeekLedger, type DayView } from "./WeekLedger";
+
+/** the re-plan button is enabled at this many rated activities (ui.md 5; lib/gate.ts MIN_RATED_FOR_REPLAN) */
+const MIN_RATED = 3;
 
 type Ev = { type: string } & Record<string, unknown>;
 
@@ -48,10 +53,14 @@ async function readSse(res: Response, on: (event: string, data: unknown) => void
   }
 }
 
-export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; initialPlan: PlanDoc | null }) {
+export function Workbench({ initialCase, initialPlan, previousPlan = null }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null }) {
   const [c, setCase] = useState(initialCase);
   const [plan, setPlan] = useState<PlanDoc | null>(initialPlan);
-  const [phase, setPhase] = useState<"streaming" | "idle" | "toggling">(initialPlan ? "idle" : "streaming");
+  /** the rated week this one was re-planned from (shown above the ledger with the ember threads) */
+  const [prev, setPrev] = useState<PlanDoc | null>(previousPlan);
+  const [phase, setPhase] = useState<"streaming" | "idle" | "toggling" | "acting">(initialPlan ? "idle" : "streaming");
+  const [swapping, setSwapping] = useState<string | null>(null);
+  const [pending, setPending] = useState<Record<string, PendingRating>>({});
   const [streamed, setStreamed] = useState<Streamed>({ slots: {}, cards: {}, empty: {} });
   const [live, setLive] = useState<string[]>([]);
   const [qloo, setQloo] = useState(0);
@@ -60,19 +69,32 @@ export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; 
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const started = useRef(false);
 
-  const run = useCallback(async () => {
+  /** Stream an agent run into the ledger: week 1 for the case, or week N+1 re-planned from a rated week. */
+  const run = useCallback(async (rated?: PlanDoc) => {
     setPhase("streaming");
     setFailure(null);
+    setNotice(null);
     setLive([]);
     setQloo(0);
     setStreamed({ slots: {}, cards: {}, empty: {} });
+    if (rated) {
+      setPrev(rated);
+      setPlan(null);
+    }
     try {
-      const res = await fetch(`/api/cases/${c.id}/plan`, { method: "POST" });
+      const res = await fetch(rated ? `/api/plans/${rated.id}/replan` : `/api/cases/${c.id}/plan`, { method: "POST" });
       if (!res.ok || !res.body) {
         const b = (await res.json().catch(() => ({}))) as { error?: string };
         throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });
       }
       let got = false;
+      if (res.headers.get("content-type")?.includes("application/json")) {
+        // a week that was already re-planned comes back whole (no second agent run)
+        const p = ((await res.json()) as { plan: PlanDoc }).plan;
+        setPlan(p);
+        window.history.replaceState(null, "", `/plans/${p.id}`);
+        return;
+      }
       await readSse(res, (event, data) => {
         const e = data as Ev;
         if (event === "qloo") return setQloo((n) => n + 1);
@@ -100,6 +122,11 @@ export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; 
       if (!got) throw new Error("the stream ended before the plan was saved");
     } catch (err) {
       setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      if (rated) {
+        // nothing was re-planned: put the rated week back on the sheet
+        setPlan(rated);
+        setPrev(null);
+      }
     } finally {
       setPhase("idle");
     }
@@ -145,6 +172,87 @@ export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; 
     [plan],
   );
 
+  /** one JSON request that returns `{ plan }`; errors land in the failure box */
+  const send = useCallback(async (url: string, method: string, body?: unknown) => {
+    const res = await fetch(url, { method, ...(body !== undefined ? { headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {}) });
+    const b = (await res.json().catch(() => ({}))) as { plan?: PlanDoc; error?: string; swap?: { found: boolean; ms: number; calls: number } };
+    if (!res.ok || !b.plan) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });
+    return b as { plan: PlanDoc; swap?: { found: boolean; ms: number; calls: number } };
+  }, []);
+
+  const act = useCallback(
+    async (cardId: string, action: CardAction) => {
+      if (!plan) return;
+      const before = plan.cards.find((x) => x.id === cardId);
+      setPhase("acting");
+      setFailure(null);
+      setNotice(null);
+      if (action === "swap") setSwapping(cardId);
+      try {
+        const r = await send(`/api/plans/${plan.id}/cards/${cardId}`, "PATCH", { action });
+        setPlan(r.plan);
+        const sw = r.swap;
+        if (action === "swap" && sw && before) {
+          setNotice(swapNotice(before, r.plan, sw));
+          const now = r.plan.cards.find((x) => x.day_name === before.day_name)?.name ?? "empty";
+          setLive((l) => [...(l.length ? l : traceFromPlan(plan)), `swap ${before.day_name} ${before.name} → ${now} · ${sw.calls} Qloo call${sw.calls === 1 ? "" : "s"}`]);
+        }
+        if (action === "remove" && before) setNotice(`${before.name} removed; ${before.day_name} is left empty for this week.`);
+      } catch (err) {
+        setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      } finally {
+        setSwapping(null);
+        setPhase("idle");
+      }
+    },
+    [plan, send],
+  );
+
+  const approve = useCallback(async () => {
+    if (!plan) return;
+    setPhase("acting");
+    setFailure(null);
+    setNotice(null);
+    try {
+      const r = await send(`/api/plans/${plan.id}/approve`, "POST");
+      setPlan(r.plan);
+      setNotice(`Week approved: ${r.plan.cards.length} activities stamped. After each one, rate pleasure (P) and mastery (M) from 0 to 10.`);
+    } catch (err) {
+      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+    } finally {
+      setPhase("idle");
+    }
+  }, [plan, send]);
+
+  /** save pending ratings; returns the stored plan (or null on failure) */
+  const saveRatings = useCallback(async (): Promise<PlanDoc | null> => {
+    if (!plan) return null;
+    const ratings = changedRatings(plan.cards, pending);
+    if (ratings.length === 0) return plan;
+    setPhase("acting");
+    setFailure(null);
+    try {
+      const r = await send(`/api/plans/${plan.id}/ratings`, "POST", { ratings });
+      setPlan(r.plan);
+      setPending({});
+      setNotice(`${ratingsSaved(r.plan)} activities rated.`);
+      return r.plan;
+    } catch (err) {
+      setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
+      return null;
+    } finally {
+      setPhase("idle");
+    }
+  }, [plan, pending, send]);
+
+  const replan = useCallback(async () => {
+    const saved = await saveRatings();
+    if (saved) await run(saved);
+  }, [saveRatings, run]);
+
+  const mode: "draft" | "rate" | "locked" | null = !plan ? null : plan.status === "draft" ? "draft" : plan.next_plan_id ? "locked" : "rate";
+  const threads = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards) : []), [plan, prev]);
+
   const days: DayView[] = useMemo(() => {
     const strikes = plan ? strikesByDay(plan) : null;
     return DAYS.map((day) => {
@@ -163,25 +271,40 @@ export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; 
         pending: !plan && phase === "streaming",
         recheck: phase === "toggling" && !!card && card.rung !== "home",
         fresh,
+        gate:
+          card && mode
+            ? {
+                mode,
+                busy: swapping === card.id,
+                disabled: phase !== "idle",
+                approved: card.clinician_action === "approved",
+                onAction: (a: CardAction) => void act(card.id, a),
+                rating: pending[card.id] ?? { pleasure: card.pleasure, mastery: card.mastery },
+                onRate: (r: PendingRating) => setPending((p) => ({ ...p, [card.id]: r })),
+              }
+            : null,
+        ember: card ? (threads.find((t) => t.to_id === card.qloo_entity_id) ?? null) : null,
       };
     });
-  }, [plan, streamed, phase, fresh]);
+  }, [plan, streamed, phase, fresh, mode, swapping, pending, act, threads]);
 
   const traceLines = plan && live.length === 0 ? traceFromPlan(plan) : live;
   const stats = {
     qlooCalls: plan ? plan.qloo_calls : qloo,
     llm: plan ? (plan.llm_model ? `${plan.llm_provider}:${plan.llm_model}` : "deterministic route") : null,
     seconds: plan ? plan.latency_ms / 1000 : null,
-    secondsLabel: plan?.origin === "toggle" ? "last update" : "plan time",
+    secondsLabel: plan?.origin === "toggle" ? "last update" : plan?.origin === "replan" ? "re-plan time" : "plan time",
     planId: plan?.id ?? null,
   };
 
   return (
     <>
-      <CaseStrip c={c} week={plan?.week ?? 1} disabled={phase !== "idle" || !plan || plan.status !== "draft"} onToggle={toggle} />
+      <CaseStrip c={c} week={plan?.week ?? (prev ? prev.week + 1 : 1)} disabled={phase !== "idle" || !plan || plan.status !== "draft"} onToggle={toggle} stamp={plan?.approved_at ? stampLabel(plan.approved_at) : null} />
       {phase === "streaming" && (
         <p className={s.notice} role="status">
-          Planning live: the agent routes each slot, Qloo returns candidates, the verifier strikes what fails.
+          {prev
+            ? `Re-planning week ${prev.week + 1} live from the ratings: rated ≥7 become Qloo signals, rated ≤3 are excluded, the same verifier strikes what fails.`
+            : "Planning live: the agent routes each slot, Qloo returns candidates, the verifier strikes what fails."}
         </p>
       )}
       {phase === "toggling" && (
@@ -214,13 +337,74 @@ export function Workbench({ initialCase, initialPlan }: { initialCase: CaseDoc; 
         </div>
       )}
       <div className={s.grid}>
-        <WeekLedger days={days} />
+        <EmberThreads threads={threads}>
+          {prev && plan?.diff && <ReplanStrip prev={prev} threads={threads} />}
+          <WeekLedger days={days} />
+          {prev && plan?.diff && <ReplanSummary prev={prev} diff={plan.diff} threads={threads} />}
+        </EmberThreads>
         <AgentTrace lines={traceLines} stats={stats} live={phase === "streaming"} />
       </div>
+      <GateBar plan={plan} mode={mode} busy={phase !== "idle"} rated={plan ? ratedCount(plan.cards, pending) : 0} dirty={plan ? changedRatings(plan.cards, pending).length : 0} onApprove={approve} onSave={() => void saveRatings()} onReplan={() => void replan()} />
       <div className={s.bar}>
-        <span>Draft week for clinician review. Fictional case: never enter a real patient&apos;s name.</span>
-        {plan && <span className={s.reason}>plan {plan.id.slice(0, 8)} · {plan.origin === "toggle" ? "constraint change" : "agent run"} · {new Date(plan.created_at).toUTCString().slice(5, 22)} UTC</span>}
+        <span>{mode === "draft" || !mode ? "Draft week for clinician review." : "Approved by the clinician."} Fictional case: never enter a real patient&apos;s name.</span>
+        {plan && (
+          <span className={s.reason}>
+            plan {plan.id.slice(0, 8)} · {plan.origin === "toggle" ? "constraint change" : plan.origin === "replan" ? `re-planned from week ${plan.week - 1}` : "agent run"} · {new Date(plan.created_at).toUTCString().slice(5, 22)} UTC
+          </span>
+        )}
       </div>
     </>
+  );
+}
+
+const ratingsSaved = (p: PlanDoc) => p.cards.filter((c) => c.pleasure !== null).length;
+
+/** Approve bar (ui.md 4) on a draft; ratings + re-plan (ui.md 5) on an approved week; a link once re-planned. */
+function GateBar(o: { plan: PlanDoc | null; mode: "draft" | "rate" | "locked" | null; busy: boolean; rated: number; dirty: number; onApprove: () => void; onSave: () => void; onReplan: () => void }) {
+  const { plan, mode } = o;
+  if (!plan || !mode) return null;
+  if (mode === "draft") {
+    const n = plan.cards.filter((c) => c.clinician_action === "approved").length;
+    return (
+      <div className={s.gateBar} data-testid="gate-bar">
+        <p>
+          Nothing reaches the patient until you approve. Approve, swap or remove single cards, then approve the week: every card left on the sheet is stamped.
+          <span className={s.reason}> {n} of {plan.cards.length} approved individually</span>
+        </p>
+        <button type="button" className={`${s.btn} ${s.btnStamp}`} disabled={o.busy || plan.cards.length === 0} onClick={o.onApprove} data-testid="approve-week">
+          Approve week
+        </button>
+      </div>
+    );
+  }
+  if (mode === "locked") {
+    return (
+      <div className={s.gateBar} data-testid="gate-bar">
+        <p>This week was re-planned from its ratings; the ratings are locked.</p>
+        <Link className={`${s.btn} ${s.btnQuiet}`} href={`/plans/${plan.next_plan_id}`} data-testid="next-week">
+          Week {plan.week + 1} →
+        </Link>
+      </div>
+    );
+  }
+  const ready = o.rated >= MIN_RATED;
+  return (
+    <div className={s.gateBar} data-testid="gate-bar">
+      <p>
+        Rate each activity after it happens: pleasure (P) and mastery (M), 0–10. Rated ≥7 becomes next week&apos;s signal; rated ≤3 is excluded.
+        <span className={s.reason} data-testid="rated-count">
+          {" "}
+          {o.rated} rated · {ready ? "ready to re-plan" : `${MIN_RATED - o.rated} more to re-plan`}
+        </span>
+      </p>
+      <div className={s.gateBtns}>
+        <button type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={o.busy || o.dirty === 0} onClick={o.onSave} data-testid="save-ratings">
+          Save ratings
+        </button>
+        <button type="button" className={s.btn} disabled={o.busy || !ready} onClick={o.onReplan} data-testid="replan" title={ready ? undefined : `Rate at least ${MIN_RATED} activities`}>
+          Re-plan week {plan.week + 1}
+        </button>
+      </div>
+    </div>
   );
 }
