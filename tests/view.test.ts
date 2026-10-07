@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
+import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -114,6 +114,8 @@ describe("gate + re-plan view helpers", () => {
     expect(ratedCount(cards, { b: { pleasure: 2, mastery: null }, c: { pleasure: null, mastery: 5 } })).toBe(2);
     expect(changedRatings(cards, { a: { pleasure: 7, mastery: 4 }, b: { pleasure: 2, mastery: null }, c: { pleasure: null, mastery: 5 } })).toEqual([{ card_id: "b", pleasure: 2, mastery: null }]);
     expect([clampScore(-1), clampScore(11), clampScore(6.6)]).toEqual([0, 10, 7]);
+    // typed scores are never clamped: out of range is invalid and is not saved (QA round 2: 15 saved as 10)
+    expect(["", "0", "7", "10", "15", "-1", "6.5", "1e1", "abc"].map(parseScore)).toEqual([null, 0, 7, 10, "invalid", "invalid", "invalid", "invalid", "invalid"]);
   });
 
   it("ember threads: only top-weighted links, one per week-2 card, with the week-1 rating", () => {

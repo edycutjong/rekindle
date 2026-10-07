@@ -8,7 +8,16 @@ import { storeFor } from "@/lib/scope";
 export const dynamic = "force-dynamic";
 
 const score = z.number().int().min(0).max(10);
-const Body = z.object({ ratings: z.array(z.object({ card_id: z.string(), pleasure: score, mastery: score.nullable().optional() }).strict()).min(1).max(7) }).strict();
+const Body = z
+  .object({
+    ratings: z
+      .array(z.object({ card_id: z.string(), pleasure: score, mastery: score.nullable().optional() }).strict())
+      .min(1)
+      .max(7)
+      // one rating per card per request (QA round 2: 9 and 1 for the same card returned 200)
+      .refine((rs) => new Set(rs.map((r) => r.card_id)).size === rs.length, { message: "each card can be rated once per request" }),
+  })
+  .strict();
 
 /** POST /api/plans/:id/ratings — pleasure / mastery 0–10 for approved cards of an approved week. */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

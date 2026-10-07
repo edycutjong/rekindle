@@ -227,6 +227,18 @@ export function changedRatings(cards: readonly Pick<CardDoc, "id" | "pleasure" |
 
 export const clampScore = (n: number) => Math.max(0, Math.min(10, Math.round(n)));
 
+/**
+ * A typed P / M score: "" clears it, a whole number 0–10 is the score, anything else is invalid and is never saved
+ * (QA round 2: typing 15 silently saved a 10 the clinician never entered).
+ */
+export function parseScore(text: string): number | null | "invalid" {
+  const s = text.trim();
+  if (s === "") return null;
+  if (!/^\d{1,2}$/.test(s)) return "invalid";
+  const n = Number(s);
+  return n >= 0 && n <= 10 ? n : "invalid";
+}
+
 export interface EmberLink {
   from: string;
   from_id: string;

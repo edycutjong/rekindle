@@ -4,7 +4,8 @@
  * pleasure / mastery steppers on an approved week. Pure presentation; Workbench owns the requests.
  */
 import type { CardAction } from "@/lib/gate";
-import { clampScore, type PendingRating } from "@/lib/view";
+import { useEffect, useState } from "react";
+import { clampScore, parseScore, type PendingRating } from "@/lib/view";
 import s from "./rekindle.module.css";
 
 export interface CardGate {
@@ -67,9 +68,18 @@ export function PMBox({ g }: { g?: CardGate }) {
 }
 
 function Stepper({ label, long, value, disabled, onChange }: { label: string; long: string; value: number | null; disabled: boolean; onChange: (v: number | null) => void }) {
-  const step = (d: number) => onChange(value === null ? 5 : clampScore(value + d));
+  // what is typed; an out-of-range entry stays visible, marked, and clears the score instead of being clamped
+  const [text, setText] = useState(value === null ? "" : String(value));
+  const [invalid, setInvalid] = useState(false);
+  useEffect(() => {
+    if (!invalid) setText(value === null ? "" : String(value));
+  }, [value, invalid]);
+  const step = (d: number) => {
+    setInvalid(false);
+    onChange(value === null ? 5 : clampScore(value + d));
+  };
   return (
-    <div className={s.stepper}>
+    <div className={`${s.stepper} ${invalid ? s.stepInvalid : ""}`}>
       <span className={s.stepLabel} aria-hidden="true">
         {label}
       </span>
@@ -83,15 +93,26 @@ function Stepper({ label, long, value, disabled, onChange }: { label: string; lo
         min={0}
         max={10}
         placeholder="–"
-        value={value ?? ""}
+        value={text}
         disabled={disabled}
         aria-label={`${long}, 0 to 10`}
+        aria-invalid={invalid || undefined}
         data-testid={`rate-${label.toLowerCase()}`}
-        onChange={(e) => onChange(e.target.value === "" ? null : clampScore(Number(e.target.value)))}
+        onChange={(e) => {
+          const v = parseScore(e.target.value);
+          setText(e.target.value);
+          setInvalid(v === "invalid");
+          onChange(v === "invalid" ? null : v);
+        }}
       />
       <button type="button" className={s.stepBtn} disabled={disabled || value === 10} onClick={() => step(1)} aria-label={`${long} up`}>
         +
       </button>
+      {invalid && (
+        <span className={s.stepError} role="alert" data-testid={`rate-${label.toLowerCase()}-invalid`}>
+          0–10 only, not saved
+        </span>
+      )}
     </div>
   );
 }

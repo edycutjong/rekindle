@@ -688,6 +688,15 @@
   font: 15px var(--font-data);
   font-weight: 700;
 }
+/* an out-of-range score: a heavier dashed ink rule (no new colour: the palette has no error red) and a note */
+.stepInvalid .stepVal {
+  border: 2px dashed var(--ink);
+}
+.stepError {
+  grid-column: 1 / -1;
+  font: 13px var(--font-data);
+  color: var(--ink);
+}
 .stepBtn {
   height: 44px;
   font: 20px var(--font-data);

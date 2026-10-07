@@ -305,6 +305,8 @@ describe("gate routes", () => {
     expect((await approveRoute(req(`/api/plans/${plan.id}/approve`, "POST"), ctx(plan.id))).status).toBe(200);
     expect((await approveRoute(req(`/api/plans/${plan.id}/approve`, "POST"), ctx(plan.id))).status).toBe(409);
     expect((await ratingsRoute(req(`/api/plans/${plan.id}/ratings`, "POST", { ratings: [{ card_id: card.id, pleasure: 11, mastery: 5 }] }), ctx(plan.id))).status).toBe(400);
+    // the same card twice in one request is a 400, not two ratings (QA round 2)
+    expect((await ratingsRoute(req(`/api/plans/${plan.id}/ratings`, "POST", { ratings: [{ card_id: card.id, pleasure: 9, mastery: 5 }, { card_id: card.id, pleasure: 1, mastery: 1 }] }), ctx(plan.id))).status).toBe(400);
     const rated = await ratingsRoute(req(`/api/plans/${plan.id}/ratings`, "POST", { ratings: [{ card_id: card.id, pleasure: 7, mastery: 5 }] }), ctx(plan.id));
     expect(rated.status).toBe(200);
     expect(((await rated.json()) as { plan: PlanDoc }).plan.status).toBe("rated");
