@@ -1,0 +1,37 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+/test-results
+/playwright-report
+
+# next.js
+/.next/
+/out/
+/dist
+
+# env files — never commit secrets; .env.example is the only tracked template
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+__pycache__/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# kitchen material must never land here (house rule)
+CLAUDE.md
+AGENTS.md
+.claude/
+specs/
+graphify-out/

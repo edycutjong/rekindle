@@ -1,0 +1,36 @@
+/* Tokens: specs/design.md §4 (the design contract). No new colours. */
+:root {
+  --bg: #f5efe3;
+  --paper: #fbf8f1;
+  --ink: #26221d;
+  --muted: #6f675b;
+  --before: #9a968e; /* state: refused / unverified (graphite strike) */
+  --after: #c4501a; /* state: rekindled (fires only on re-plan) */
+  --stamp: #2e5b4f; /* clinician-approved */
+  --rule: #dcd2bf;
+  --font-display: var(--font-young-serif), "Iowan Old Style", Georgia, serif;
+  --font-body: var(--font-atkinson), "Helvetica Neue", Arial, sans-serif;
+  --font-data: var(--font-plex-mono), ui-monospace, Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
