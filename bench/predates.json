@@ -64,6 +64,11 @@
    "commit": "0d6aa30",
    "date": "2026-10-07",
    "subject": "Coverage refusal names the binding filter: each empty outing under optional filters gets one live probe (same query without …"
+  },
+  {
+   "commit": "32b969c",
+   "date": "2026-10-07",
+   "subject": "Fix the re-plan route refusing itself: the route claims runs/replan-<id> before opening the stream, and replanWeek's precheck then saw that …"
   }
  ]
 }
