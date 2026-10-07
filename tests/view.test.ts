@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
+import { changedRatings, clampScore, coverageRefusal, emberLabel, keptLabel, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -187,5 +187,23 @@ describe("kept activity on a re-plan (QA round 1)", () => {
   it("only a kept card carries the ember 'kept' mark, with the rating it got", () => {
     expect(keptLabel({ routed_by: "kept", tool_params: { day: "thursday", kept: true, rated: 9 } })).toBe("↻ kept from last week, rated 9 · re-checked live");
     expect(keptLabel({ routed_by: "llm", tool_params: {} })).toBeNull();
+  });
+});
+
+describe("constraint toggle notice (QA round 1: widen copy)", () => {
+  const caseA = { max_meters: 1500, price_max: 2, in_recovery: false, need_quiet: true, need_wheelchair: false };
+  const before = { id: "p1", cards: [{ day_name: "monday" }], empty_slots: [{ day_name: "thursday", rung: "solo" }, { day_name: "saturday", rung: "solo" }, { day_name: "sunday", rung: "social" }] } as unknown as PlanDoc;
+  const after = (cards: string[], toggle: { struck: number; refilled: number; ms: number }) => ({ id: "p2", cards: cards.map((d) => ({ day_name: d })), toggle: { changed: {}, ...toggle } }) as unknown as PlanDoc;
+
+  it("widening reports the live retry of the empty outings, with how many filled", () => {
+    expect(toggleNotice(before, caseA, after(["monday", "saturday"], { struck: 0, refilled: 3, ms: 2100 }), { ...caseA, max_meters: 3000 })).toBe("Retried 3 empty outings within 3 km: 1 filled, 2 still empty · 2.1 s. The verified cards stay as they were.");
+    expect(toggleNotice(before, caseA, after(["monday"], { struck: 0, refilled: 3, ms: 2100 }), { ...caseA, max_meters: 3000 })).toMatch(/^Retried 3 empty outings within 3 km: 0 filled/);
+    expect(toggleNotice(before, caseA, after(["monday", "thursday"], { struck: 0, refilled: 3, ms: 900 }), { ...caseA, need_quiet: false })).toMatch(/^Retried 3 empty outings under the new setting: 1 filled/);
+  });
+
+  it("tightening reports strikes; no change says so", () => {
+    expect(toggleNotice(before, caseA, after(["monday"], { struck: 2, refilled: 2, ms: 3000 }), { ...caseA, in_recovery: true })).toBe("2 outings struck in place and 2 slots refilled live · 3.0 s");
+    expect(toggleNotice(before, caseA, after(["monday"], { struck: 0, refilled: 0, ms: 500 }), { ...caseA, in_recovery: true })).toBe("Every placed outing still passes the new constraint (0.5 s).");
+    expect(toggleNotice(before, caseA, before, caseA)).toBe("No change to the week.");
   });
 });

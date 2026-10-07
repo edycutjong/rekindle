@@ -10,7 +10,7 @@ import type { CardAction } from "@/lib/gate";
 import type { ConstraintPatch } from "@/lib/service";
 import type { CaseDoc, PlanDoc } from "@/lib/store";
 import { DAYS, type DayName } from "@/lib/verify";
-import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, stampLabel, strikesByDay, swapNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
+import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, stampLabel, strikesByDay, swapNotice, toggleNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
 import { AgentTrace } from "./AgentTrace";
 import { CaseStrip } from "./CaseStrip";
 import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
@@ -160,20 +160,14 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         const t = b.plan.toggle;
         const next = b.plan;
         if (t && next.id !== plan.id) setLive((l) => [...(l.length ? l : traceFromPlan(plan)), ...traceFromPlan(next).slice(0, 1)]);
-        setNotice(
-          b.plan.id === plan.id || !t
-            ? "No change to the week."
-            : t.struck === 0
-              ? `Every placed outing still passes the new constraint (${(t.ms / 1000).toFixed(1)} s). Loosening keeps the verified week; re-plan to use the wider setting.`
-              : `${t.struck} outing${t.struck === 1 ? "" : "s"} struck in place and ${t.refilled} slot${t.refilled === 1 ? "" : "s"} refilled live · ${(t.ms / 1000).toFixed(1)} s`,
-        );
+        setNotice(toggleNotice(plan, c, b.plan, b.case));
       } catch (err) {
         setFailure({ message: err instanceof Error ? err.message : String(err), status: (err as { status?: number }).status });
       } finally {
         setPhase("idle");
       }
     },
-    [plan],
+    [plan, c],
   );
 
   /** one JSON request that returns `{ plan }`; errors land in the failure box */

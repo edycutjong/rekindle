@@ -238,6 +238,28 @@ export function keptLabel(c: Pick<CardDoc, "routed_by" | "tool_params">): string
   return `↻ kept from last week${rated} · re-checked live`;
 }
 
+/**
+ * The notice after a constraint toggle. Loosening (wider radius, higher budget, a flag off) retries the empty outing
+ * slots live, so the notice reports that retry — "Retried 2 empty outings within 3 km: 1 filled" — instead of implying
+ * nothing happened (QA round 1). Tightening reports what was struck and refilled.
+ */
+export function toggleNotice(before: Pick<PlanDoc, "id" | "cards" | "empty_slots">, beforeCase: Pick<CaseDoc, "max_meters" | "price_max" | "in_recovery" | "need_quiet" | "need_wheelchair">, after: Pick<PlanDoc, "id" | "cards" | "toggle">, afterCase: Pick<CaseDoc, "max_meters" | "price_max" | "in_recovery" | "need_quiet" | "need_wheelchair">): string {
+  const t = after.toggle;
+  if (after.id === before.id || !t) return "No change to the week.";
+  const secs = `${(t.ms / 1000).toFixed(1)} s`;
+  const loosened = afterCase.max_meters > beforeCase.max_meters || afterCase.price_max > beforeCase.price_max || (beforeCase.in_recovery && !afterCase.in_recovery) || (beforeCase.need_quiet && !afterCase.need_quiet) || (beforeCase.need_wheelchair && !afterCase.need_wheelchair);
+  if (loosened) {
+    const emptyDays = new Set(before.empty_slots.filter((e) => e.rung !== "home").map((e) => e.day_name));
+    const filled = after.cards.filter((c) => emptyDays.has(c.day_name)).length;
+    const where = afterCase.max_meters > beforeCase.max_meters ? ` within ${distanceLabel(afterCase.max_meters).slice(1)}` : " under the new setting";
+    if (emptyDays.size === 0) return `Every placed outing still passes, and no outing was empty to retry (${secs}).`;
+    return `Retried ${emptyDays.size} empty outing${emptyDays.size === 1 ? "" : "s"}${where}: ${filled} filled, ${emptyDays.size - filled} still empty · ${secs}. The verified cards stay as they were.`;
+  }
+  if (t.struck === 0 && t.refilled === 0) return `Every placed outing still passes the new constraint (${secs}).`;
+  if (t.struck === 0) return `${t.refilled} outing${t.refilled === 1 ? "" : "s"} moved to clinician review and refilled live · ${secs}`;
+  return `${t.struck} outing${t.struck === 1 ? "" : "s"} struck in place and ${t.refilled} slot${t.refilled === 1 ? "" : "s"} refilled live · ${secs}`;
+}
+
 /** The notice after a swap: what left the slot and what (if anything) replaced it. */
 export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pick<PlanDoc, "cards">, swap: { found: boolean; ms: number; calls: number }): string {
   const now = plan.cards.find((c) => c.day_name === before.day_name);
