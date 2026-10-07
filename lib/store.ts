@@ -149,7 +149,17 @@ export const PlanDoc = z.object({
     struck: z.array(z.string()).default([]),
   }),
   cards: z.array(CardDoc),
-  empty_slots: z.array(z.object({ day_name: day, hour: z.number().int(), rung, reason: z.string(), routed_by: z.string().optional() })),
+  empty_slots: z.array(
+    z.object({
+      day_name: day,
+      hour: z.number().int(),
+      rung,
+      reason: z.string(),
+      routed_by: z.string().optional(),
+      /** live diagnosis: verified candidates if one optional filter were relaxed (lib/plan.ts diagnoseEmpty) */
+      relax: z.object({ quiet: z.number().int().optional(), wheelchair: z.number().int().optional(), price: z.number().int().optional() }).optional(),
+    }),
+  ),
   refusals: z.array(RefusalDoc),
   /** REVIEW candidates held for the clinician (never placed automatically) */
   review: z.array(CardDoc),
@@ -305,7 +315,7 @@ export function planDocFromAgent(p: AgentPlan, o: { id?: string; caseId: string;
     latency_ms: p.latencyMs,
     history: o.history,
     cards: p.slots.flatMap((s) => (s.card ? [cardToDoc(id, s.card, { coaching: s.coaching ?? "", ...(s.coachingBy ? { coaching_by: s.coachingBy } : {}), routed_by: s.routedBy, tool: s.tool, tool_params: s.params })] : [])),
-    empty_slots: p.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: s.routedBy })),
+    empty_slots: p.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: s.routedBy, ...(s.relax ? { relax: s.relax } : {}) })),
     refusals: p.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}) })),
     review: p.review.map((c) => cardToDoc(id, c, { routed_by: "llm" })),
     dropped: p.dropped,
@@ -344,7 +354,7 @@ export function planDocFromToggle(
       if (kept) return [{ ...kept, id: newId(), plan_id: id }];
       return [cardToDoc(id, s.card, { coaching: o.coach(s.card), coaching_by: "template", routed_by: "toggle", tool: s.slot.rung === "social" ? "placeSocial" : "findOutings", tool_params: { day: s.slot.day } })];
     }),
-    empty_slots: w.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: "toggle" })),
+    empty_slots: w.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: "toggle", ...(s.relax ? { relax: s.relax } : {}) })),
     refusals: w.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}), ...(r.byClinician ? { by_clinician: r.byClinician } : {}) })),
     review: w.review.map((c) => cardToDoc(id, c, { routed_by: "toggle" })),
   });
@@ -361,7 +371,7 @@ export function weekPlanFromDoc(d: PlanDoc): WeekPlan {
       const c = cards.get(dn);
       if (c) return { slot: cardFromDoc(c).slot, card: cardFromDoc(c) };
       const e = empties.get(dn)!;
-      return { slot: { day: dn, hour: e.hour, rung: e.rung }, card: null, empty: e.reason };
+      return { slot: { day: dn, hour: e.hour, rung: e.rung }, card: null, empty: e.reason, ...(e.relax ? { relax: e.relax } : {}) };
     }),
     refusals: d.refusals.map((r) => ({ day: r.day_name, hour: r.hour, entity_id: r.qloo_entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, ...(r.moved_to !== undefined ? { movedTo: r.moved_to } : {}), ...(r.struck_by_toggle ? { struckByToggle: true } : {}), ...(r.by_clinician ? { byClinician: r.by_clinician } : {}) })),
     review: d.review.map(cardFromDoc),

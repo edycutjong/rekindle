@@ -399,15 +399,27 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
               </li>
             ))}
           </ul>
-          {coverage.widen && plan?.status === "draft" ? (
-            <p>
-              <button type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={phase !== "idle"} onClick={() => void toggle({ max_meters: coverage.widen! })} data-testid="widen-radius">
-                Widen to {distanceLabel(coverage.widen).slice(1)} with clinician consent
-              </button>{" "}
-              <span className={s.reason}>re-checks the week and retries only the empty outings, live</span>
+          {coverage.binding && (
+            <p className={s.reason} data-testid="coverage-binding">
+              {coverage.binding}
+            </p>
+          )}
+          {canEdit && plan?.status === "draft" && (coverage.relax.length > 0 || coverage.widen) ? (
+            <p className={s.coverageActions}>
+              {coverage.relax.map((r) => (
+                <button key={r.key} type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={phase !== "idle"} onClick={() => void toggle(r.patch)} data-testid={`relax-${r.key}`}>
+                  Try {r.label} with clinician consent
+                </button>
+              ))}
+              {coverage.widen && (
+                <button type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={phase !== "idle"} onClick={() => void toggle({ max_meters: coverage.widen! })} data-testid="widen-radius">
+                  Widen to {distanceLabel(coverage.widen).slice(1)} with clinician consent
+                </button>
+              )}{" "}
+              <span className={s.reason}>each re-checks the week and retries only the empty outings, live</span>
             </p>
           ) : (
-            <p className={s.reason}>{coverage.widen ? "The week is approved; widen the radius on a new draft." : "Already at the widest radius: this area is outside what Qloo can verify for these constraints."}</p>
+            <p className={s.reason}>{!canEdit ? "Read-only case: copy it to try a relaxation." : coverage.widen || coverage.relax.length ? "The week is approved; relax a constraint on a new draft." : "Already at the widest radius: this area is outside what Qloo can verify for these constraints."}</p>
           )}
         </div>
       )}

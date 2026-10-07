@@ -74,6 +74,19 @@ with sync_playwright() as p:
     res["coverage_text"] = pg.locator("[data-testid=coverage-refusal]").inner_text()[:300] if gates["coverage_refusal"] else None
     res["widen_button"] = pg.locator("[data-testid=widen-radius]").count()
     pg.screenshot(path=f"{out}/{tag}-state-coverage-1440.png", full_page=True)
+    # the coverage box names what the live probe found binding, and offers that relaxation (QA round 2)
+    res["coverage_binding"] = pg.locator("[data-testid=coverage-binding]").inner_text() if pg.locator("[data-testid=coverage-binding]").count() else None
+    gates["coverage_names_binding_filter"] = bool(res["coverage_binding"])
+    relax = pg.locator("[data-testid^=relax-]")
+    res["relax_buttons"] = [relax.nth(i).inner_text() for i in range(relax.count())]
+    if relax.count():
+        relax.first.click()
+        pg.wait_for_selector("[data-testid=toggle-notice]", timeout=60000)
+        res["relax_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
+        m = re.match(r"Retried \d+ empty outings? .*?: (\d+) filled", res["relax_notice"])
+        gates["relax_fills_an_outing"] = bool(m) and int(m.group(1)) > 0
+        pg.screenshot(path=f"{out}/{tag}-state-relaxed-1440.png", full_page=True)
+        res["widen_button"] = pg.locator("[data-testid=widen-radius]").count()
     # widening with consent retries the empty outings live; the notice must say so (QA round 1)
     if res["widen_button"]:
         pg.click("[data-testid=widen-radius]")

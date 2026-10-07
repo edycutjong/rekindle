@@ -320,6 +320,13 @@ export interface CoverageRefusal {
   slots: { day: DayName; line: string }[];
   /** the radius the clinician may consent to, or null when already at the widest step */
   widen: number | null;
+  /**
+   * From the live probe on each empty outing (lib/plan.ts diagnoseEmpty): the optional filters that, relaxed alone,
+   * leave a verified candidate for at least one empty outing — most slots first. Empty when none would.
+   */
+  relax: { key: "quiet" | "wheelchair" | "price"; label: string; fills: number; patch: { need_quiet?: false; need_wheelchair?: false; price_max?: number } }[];
+  /** what the probe says, in one line (null when no slot was probed) */
+  binding: string | null;
 }
 
 /**
@@ -332,10 +339,30 @@ export function coverageRefusal(plan: Pick<PlanDoc, "cards" | "empty_slots">, c:
   const outings = plan.cards.filter((x) => x.rung !== "home").length + plan.empty_slots.filter((e) => e.rung !== "home").length;
   const verified = plan.cards.filter((x) => x.rung !== "home").length;
   const flags = [c.need_quiet && "quiet", c.need_wheelchair && "wheelchair entrance", c.in_recovery && "alcohol-free", priceLabel(c.price_max)].filter(Boolean).join(", ");
+  const probed = empties.filter((e) => e.relax);
+  const up = Math.min(4, c.price_max + 1);
+  const options = [
+    { key: "quiet" as const, label: "without “quiet”", patch: { need_quiet: false as const } },
+    { key: "wheelchair" as const, label: "without “wheelchair entrance”", patch: { need_wheelchair: false as const } },
+    { key: "price" as const, label: `with budget ${priceLabel(up)}`, patch: { price_max: up } },
+  ];
+  const relax = options
+    .map((o) => ({ ...o, fills: probed.filter((e) => (e.relax?.[o.key] ?? 0) > 0).length, probed: probed.some((e) => e.relax?.[o.key] !== undefined) }))
+    .filter((o) => o.probed && o.fills > 0)
+    .sort((a, b) => b.fills - a.fills)
+    .map(({ key, label, fills, patch }) => ({ key, label, fills, patch }));
+  const n = probed.length;
+  const binding = !n
+    ? null
+    : relax.length
+      ? `Live check: ${relax.map((r) => `${r.label}, ${r.fills} of ${n} empty outing${n === 1 ? "" : "s"} would have a verified candidate`).join("; ")}.`
+      : `Live check: relaxing quiet, wheelchair or budget alone would not fill ${n === 1 ? "it" : "them"}; the radius is the remaining lever.`;
   return {
     headline: `Only ${verified} of ${outings} outing${outings === 1 ? "" : "s"} could be verified within ${distanceLabel(c.max_meters).slice(1)} (${flags}), open at the slot.`,
     slots: empties.map((e) => ({ day: e.day_name, line: `${DAY_SHORT[e.day_name]} ${fmtHour(e.hour)} ${e.rung}: ${e.reason}` })),
     widen: widerRadius(c.max_meters),
+    relax,
+    binding,
   };
 }
 

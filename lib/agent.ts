@@ -17,7 +17,7 @@ import { z } from "zod";
 import type { LlmHandle } from "./llm";
 import type { QlooClient } from "./qloo";
 import { DAYS, type DayName } from "./verify";
-import { EMPTY_HISTORY, findAtHome, findOutings, HOME_TYPES, ladder, placeSocial, type Card, type CaseRow, type HomeType, type PlanHistory, type Refusal, type SlotSpec, type ToolContext, type ToolResult, type WeekPlan } from "./plan";
+import { diagnoseEmpty, EMPTY_HISTORY, findAtHome, findOutings, HOME_TYPES, ladder, placeSocial, type Card, type Relax, type CaseRow, type HomeType, type PlanHistory, type Refusal, type SlotSpec, type ToolContext, type ToolResult, type WeekPlan } from "./plan";
 
 /** `kept`: a re-plan keeps the top-rated (≥ 7) activity in its slot after a live re-check (lib/plan.ts recheckKept) */
 export type RoutedBy = "llm" | "fallback" | "kept";
@@ -34,6 +34,8 @@ export interface AgentSlot {
   coachingBy?: "llm" | "template";
   /** heatmap cell of the social slot */
   cell?: string;
+  /** empty outing: verified candidates per single relaxed filter (diagnoseEmpty) */
+  relax?: Relax;
 }
 
 export interface Dropped {
@@ -437,6 +439,17 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
       fail(llm, e, coaches[k + 1]);
     }
   }
+
+  // an outing left empty under optional filters: one live probe says which single relaxation would fill it, so the
+  // coverage notice can name the binding filter and offer that relaxation (QA round 2: "widen" could not help Cal)
+  await Promise.all(
+    skeleton.map(async (s) => {
+      const f = filled.get(s.day);
+      if (!f || f.card || s.rung === "home" || (f.empty ?? "").startsWith("Qloo unavailable")) return;
+      const relax = await diagnoseEmpty(ctx, s);
+      if (relax) f.relax = relax;
+    }),
+  );
 
   const slots = skeleton.map((s) => filled.get(s.day)!).filter(Boolean);
   for (const s of slots) if (s.card) otherNames.add(s.card.name);

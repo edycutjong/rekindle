@@ -91,6 +91,18 @@ export interface SlotOutcome {
   card: Card | null;
   /** why the slot is empty, when it is */
   empty?: string;
+  /** for an empty outing: which single relaxation would have a verified candidate (diagnoseEmpty) */
+  relax?: Relax;
+}
+
+/**
+ * Live diagnosis of an empty outing slot when the case has optional filters on: how many verified candidates each
+ * single relaxation would leave (quiet off, wheelchair off, one budget level up). Undefined keys = filter not on.
+ */
+export interface Relax {
+  quiet?: number;
+  wheelchair?: number;
+  price?: number;
 }
 
 export interface WeekPlan {
@@ -368,6 +380,34 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
   return { card: null, refusals, review, empty: list.length ? `no candidate passed all rules (${list.length} checked${queried !== null ? ` within ${queried} m` : ""})` : `Qloo returned no places for these filters${queried !== null ? ` within ${queried} m` : ""}`, returned: list.length };
 }
 
+/**
+ * Why is this outing slot empty? One extra Qloo request — the same query at the case radius without the quiet /
+ * wheelchair tag filters and one budget level up — then the same verifier over the answer with ONE constraint relaxed
+ * at a time (open at the slot, near, kind, alcohol and history still apply; places already on the sheet are skipped).
+ * Returns null when the case has no optional filter to relax (the radius is then the only lever), or on an outage.
+ */
+export async function diagnoseEmpty(ctx: ToolContext, slot: SlotSpec): Promise<Relax | null> {
+  const c = ctx.case;
+  const priceUp = Math.min(4, c.priceMax + 1);
+  if (!c.needQuiet && !c.needWheelchair && priceUp === c.priceMax) return null;
+  const probe: CaseRow = { ...c, needQuiet: false, needWheelchair: false, priceMax: priceUp };
+  let res;
+  try {
+    res = await ctx.qloo.insights(outingParams(probe, slot.day, ctx.history, { excludeEntities: [...(ctx.usedPlaces ?? [])], excludeTagSet: ctx.excludeTagSet }));
+  } catch {
+    return null;
+  }
+  const list = (res.results.entities ?? []).filter((e) => !ctx.used.has(e.entity_id));
+  list.forEach((e) => ctx.seen.add(e.entity_id));
+  const hist = histSets(ctx.history);
+  const passes = (cc: CaseRow) => list.filter((e) => verifyCard(e, { kind: "outing", constraints: cc, ...hist, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen, slot: { day: slot.day, hour: slot.hour } }).verdict === "PASS").length;
+  const out: Relax = {};
+  if (c.needQuiet) out.quiet = passes({ ...c, needQuiet: false });
+  if (c.needWheelchair) out.wheelchair = passes({ ...c, needWheelchair: false });
+  if (priceUp !== c.priceMax) out.price = passes({ ...c, priceMax: priceUp });
+  return out;
+}
+
 /** Social outing: heatmap → top-affinity geohash cell → places in that cell (POINT fallback at the cell centre). */
 export async function placeSocial(ctx: ToolContext, slot: SlotSpec): Promise<ToolResult & { cell?: string; cells?: { geohash: string; affinity: number; lat: number; lon: number }[] }> {
   const s = signals(ctx.case, ctx.history);
@@ -544,6 +584,15 @@ export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: Case
     refusals.push(...r.refusals);
     review.push(...r.review);
   }
+  // outings still empty after the change: re-diagnose under the new case row (the binding filter may have moved)
+  await Promise.all(
+    slots.map(async (s) => {
+      if (s.card || s.slot.rung === "home" || (s.empty ?? "").startsWith("Qloo unavailable")) return;
+      const relax = await diagnoseEmpty(ctx, s.slot);
+      if (relax) s.relax = relax;
+      else delete s.relax;
+    }),
+  );
   return { week: prev.week, slots, refusals: [...refusals, ...struck], review, calls: prev.calls, struck, refilled };
 }
 

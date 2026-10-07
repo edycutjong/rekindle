@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { QlooClient, QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14, TAG_QUIET, TAG_WHEELCHAIR } from "../lib/tags";
-import { applyConstraints, EMPTY_HISTORY, findOutings, homeParams, ladder, outingParams, planWeek, type CaseRow, type ToolContext } from "../lib/plan";
+import { applyConstraints, diagnoseEmpty, EMPTY_HISTORY, findOutings, homeParams, ladder, outingParams, planWeek, type CaseRow, type ToolContext } from "../lib/plan";
 import { diffWeeks, historyFromRatings, seedRatings, specificGenreTags } from "../lib/replan";
 import { MAYA, replayClient } from "./replay";
 
@@ -81,6 +81,21 @@ describe("tools over captured responses", () => {
         expect(w.refusals.filter((x) => placed.has(`${x.day}|${x.entity_id}`))).toEqual([]);
       }
     }
+  });
+
+  it("diagnoseEmpty: one probe without the optional filters, then the verifier with one constraint relaxed at a time", async () => {
+    const seen: QlooParams[] = [];
+    const quietCase = { ...MAYA, needQuiet: true };
+    const relax = await diagnoseEmpty(ctx(quietCase, replayClient(seen)), { day: "thursday", hour: 15, rung: "solo" });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]["filter.tags"]).toEqual([]);
+    expect(seen[0]["filter.price_level.max"]).toBe(MAYA.priceMax + 1);
+    expect(relax!.quiet).toBeGreaterThan(0);
+    expect(Object.keys(relax!).sort()).toEqual(["price", "quiet"]);
+    // nothing optional to relax (top budget, no flags): no probe at all
+    const none: QlooParams[] = [];
+    expect(await diagnoseEmpty(ctx({ ...MAYA, priceMax: 4 }, replayClient(none)), { day: "thursday", hour: 15, rung: "solo" })).toBeNull();
+    expect(none).toHaveLength(0);
   });
 
   it("an LLM-narrowed radius that verifies nothing is retried once at the case radius before the slot is left empty", async () => {

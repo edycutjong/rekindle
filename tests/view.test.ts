@@ -164,6 +164,18 @@ describe("edge states (D10)", () => {
     expect(coverageRefusal({ cards: [outing], empty_slots: [{ day_name: "sunday", hour: 14, rung: "social", reason: "Qloo unavailable (503) — slot left empty" }] }, caseRow)).toBeNull();
     expect(coverageRefusal({ cards: [outing], empty_slots: [] }, caseRow)).toBeNull();
   });
+  it("coverage names the binding filter from the live probe and offers that relaxation beside widening (QA round 2: Cal)", () => {
+    const e = (day: "saturday" | "sunday" | "thursday", relax: { quiet?: number; price?: number }) => ({ day_name: day, hour: 14, rung: "solo" as const, reason: "Qloo returned no places for these filters", relax });
+    const plan = { cards: [outing], empty_slots: [e("thursday", { quiet: 4, price: 0 }), e("saturday", { quiet: 2, price: 1 }), e("sunday", { quiet: 0, price: 0 })] };
+    const r = coverageRefusal(plan, caseRow)!;
+    expect(r.relax.map((x) => [x.key, x.fills])).toEqual([["quiet", 2], ["price", 1]]);
+    expect(r.relax[0].patch).toEqual({ need_quiet: false });
+    expect(r.relax[1].patch).toEqual({ price_max: 3 });
+    expect(r.binding).toBe("Live check: without “quiet”, 2 of 3 empty outings would have a verified candidate; with budget ≤$$$, 1 of 3 empty outings would have a verified candidate.");
+    const none = coverageRefusal({ cards: [outing], empty_slots: [e("sunday", { quiet: 0, price: 0 })] }, caseRow)!;
+    expect(none.relax).toEqual([]);
+    expect(none.binding).toMatch(/would not fill it; the radius is the remaining lever/);
+  });
   it("outage state counts outage-empty slots and says whether it was the labelled demo", () => {
     expect(isOutage("Qloo unavailable (network) — slot left empty")).toBe(true);
     expect(isOutage("no verified artist")).toBe(false);
