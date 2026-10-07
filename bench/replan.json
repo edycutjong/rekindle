@@ -1,0 +1,1454 @@
+{
+ "generated_by": "scripts/replan_check.py",
+ "started_at": "2026-10-07T13:11:44+00:00",
+ "finished_at": "2026-10-07T13:14:44+00:00",
+ "base": "https://rekindle-one.vercel.app",
+ "source": "bench/results.json",
+ "N": 16,
+ "passed": 16,
+ "result": "16/16",
+ "excluded": [
+  {
+   "profile": "ruth",
+   "reason": "week 1 has 1 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "omar",
+   "reason": "week 1 has 0 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "hana",
+   "reason": "week 1 has 1 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "cal",
+   "reason": "week 1 has 0 verified outing(s); the rating rule needs >= 2"
+  }
+ ],
+ "errors": [],
+ "failed": [],
+ "low_rated_reappearing": 0,
+ "attributed_new_cards_total": 67,
+ "new_cards_total": 84,
+ "ember_margin_median_of_profiles": 0.0555,
+ "ember_margin_min_of_profiles": 0.0047,
+ "replan_seconds_p50": 20.71,
+ "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient).",
+ "profiles": [
+  {
+   "profile": "maya",
+   "status": "pass",
+   "week1_plan": "eb916e70-9d56-48b6-bb65-2d0caa179bff",
+   "week2_plan": "f11ab902-351f-40fa-bc39-007ead1b42ce",
+   "replan_seconds": 22.18,
+   "rated": [
+    {
+     "name": "Lucy Dacus",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Dun-Well Doughnuts",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Juice Generation",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "Big Thief",
+    "Ceremonia Bakeshop",
+    "Kabob Shack",
+    "Bushwick Pita Palace"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0231,
+   "margin_min": -0.0021,
+   "cards": [
+    {
+     "name": "Big Thief",
+     "rung": "home",
+     "top_input": "Lucy Dacus",
+     "top_score": 0.26576236412302573,
+     "rekindled_is_top": true,
+     "margin": 0.0021
+    },
+    {
+     "name": "A Little Devil in America: Notes in Praise of Black Performance",
+     "rung": "home",
+     "top_input": "Phoebe Bridgers",
+     "top_score": 0.2808432503052556,
+     "rekindled_is_top": false,
+     "margin": -0.0021
+    },
+    {
+     "name": "Ceremonia Bakeshop",
+     "rung": "solo",
+     "top_input": "Dun-Well Doughnuts",
+     "top_score": 0.2960061549573592,
+     "rekindled_is_top": true,
+     "margin": 0.0441
+    },
+    {
+     "name": "Shrill",
+     "rung": "home",
+     "top_input": "Phoebe Bridgers",
+     "top_score": 0.25733932663101033,
+     "rekindled_is_top": false,
+     "margin": -0.0015
+    },
+    {
+     "name": "Kabob Shack",
+     "rung": "solo",
+     "top_input": "Dun-Well Doughnuts",
+     "top_score": 0.329663619937918,
+     "rekindled_is_top": true,
+     "margin": 0.0946
+    },
+    {
+     "name": "Bushwick Pita Palace",
+     "rung": "social",
+     "top_input": "Dun-Well Doughnuts",
+     "top_score": 0.3066466350272131,
+     "rekindled_is_top": true,
+     "margin": 0.0724
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "theo",
+   "status": "pass",
+   "week1_plan": "ce9ced7e-ec16-429a-b268-d4521e055fd1",
+   "week2_plan": "0acfb7ce-da82-4a10-a744-4bc69e235b07",
+   "replan_seconds": 22.03,
+   "rated": [
+    {
+     "name": "Fleishman Is in Trouble",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "One Girl Cookies",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "US Fried Chicken",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "Mitski",
+    "Bien Cuit",
+    "Somebody Somewhere",
+    "Van Leeuwen Ice Cream",
+    "Shelsky's Of Brooklyn Appetizing and Delicatessen"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0176,
+   "margin_min": -0.0981,
+   "cards": [
+    {
+     "name": "Mitski",
+     "rung": "home",
+     "top_input": "Fleishman Is in Trouble",
+     "top_score": 0.35251741481348287,
+     "rekindled_is_top": true,
+     "margin": 0.0054
+    },
+    {
+     "name": "TigerBelly",
+     "rung": "home",
+     "top_input": "The Bear",
+     "top_score": 0.42485697432369296,
+     "rekindled_is_top": false,
+     "margin": -0.0981
+    },
+    {
+     "name": "Bien Cuit",
+     "rung": "solo",
+     "top_input": "One Girl Cookies",
+     "top_score": 0.3033123831723809,
+     "rekindled_is_top": true,
+     "margin": 0.0451
+    },
+    {
+     "name": "Somebody Somewhere",
+     "rung": "home",
+     "top_input": "Fleishman Is in Trouble",
+     "top_score": 0.35762040112522125,
+     "rekindled_is_top": true,
+     "margin": 0.0124
+    },
+    {
+     "name": "Van Leeuwen Ice Cream",
+     "rung": "solo",
+     "top_input": "One Girl Cookies",
+     "top_score": 0.30648750150016646,
+     "rekindled_is_top": true,
+     "margin": 0.0542
+    },
+    {
+     "name": "Shelsky's Of Brooklyn Appetizing and Delicatessen",
+     "rung": "social",
+     "top_input": "One Girl Cookies",
+     "top_score": 0.29857691239008993,
+     "rekindled_is_top": true,
+     "margin": 0.0228
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "ana",
+   "status": "pass",
+   "week1_plan": "76e416ff-db43-4085-b916-2f7f1b931b3a",
+   "week2_plan": "c71fd764-5281-4f73-9d92-dd21f15e6f2c",
+   "replan_seconds": 23.21,
+   "rated": [
+    {
+     "name": "Karol G",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Museum of Sex",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Dos Caminos",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "J Balvin",
+    "Pig 'N' Whistle Public House",
+    "Trinity Place",
+    "Slattery's Midtown Pub",
+    "Eataly - Flatiron"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0117,
+   "margin_min": -0.0863,
+   "cards": [
+    {
+     "name": "J Balvin",
+     "rung": "home",
+     "top_input": "Karol G",
+     "top_score": 0.29090401858347903,
+     "rekindled_is_top": true,
+     "margin": 0.0108
+    },
+    {
+     "name": "Pig 'N' Whistle Public House",
+     "rung": "solo",
+     "top_input": "Museum of Sex",
+     "top_score": 0.27635879287904624,
+     "rekindled_is_top": true,
+     "margin": 0.0078
+    },
+    {
+     "name": "Off The Vine with Kaitlyn Bristowe",
+     "rung": "home",
+     "top_input": "Jane the Virgin",
+     "top_score": 0.3179886757422724,
+     "rekindled_is_top": false,
+     "margin": -0.0863
+    },
+    {
+     "name": "Trinity Place",
+     "rung": "solo",
+     "top_input": "Museum of Sex",
+     "top_score": 0.2743806575099143,
+     "rekindled_is_top": true,
+     "margin": 0.0147
+    },
+    {
+     "name": "Slattery's Midtown Pub",
+     "rung": "solo",
+     "top_input": "Museum of Sex",
+     "top_score": 0.26715093396262385,
+     "rekindled_is_top": true,
+     "margin": 0.0126
+    },
+    {
+     "name": "Eataly - Flatiron",
+     "rung": "social",
+     "top_input": "Museum of Sex",
+     "top_score": 0.2847787285271731,
+     "rekindled_is_top": true,
+     "margin": 0.034
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "sam",
+   "status": "pass",
+   "week1_plan": "166f6b1f-aa1b-4aa1-8c07-0a6e81affe8a",
+   "week2_plan": "763daf9f-e72c-4b2b-ba60-c77665cbc25c",
+   "replan_seconds": 20.1,
+   "rated": [
+    {
+     "name": "Fruits Basket",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Finestra Restaurant",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Ariyoshi",
+     "rung": "solo",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 6,
+   "new_cards": 5,
+   "attributed_new_cards": [
+    "Frédéric Chopin",
+    "Avenue Coffee House",
+    "Paris Oven"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0047,
+   "margin_min": -0.0639,
+   "cards": [
+    {
+     "name": "Frédéric Chopin",
+     "rung": "home",
+     "top_input": "Finestra Restaurant",
+     "top_score": 0.3657249033743632,
+     "rekindled_is_top": true,
+     "margin": 0.0047
+    },
+    {
+     "name": "Welcome to Night Vale",
+     "rung": "home",
+     "top_input": "Spirited Away",
+     "top_score": 0.5319272811122088,
+     "rekindled_is_top": false,
+     "margin": -0.0639
+    },
+    {
+     "name": "Avenue Coffee House",
+     "rung": "solo",
+     "top_input": "Finestra Restaurant",
+     "top_score": 0.38619692421181334,
+     "rekindled_is_top": true,
+     "margin": 0.0897
+    },
+    {
+     "name": "Yona of the Dawn",
+     "rung": "home",
+     "top_input": "Spirited Away",
+     "top_score": 0.5040812926178391,
+     "rekindled_is_top": false,
+     "margin": -0.0082
+    },
+    {
+     "name": "Paris Oven",
+     "rung": "solo",
+     "top_input": "Finestra Restaurant",
+     "top_score": 0.40448334855348683,
+     "rekindled_is_top": true,
+     "margin": 0.1097
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 5,
+    "removed": 5
+   }
+  },
+  {
+   "profile": "priya",
+   "status": "pass",
+   "week1_plan": "a0e4970a-20c4-454f-9f04-b356aeaa297b",
+   "week2_plan": "eea42b0b-4c11-41ec-89a8-88213bc3e5bc",
+   "replan_seconds": 22.14,
+   "rated": [
+    {
+     "name": "Evil Genius",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Ginjan Cafe",
+     "rung": "social",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Jerk House Caribbean Restaurant",
+     "rung": "solo",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 7,
+   "attributed_new_cards": [
+    "Carole Bayer Sager",
+    "2 Dope Queens",
+    "White Castle",
+    "Sugar Hill Creamery",
+    "KFC"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.1142,
+   "margin_min": -0.0053,
+   "cards": [
+    {
+     "name": "Carole Bayer Sager",
+     "rung": "home",
+     "top_input": "Evil Genius",
+     "top_score": 0.38672059348813426,
+     "rekindled_is_top": true,
+     "margin": 0.1201
+    },
+    {
+     "name": "2 Dope Queens",
+     "rung": "home",
+     "top_input": "Ginjan Cafe",
+     "top_score": 0.44938046686676464,
+     "rekindled_is_top": true,
+     "margin": 0.0747
+    },
+    {
+     "name": "Both/And: A Memoir",
+     "rung": "home",
+     "top_input": "Becoming",
+     "top_score": 0.3383334374566497,
+     "rekindled_is_top": false,
+     "margin": -0.0007
+    },
+    {
+     "name": "White Castle",
+     "rung": "solo",
+     "top_input": "Ginjan Cafe",
+     "top_score": 0.4178422311460512,
+     "rekindled_is_top": true,
+     "margin": 0.1348
+    },
+    {
+     "name": "Wormwood",
+     "rung": "home",
+     "top_input": "Becoming",
+     "top_score": 0.34931733813643356,
+     "rekindled_is_top": false,
+     "margin": -0.0053
+    },
+    {
+     "name": "Sugar Hill Creamery",
+     "rung": "solo",
+     "top_input": "Ginjan Cafe",
+     "top_score": 0.41798764081716644,
+     "rekindled_is_top": true,
+     "margin": 0.1142
+    },
+    {
+     "name": "KFC",
+     "rung": "social",
+     "top_input": "Ginjan Cafe",
+     "top_score": 0.4590004852334099,
+     "rekindled_is_top": true,
+     "margin": 0.1655
+    }
+   ],
+   "diff_summary": {
+    "kept": 0,
+    "added": 7,
+    "removed": 7
+   }
+  },
+  {
+   "profile": "jo",
+   "status": "pass",
+   "week1_plan": "92cb6918-0a97-4c50-a83b-ae79f30cb30e",
+   "week2_plan": "77bed534-2fb2-44c8-be5a-0c0dd23962da",
+   "replan_seconds": 16.91,
+   "rated": [
+    {
+     "name": "The Smiths",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Cafe Los Feliz",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "El Chino Restaurant",
+     "rung": "solo",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 6,
+   "new_cards": 3,
+   "attributed_new_cards": [
+    "Joy Division",
+    "Constellation Coffee",
+    "El Cafetal"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.11,
+   "margin_min": 0.009,
+   "cards": [
+    {
+     "name": "Joy Division",
+     "rung": "home",
+     "top_input": "The Smiths",
+     "top_score": 0.33265208784976324,
+     "rekindled_is_top": true,
+     "margin": 0.009
+    },
+    {
+     "name": "Constellation Coffee",
+     "rung": "solo",
+     "top_input": "Cafe Los Feliz",
+     "top_score": 0.3719542978650823,
+     "rekindled_is_top": true,
+     "margin": 0.1538
+    },
+    {
+     "name": "El Cafetal",
+     "rung": "solo",
+     "top_input": "Cafe Los Feliz",
+     "top_score": 0.33313078637642274,
+     "rekindled_is_top": true,
+     "margin": 0.11
+    }
+   ],
+   "diff_summary": {
+    "kept": 3,
+    "added": 3,
+    "removed": 3
+   }
+  },
+  {
+   "profile": "marcus",
+   "status": "pass",
+   "week1_plan": "37b5c30d-6ae1-4a73-9b7f-d3d91b90cbe0",
+   "week2_plan": "693eb57b-5b91-47c9-94c0-229fbacc9885",
+   "replan_seconds": 20.96,
+   "rated": [
+    {
+     "name": "Frank Ocean",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Fatburger",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Triple Beam Pizza",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 4,
+   "attributed_new_cards": [
+    "Millie's Cafe",
+    "Tacos Delta",
+    "House of Pies"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0915,
+   "margin_min": -0.0109,
+   "cards": [
+    {
+     "name": "Vince Staples",
+     "rung": "home",
+     "top_input": "Atlanta",
+     "top_score": 0.2649237218796099,
+     "rekindled_is_top": false,
+     "margin": -0.0109
+    },
+    {
+     "name": "Millie's Cafe",
+     "rung": "solo",
+     "top_input": "Fatburger",
+     "top_score": 0.30304816252110195,
+     "rekindled_is_top": true,
+     "margin": 0.0758
+    },
+    {
+     "name": "Tacos Delta",
+     "rung": "solo",
+     "top_input": "Fatburger",
+     "top_score": 0.32524201524779656,
+     "rekindled_is_top": true,
+     "margin": 0.11
+    },
+    {
+     "name": "House of Pies",
+     "rung": "social",
+     "top_input": "Fatburger",
+     "top_score": 0.33003212714660296,
+     "rekindled_is_top": true,
+     "margin": 0.1072
+    }
+   ],
+   "diff_summary": {
+    "kept": 3,
+    "added": 4,
+    "removed": 4
+   }
+  },
+  {
+   "profile": "lena",
+   "status": "pass",
+   "week1_plan": "e97823ff-8e93-428b-9b8e-b52265cc0139",
+   "week2_plan": "0bf7b1d5-4dc1-4503-84f6-d490ec987491",
+   "replan_seconds": 20.81,
+   "rated": [
+    {
+     "name": "Katy Perry",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Bubba Gump Shrimp Co.",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "The Albright",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "The Cheesecake Factory",
+    "The Sidewalk Cafe",
+    "Pier Burger",
+    "Hot Dog on a Stick"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0706,
+   "margin_min": -0.0276,
+   "cards": [
+    {
+     "name": "Justin Bieber",
+     "rung": "home",
+     "top_input": "Taylor Swift",
+     "top_score": 0.28164607477238424,
+     "rekindled_is_top": false,
+     "margin": -0.0074
+    },
+    {
+     "name": "Armchair Expert with Dax Shepard",
+     "rung": "home",
+     "top_input": "Taylor Swift",
+     "top_score": 0.29043604199887374,
+     "rekindled_is_top": false,
+     "margin": -0.0276
+    },
+    {
+     "name": "The Cheesecake Factory",
+     "rung": "solo",
+     "top_input": "Bubba Gump Shrimp Co.",
+     "top_score": 0.30862619344103626,
+     "rekindled_is_top": true,
+     "margin": 0.0697
+    },
+    {
+     "name": "The Sidewalk Cafe",
+     "rung": "solo",
+     "top_input": "Bubba Gump Shrimp Co.",
+     "top_score": 0.322063905264713,
+     "rekindled_is_top": true,
+     "margin": 0.0766
+    },
+    {
+     "name": "Pier Burger",
+     "rung": "solo",
+     "top_input": "Bubba Gump Shrimp Co.",
+     "top_score": 0.3268428283444903,
+     "rekindled_is_top": true,
+     "margin": 0.0833
+    },
+    {
+     "name": "Hot Dog on a Stick",
+     "rung": "social",
+     "top_input": "Bubba Gump Shrimp Co.",
+     "top_score": 0.3090519674751345,
+     "rekindled_is_top": true,
+     "margin": 0.0716
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "ruth",
+   "status": "excluded",
+   "reason": "week 1 has 1 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "dev",
+   "status": "pass",
+   "week1_plan": "747b4c68-cb61-4443-85bf-bbdf0a09bf2e",
+   "week2_plan": "5c89506d-9848-4ec0-a1e3-fa66c63dc966",
+   "replan_seconds": 20.17,
+   "rated": [
+    {
+     "name": "The Leftovers",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Dynamo Donut & Coffee",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Philz Coffee",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "Invisibilia",
+    "Mission Minis",
+    "Search Party",
+    "Haus Coffee",
+    "Banh Mi Viet"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0506,
+   "margin_min": -0.0083,
+   "cards": [
+    {
+     "name": "Sufjan Stevens",
+     "rung": "home",
+     "top_input": "Bon Iver",
+     "top_score": 0.2925010328269213,
+     "rekindled_is_top": false,
+     "margin": -0.0083
+    },
+    {
+     "name": "Invisibilia",
+     "rung": "home",
+     "top_input": "The Leftovers",
+     "top_score": 0.2547738538338565,
+     "rekindled_is_top": true,
+     "margin": 0.0037
+    },
+    {
+     "name": "Mission Minis",
+     "rung": "solo",
+     "top_input": "Dynamo Donut & Coffee",
+     "top_score": 0.31828838149845734,
+     "rekindled_is_top": true,
+     "margin": 0.0794
+    },
+    {
+     "name": "Search Party",
+     "rung": "home",
+     "top_input": "Dynamo Donut & Coffee",
+     "top_score": 0.26984685177267015,
+     "rekindled_is_top": true,
+     "margin": 0.0218
+    },
+    {
+     "name": "Haus Coffee",
+     "rung": "solo",
+     "top_input": "Dynamo Donut & Coffee",
+     "top_score": 0.3347190477428728,
+     "rekindled_is_top": true,
+     "margin": 0.0972
+    },
+    {
+     "name": "Banh Mi Viet",
+     "rung": "social",
+     "top_input": "Dynamo Donut & Coffee",
+     "top_score": 0.32146278764105524,
+     "rekindled_is_top": true,
+     "margin": 0.0853
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "kim",
+   "status": "pass",
+   "week1_plan": "2539bdac-37c1-4d8d-9230-c9f2b90c7d37",
+   "week2_plan": "cf0ee7e4-b50e-482b-9376-f1bb0a869809",
+   "replan_seconds": 20.67,
+   "rated": [
+    {
+     "name": "Red Velvet",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Stonemill Matcha",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Jin Mi Korean Cuisine",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 5,
+   "attributed_new_cards": [
+    "TWICE",
+    "Boba Guys Hayes Valley",
+    "Choux",
+    "Boba Guys Fillmore",
+    "Blue Bottle Coffee"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.1312,
+   "margin_min": 0.001,
+   "cards": [
+    {
+     "name": "TWICE",
+     "rung": "home",
+     "top_input": "Red Velvet",
+     "top_score": 0.27748790501223236,
+     "rekindled_is_top": true,
+     "margin": 0.001
+    },
+    {
+     "name": "Boba Guys Hayes Valley",
+     "rung": "solo",
+     "top_input": "Stonemill Matcha",
+     "top_score": 0.353011568714107,
+     "rekindled_is_top": true,
+     "margin": 0.1312
+    },
+    {
+     "name": "Choux",
+     "rung": "solo",
+     "top_input": "Stonemill Matcha",
+     "top_score": 0.35083171678221337,
+     "rekindled_is_top": true,
+     "margin": 0.1317
+    },
+    {
+     "name": "Boba Guys Fillmore",
+     "rung": "solo",
+     "top_input": "Stonemill Matcha",
+     "top_score": 0.3574463029026622,
+     "rekindled_is_top": true,
+     "margin": 0.1369
+    },
+    {
+     "name": "Blue Bottle Coffee",
+     "rung": "solo",
+     "top_input": "Stonemill Matcha",
+     "top_score": 0.32040243412653147,
+     "rekindled_is_top": true,
+     "margin": 0.0738
+    }
+   ],
+   "diff_summary": {
+    "kept": 2,
+    "added": 5,
+    "removed": 5
+   }
+  },
+  {
+   "profile": "omar",
+   "status": "excluded",
+   "reason": "week 1 has 0 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "grace",
+   "status": "pass",
+   "week1_plan": "c91a5300-f3ee-4a20-9186-17b0468b25b5",
+   "week2_plan": "28794e73-7dfd-476f-a081-a97855a47bfe",
+   "replan_seconds": 19.25,
+   "rated": [
+    {
+     "name": "Being Mary Jane",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Bronzeville Winery",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "B'Gabs Comfort Cafe",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 5,
+   "attributed_new_cards": [
+    "Brandy",
+    "Ratchet & Respectable",
+    "Peach's Restaurant",
+    "McDonald's"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0284,
+   "margin_min": -0.0102,
+   "cards": [
+    {
+     "name": "Brandy",
+     "rung": "home",
+     "top_input": "Being Mary Jane",
+     "top_score": 0.2724546208230346,
+     "rekindled_is_top": true,
+     "margin": 0.0284
+    },
+    {
+     "name": "Ratchet & Respectable",
+     "rung": "home",
+     "top_input": "Being Mary Jane",
+     "top_score": 0.36994458649023865,
+     "rekindled_is_top": true,
+     "margin": 0.0257
+    },
+    {
+     "name": "Peach's Restaurant",
+     "rung": "solo",
+     "top_input": "Bronzeville Winery",
+     "top_score": 0.3097251261252765,
+     "rekindled_is_top": true,
+     "margin": 0.0593
+    },
+    {
+     "name": "Star",
+     "rung": "home",
+     "top_input": "Beyoncé",
+     "top_score": 0.3431885971333095,
+     "rekindled_is_top": false,
+     "margin": -0.0102
+    },
+    {
+     "name": "McDonald's",
+     "rung": "social",
+     "top_input": "Bronzeville Winery",
+     "top_score": 0.30011259475013213,
+     "rekindled_is_top": true,
+     "margin": 0.062
+    }
+   ],
+   "diff_summary": {
+    "kept": 2,
+    "added": 5,
+    "removed": 5
+   }
+  },
+  {
+   "profile": "leo",
+   "status": "pass",
+   "week1_plan": "c1aa7d14-483e-4001-8865-afea74b15bb2",
+   "week2_plan": "a8c7bcc6-120c-47e7-b133-c37afb762d4b",
+   "replan_seconds": 18.87,
+   "rated": [
+    {
+     "name": "Kasabian",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Wolfbait & B-girls",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Jam 'n Honey",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 5,
+   "attributed_new_cards": [
+    "Blur",
+    "Alliance Bakery — Division",
+    "Letizia's Natural Bakery",
+    "Artemio's Bakery"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.1287,
+   "margin_min": -0.0158,
+   "cards": [
+    {
+     "name": "Blur",
+     "rung": "home",
+     "top_input": "Kasabian",
+     "top_score": 0.28139355371271885,
+     "rekindled_is_top": true,
+     "margin": 0.007
+    },
+    {
+     "name": "Alliance Bakery — Division",
+     "rung": "solo",
+     "top_input": "Wolfbait & B-girls",
+     "top_score": 0.3502434647495052,
+     "rekindled_is_top": true,
+     "margin": 0.1287
+    },
+    {
+     "name": "Beautiful Stories From Anonymous People",
+     "rung": "home",
+     "top_input": "Peaky Blinders",
+     "top_score": 0.2666660069143999,
+     "rekindled_is_top": false,
+     "margin": -0.0158
+    },
+    {
+     "name": "Letizia's Natural Bakery",
+     "rung": "solo",
+     "top_input": "Wolfbait & B-girls",
+     "top_score": 0.358104523900276,
+     "rekindled_is_top": true,
+     "margin": 0.1366
+    },
+    {
+     "name": "Artemio's Bakery",
+     "rung": "social",
+     "top_input": "Wolfbait & B-girls",
+     "top_score": 0.35907464901581587,
+     "rekindled_is_top": true,
+     "margin": 0.1334
+    }
+   ],
+   "diff_summary": {
+    "kept": 2,
+    "added": 5,
+    "removed": 5
+   }
+  },
+  {
+   "profile": "hana",
+   "status": "excluded",
+   "reason": "week 1 has 1 verified outing(s); the rating rule needs >= 2"
+  },
+  {
+   "profile": "ben",
+   "status": "pass",
+   "week1_plan": "a0949c07-aa4b-449f-9b7c-4f11a17413e7",
+   "week2_plan": "29117ba8-04c1-4799-8584-eadb27335a6f",
+   "replan_seconds": 18.1,
+   "rated": [
+    {
+     "name": "The Smashing Pumpkins",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Starbucks Coffee Company",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "TeKu Tavern + Café",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 4,
+   "attributed_new_cards": [
+    "Elliott Bay Book Company",
+    "Top Pot Doughnuts",
+    "Zeeks Pizza"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0242,
+   "margin_min": -0.0032,
+   "cards": [
+    {
+     "name": "The Cure",
+     "rung": "home",
+     "top_input": "Twin Peaks",
+     "top_score": 0.34742431177392247,
+     "rekindled_is_top": false,
+     "margin": -0.0032
+    },
+    {
+     "name": "Elliott Bay Book Company",
+     "rung": "solo",
+     "top_input": "Starbucks Coffee Company",
+     "top_score": 0.2675909626158359,
+     "rekindled_is_top": true,
+     "margin": 0.0066
+    },
+    {
+     "name": "Top Pot Doughnuts",
+     "rung": "solo",
+     "top_input": "Starbucks Coffee Company",
+     "top_score": 0.29015186656554487,
+     "rekindled_is_top": true,
+     "margin": 0.0417
+    },
+    {
+     "name": "Zeeks Pizza",
+     "rung": "social",
+     "top_input": "Starbucks Coffee Company",
+     "top_score": 0.28919266986294273,
+     "rekindled_is_top": true,
+     "margin": 0.0453
+    }
+   ],
+   "diff_summary": {
+    "kept": 3,
+    "added": 4,
+    "removed": 4
+   }
+  },
+  {
+   "profile": "ivy",
+   "status": "pass",
+   "week1_plan": "a3e3f945-5974-4360-8261-9ae1f0381785",
+   "week2_plan": "50a6093e-c68c-4343-bb98-a340e55b50a8",
+   "replan_seconds": 20.71,
+   "rated": [
+    {
+     "name": "Paul Simon",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Uncle Louie G",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "16 Handles",
+     "rung": "solo",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 7,
+   "attributed_new_cards": [
+    "Joni Mitchell",
+    "Brave New World",
+    "sweetgreen - Healthy Salads, Wraps, and Bowls",
+    "Somebody Somewhere",
+    "Bakeri",
+    "Milk Bar"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0427,
+   "margin_min": -0.0193,
+   "cards": [
+    {
+     "name": "Joni Mitchell",
+     "rung": "home",
+     "top_input": "Paul Simon",
+     "top_score": 0.2906698716103787,
+     "rekindled_is_top": true,
+     "margin": 0.0112
+    },
+    {
+     "name": "Getting Curious with Jonathan Van Ness",
+     "rung": "home",
+     "top_input": "Schitt's Creek",
+     "top_score": 0.27443846497544605,
+     "rekindled_is_top": false,
+     "margin": -0.0193
+    },
+    {
+     "name": "Brave New World",
+     "rung": "home",
+     "top_input": "Paul Simon",
+     "top_score": 0.3398587322417675,
+     "rekindled_is_top": true,
+     "margin": 0.0427
+    },
+    {
+     "name": "sweetgreen - Healthy Salads, Wraps, and Bowls",
+     "rung": "solo",
+     "top_input": "Uncle Louie G",
+     "top_score": 0.32855660738841724,
+     "rekindled_is_top": true,
+     "margin": 0.1009
+    },
+    {
+     "name": "Somebody Somewhere",
+     "rung": "home",
+     "top_input": "Uncle Louie G",
+     "top_score": 0.2591111955956827,
+     "rekindled_is_top": true,
+     "margin": 0.0105
+    },
+    {
+     "name": "Bakeri",
+     "rung": "solo",
+     "top_input": "Uncle Louie G",
+     "top_score": 0.32153706884286615,
+     "rekindled_is_top": true,
+     "margin": 0.0889
+    },
+    {
+     "name": "Milk Bar",
+     "rung": "social",
+     "top_input": "Uncle Louie G",
+     "top_score": 0.3450737359752473,
+     "rekindled_is_top": true,
+     "margin": 0.1215
+    }
+   ],
+   "diff_summary": {
+    "kept": 0,
+    "added": 7,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "nate",
+   "status": "pass",
+   "week1_plan": "64fe4c31-ea99-4894-9b2d-934ff321fc69",
+   "week2_plan": "8fa7cc9f-4bb9-4dd2-b027-e2fde55c87da",
+   "replan_seconds": 20.85,
+   "rated": [
+    {
+     "name": "SZA",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Mixtape Bushwick",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Pastelitos Elvys",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 3,
+   "attributed_new_cards": [
+    "Kali Uchis",
+    "Little Roy Coffee Co.",
+    "Bake Shop"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0604,
+   "margin_min": 0.0125,
+   "cards": [
+    {
+     "name": "Kali Uchis",
+     "rung": "home",
+     "top_input": "SZA",
+     "top_score": 0.29394669292906433,
+     "rekindled_is_top": true,
+     "margin": 0.0125
+    },
+    {
+     "name": "Little Roy Coffee Co.",
+     "rung": "solo",
+     "top_input": "Mixtape Bushwick",
+     "top_score": 0.31148655578338413,
+     "rekindled_is_top": true,
+     "margin": 0.0604
+    },
+    {
+     "name": "Bake Shop",
+     "rung": "solo",
+     "top_input": "Mixtape Bushwick",
+     "top_score": 0.3205100420466024,
+     "rekindled_is_top": true,
+     "margin": 0.0675
+    }
+   ],
+   "diff_summary": {
+    "kept": 4,
+    "added": 3,
+    "removed": 3
+   }
+  },
+  {
+   "profile": "ruby",
+   "status": "pass",
+   "week1_plan": "444b0225-91b7-44b9-b428-674bc3b175af",
+   "week2_plan": "ebdac810-d71d-4cbb-8b84-8a99e1a55ee4",
+   "replan_seconds": 21.13,
+   "rated": [
+    {
+     "name": "The Mindy Project",
+     "rung": "home",
+     "pleasure": 7,
+     "mastery": 5
+    },
+    {
+     "name": "Zombie Burger + Bird",
+     "rung": "solo",
+     "pleasure": 8,
+     "mastery": 6
+    },
+    {
+     "name": "Buzzard Billy’s",
+     "rung": "social",
+     "pleasure": 2,
+     "mastery": 3
+    }
+   ],
+   "week2_cards": 7,
+   "new_cards": 6,
+   "attributed_new_cards": [
+    "I Said No Gifts! A comedy interview podcast with Bridger Winegar",
+    "Fong's Pizza",
+    "Hessen Haus",
+    "Difficult People",
+    "Molly's Cupcakes"
+   ],
+   "low_rated_in_week2": [],
+   "margin_median": 0.0642,
+   "margin_min": -0.0507,
+   "cards": [
+    {
+     "name": "The Highwomen",
+     "rung": "home",
+     "top_input": "Kacey Musgraves",
+     "top_score": 0.3104901958927028,
+     "rekindled_is_top": false,
+     "margin": -0.0507
+    },
+    {
+     "name": "I Said No Gifts! A comedy interview podcast with Bridger Winegar",
+     "rung": "home",
+     "top_input": "The Mindy Project",
+     "top_score": 0.3118022016784066,
+     "rekindled_is_top": true,
+     "margin": 0.0129
+    },
+    {
+     "name": "Fong's Pizza",
+     "rung": "solo",
+     "top_input": "Zombie Burger + Bird",
+     "top_score": 0.3400384947085018,
+     "rekindled_is_top": true,
+     "margin": 0.1265
+    },
+    {
+     "name": "Hessen Haus",
+     "rung": "solo",
+     "top_input": "Zombie Burger + Bird",
+     "top_score": 0.32538661255559426,
+     "rekindled_is_top": true,
+     "margin": 0.1075
+    },
+    {
+     "name": "Difficult People",
+     "rung": "home",
+     "top_input": "The Mindy Project",
+     "top_score": 0.2630358947038515,
+     "rekindled_is_top": true,
+     "margin": 0.0209
+    },
+    {
+     "name": "Molly's Cupcakes",
+     "rung": "social",
+     "top_input": "Zombie Burger + Bird",
+     "top_score": 0.33506064704469124,
+     "rekindled_is_top": true,
+     "margin": 0.1235
+    }
+   ],
+   "diff_summary": {
+    "kept": 1,
+    "added": 6,
+    "removed": 6
+   }
+  },
+  {
+   "profile": "cal",
+   "status": "excluded",
+   "reason": "week 1 has 0 verified outing(s); the rating rule needs >= 2"
+  }
+ ]
+}

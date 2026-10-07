@@ -1,0 +1,114 @@
+rekindle runs: 40 (B, B-, B-4) · workers 2
+  B    maya   20.73 s · cards 7
+  B-   maya   20.73 s · cards 7
+  B-4  maya   18.36 s · cards 7
+  B    theo   20.08 s · cards 7
+  B-   theo   19.9 s · cards 7
+  B-4  theo   20.09 s · cards 7
+  B    ana    16.98 s · cards 7
+  B    sam    16.32 s · cards 6
+  B    priya  19.28 s · cards 7
+  B-   priya  18.76 s · cards 7
+  B-4  priya  17.02 s · cards 7
+  B    jo     20.61 s · cards 6
+  B-   jo     15.8 s · cards 2
+  B-4  jo     14.48 s · cards 2
+  B    marcus 18.04 s · cards 7
+  B    lena   17.43 s · cards 7
+  B    ruth   13.8 s · cards 5
+  B    dev    19.5 s · cards 7
+  B-   dev    18.83 s · cards 7
+  B-4  dev    20.86 s · cards 7
+  B    kim    18.38 s · cards 7
+  B    omar   18.57 s · cards 4
+  B-   omar   15.4 s · cards 5
+  B-4  omar   14.28 s · cards 4
+  B    grace  15.4 s · cards 7
+  B    leo    16.52 s · cards 7
+  B-   leo    19.62 s · cards 7
+  B-4  leo    18.01 s · cards 7
+  B    hana   16.81 s · cards 5
+  B-   hana   20.81 s · cards 6
+  B-4  hana   16.28 s · cards 7
+  B    ben    18.4 s · cards 7
+  B    ivy    17.28 s · cards 6
+  B-   ivy    18.09 s · cards 6
+  B-4  ivy    18.22 s · cards 6
+  B    nate   17.61 s · cards 7
+  B-   nate   17.96 s · cards 7
+  B-4  nate   19.6 s · cards 7
+  B    ruby   16.97 s · cards 7
+  B    cal    15.27 s · cards 4
+  graded B    maya   outings 3 · violations 0 · pool alcohol 2 · plan leak 0
+  graded B-   maya   outings 3 · violations 0 · pool alcohol 2 · plan leak 0
+  graded B-4  maya   outings 3 · violations 3 · pool alcohol 9 · plan leak 3
+  graded B    theo   outings 4 · violations 0 · pool alcohol 1 · plan leak 0
+  graded B-   theo   outings 4 · violations 0 · pool alcohol 1 · plan leak 0
+  graded B-4  theo   outings 4 · violations 4 · pool alcohol 31 · plan leak 4
+  graded B    ana    outings 5 · violations 0 · pool alcohol 35 · plan leak 4
+  graded B    sam    outings 3 · violations 0 · pool alcohol 2 · plan leak 2
+  graded B    priya  outings 3 · violations 0 · pool alcohol 4 · plan leak 0
+  graded B-   priya  outings 3 · violations 0 · pool alcohol 4 · plan leak 0
+  graded B-4  priya  outings 3 · violations 1 · pool alcohol 21 · plan leak 1
+  graded B    jo     outings 4 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B-   jo     outings 0 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B-4  jo     outings 0 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B    marcus outings 4 · violations 0 · pool alcohol 25 · plan leak 3
+  graded B    lena   outings 5 · violations 0 · pool alcohol 19 · plan leak 4
+  graded B    ruth   outings 1 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B    dev    outings 4 · violations 0 · pool alcohol 7 · plan leak 0
+  graded B-   dev    outings 4 · violations 1 · pool alcohol 7 · plan leak 1
+  graded B-4  dev    outings 4 · violations 3 · pool alcohol 35 · plan leak 3
+  graded B    kim    outings 5 · violations 0 · pool alcohol 32 · plan leak 4
+  graded B    omar   outings 0 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B-   omar   outings 1 · violations 1 · pool alcohol 1 · plan leak 1
+  graded B-4  omar   outings 0 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B    grace  outings 4 · violations 0 · pool alcohol 23 · plan leak 3
+  graded B    leo    outings 5 · violations 0 · pool alcohol 3 · plan leak 0
+  graded B-   leo    outings 5 · violations 0 · pool alcohol 3 · plan leak 0
+  graded B-4  leo    outings 5 · violations 4 · pool alcohol 35 · plan leak 4
+  graded B    hana   outings 1 · violations 0 · pool alcohol 1 · plan leak 0
+  graded B-   hana   outings 2 · violations 1 · pool alcohol 1 · plan leak 1
+  graded B-4  hana   outings 3 · violations 2 · pool alcohol 3 · plan leak 2
+  graded B    ben    outings 5 · violations 0 · pool alcohol 34 · plan leak 4
+  graded B    ivy    outings 2 · violations 0 · pool alcohol 3 · plan leak 0
+  graded B-   ivy    outings 2 · violations 0 · pool alcohol 0 · plan leak 0
+  graded B-4  ivy    outings 2 · violations 2 · pool alcohol 21 · plan leak 2
+  graded B    nate   outings 4 · violations 0 · pool alcohol 4 · plan leak 0
+  graded B-   nate   outings 4 · violations 0 · pool alcohol 2 · plan leak 0
+  graded B-4  nate   outings 4 · violations 2 · pool alcohol 28 · plan leak 2
+  graded B    ruby   outings 4 · violations 0 · pool alcohol 27 · plan leak 4
+  graded B    cal    outings 0 · violations 0 · pool alcohol 0 · plan leak 0
+  arm A maya   outings 3 · violations 2 · 6.43 s
+  arm A theo   outings 4 · violations 3 · 6.71 s
+  arm A ana    outings 5 · violations 4 · 8.27 s
+  arm A sam    outings 4 · violations 4 · 6.77 s
+  arm A priya  outings 3 · violations 2 · 7.45 s
+  arm A jo     outings 5 · violations 3 · 7.89 s
+  arm A marcus outings 4 · violations 4 · 6.92 s
+  arm A lena   outings 5 · violations 2 · 8.25 s
+  arm A ruth   outings 3 · violations 3 · 6.97 s
+  arm A dev    outings 4 · violations 3 · 8.47 s
+  arm A kim    outings 5 · violations 5 · 8.14 s
+  arm A omar   outings 3 · violations 0 · 8.3 s
+  arm A grace  outings 4 · violations 2 · 7.43 s
+  arm A leo    outings 5 · violations 2 · 6.71 s
+  arm A hana   outings 3 · violations 1 · 7.22 s
+  arm A ben    outings 5 · violations 5 · 6.23 s
+  arm A ivy    outings 3 · violations 3 · 7.2 s
+  arm A nate   outings 4 · violations 3 · 6.67 s
+  arm A ruby   outings 4 · violations 4 · 8.28 s
+  arm A cal    outings 3 · violations 3 · 6.32 s
+
+KILLER NUMBER (Qloo-graded)
+  A      outing venues  79 · violations  58 (73.4%) · unverifiable 48 · closed 9 · alcohol 1/37 · unknown_hours 2 · beyond radius 14 · errors 0
+  B      outing venues  66 · violations   0 (0.0%) · unverifiable 0 · closed 0 · alcohol 0/30 · unknown_hours 0 · beyond radius 0 · errors 0
+  B-     outing venues  28 · violations   3 (10.7%) · unverifiable 0 · closed 0 · alcohol 3/28 · unknown_hours 0 · beyond radius 0 · errors 0
+  B-4    outing venues  28 · violations  21 (75.0%) · unverifiable 0 · closed 0 · alcohol 21/28 · unknown_hours 0 · beyond radius 0 · errors 0
+  B-sym  outing venues  66 · violations   6 (9.1%) · unverifiable 6 · closed 0 · alcohol 0/30 · unknown_hours 0 · beyond radius 0 · errors 0
+ABLATION (in-recovery profiles)
+  B    pool alcohol 25/257 · profiles 8/10 · plan leak 0/30
+  B-   pool alcohol 21/232 · profiles 8/10 · plan leak 3/28
+  B-4  pool alcohol 183/295 · profiles 8/10 · plan leak 21/28
+LATENCY {"B": {"plans": 20, "client_p50_s": 17.43, "client_p95_s": 20.61, "server_p50_s": 16.445, "server_p95_s": 20.001, "qloo_calls_mean": 9.4, "qloo_calls_p50": 9}, "B-": {"plans": 10, "client_p50_s": 18.76, "client_p95_s": 20.81, "server_p50_s": 17.847, "server_p95_s": 20.002, "qloo_calls_mean": 10.1, "qloo_calls_p50": 9}, "B-4": {"plans": 10, "client_p50_s": 18.01, "client_p95_s": 20.86, "server_p50_s": 16.879, "server_p95_s": 20.003, "qloo_calls_mean": 9.6, "qloo_calls_p50": 9}, "A": {"plans": 20, "llm_p50_s": 7.2, "llm_p95_s": 8.3}}
+errors: 0 · wrote bench/results.json

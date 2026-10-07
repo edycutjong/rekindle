@@ -1,0 +1,22 @@
+  theo   pass     attributed 5/6 new · margin median 0.0176 · 22.03 s
+  maya   pass     attributed 4/6 new · margin median 0.0231 · 22.18 s
+  sam    pass     attributed 3/5 new · margin median 0.0047 · 20.1 s
+  ana    pass     attributed 5/6 new · margin median 0.0117 · 23.21 s
+  jo     pass     attributed 3/3 new · margin median 0.11 · 16.91 s
+  priya  pass     attributed 5/7 new · margin median 0.1142 · 22.14 s
+  marcus pass     attributed 3/4 new · margin median 0.0915 · 20.96 s
+  ruth   excluded week 1 has 1 verified outing(s); the rating rule needs >= 2
+  lena   pass     attributed 4/6 new · margin median 0.0706 · 20.81 s
+  dev    pass     attributed 5/6 new · margin median 0.0506 · 20.17 s
+  omar   excluded week 1 has 0 verified outing(s); the rating rule needs >= 2
+  kim    pass     attributed 5/5 new · margin median 0.1312 · 20.67 s
+  grace  pass     attributed 4/5 new · margin median 0.0284 · 19.25 s
+  hana   excluded week 1 has 1 verified outing(s); the rating rule needs >= 2
+  leo    pass     attributed 4/5 new · margin median 0.1287 · 18.87 s
+  ben    pass     attributed 3/4 new · margin median 0.0242 · 18.1 s
+  ivy    pass     attributed 6/7 new · margin median 0.0427 · 20.71 s
+  nate   pass     attributed 3/3 new · margin median 0.0604 · 20.85 s
+  cal    excluded week 1 has 0 verified outing(s); the rating rule needs >= 2
+  ruby   pass     attributed 5/6 new · margin median 0.0642 · 21.13 s
+
+RE-PLAN RESPONSIVENESS 16/16 · excluded ['ruth', 'omar', 'hana', 'cal'] · errors 0 · low-rated reappearing 0 · attributed new cards 67/84 · margin median 0.0555 · wrote bench/replan.json
