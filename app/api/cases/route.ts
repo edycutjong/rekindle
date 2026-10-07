@@ -5,6 +5,8 @@ import { guard } from "@/lib/ratelimit";
 import { wkt } from "@/lib/plan";
 import { storeFor } from "@/lib/scope";
 import { CaseDoc, newId } from "@/lib/store";
+import { checkLoveShapes, verifyLoves } from "@/lib/intake";
+import { qlooFromEnv } from "@/lib/qloo";
 
 export const dynamic = "force-dynamic";
 
@@ -23,15 +25,23 @@ const Intake = z.object({
   loves: z
     .array(z.object({ text: z.string().trim().min(1).max(120), qloo_id: z.string().min(1).max(200), qloo_kind: z.enum(["entity", "tag"]), entity_type: z.string().max(40).optional(), name: z.string().max(200).optional() }))
     .min(3, "confirm at least 3 loves")
-    .max(6),
+    .max(6)
+    .refine((ls) => new Set(ls.map((l) => l.qloo_id.toLowerCase())).size === ls.length, "each love must be a different Qloo entity or tag"),
 });
 
-/** POST /api/cases — intake. Stores the case row; no plan is run until POST /api/cases/:id/plan. */
+/**
+ * POST /api/cases — intake. Every love is re-resolved against Qloo (one /entities call for the entity IDs, one /v2/tags
+ * lookup per tag) before the case is stored; no plan is run until POST /api/cases/:id/plan.
+ */
 export async function POST(req: Request) {
   const g = await guard(req, "write");
   if (g.deny) return g.deny;
   try {
     const b = Intake.parse(await req.json());
+    // the client's IDs and names are claims: format + deny-list first (no request), then Qloo confirms every ID and
+    // supplies the name that is stored and shown (QA round 3)
+    checkLoveShapes(b.loves);
+    const loves = await verifyLoves(qlooFromEnv(), b.loves);
     const owner = ownerForNewCase(req);
     const doc = CaseDoc.parse({
       ...b,
@@ -41,7 +51,7 @@ export async function POST(req: Request) {
       point_wkt: wkt(b.lon, b.lat),
       max_meters: b.max_meters ?? { 1: 1500, 2: 3000, 3: 5000 }[b.energy],
       is_seed: false,
-      loves: b.loves.map((l) => ({ id: newId(), weight: 1, ...l })),
+      loves: loves.map((l) => ({ id: newId(), weight: 1, ...l })),
     });
     await storeFor(req).putCase(doc);
     return json({ case: doc }, 201, owner.setCookie);

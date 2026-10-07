@@ -18,6 +18,8 @@ import { POST as casesRoute } from "../app/api/cases/route";
 import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
 import { POST as planRoute } from "../app/api/cases/[id]/plan/route";
 import { POST as copyRoute } from "../app/api/cases/[id]/copy/route";
+import { GET as resolveRoute } from "../app/api/resolve/route";
+import { screenLoveText } from "../lib/resolve";
 import { planRunState, RUN_STALE_MS } from "../lib/service";
 import { POST as constraintsRoute } from "../app/api/plans/[id]/constraints/route";
 
@@ -381,9 +383,74 @@ describe("gate routes", () => {
     const body = (k: number) => ({ label: "Rosa", locality: "Williamsburg, Brooklyn", lon: -73.9571, lat: 40.7081, energy: 1, loves: Array.from({ length: k }, (_, n) => love(n)) });
     expect((await casesRoute(req("/api/cases", "POST", body(2)))).status).toBe(400);
     expect((await casesRoute(req("/api/cases", "POST", body(7)))).status).toBe(400);
+    // the server looks each tag up again (/v2/tags) and stores Qloo's name, not the client's
+    vi.stubEnv("QLOO_API_KEY", "test-key");
+    const seen: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      const u = new URL(url);
+      seen.push(u.pathname);
+      const q = u.searchParams.get("filter.query") ?? "";
+      return Response.json({ results: { tags: [{ id: `urn:tag:genre:place:restaurant:x${q.split(" ")[1]}`, name: `Qloo ${q}` }] } });
+    });
     const ok = await casesRoute(req("/api/cases", "POST", body(3)));
+    vi.unstubAllGlobals();
     expect(ok.status).toBe(201);
-    expect(((await ok.json()) as { case: { max_meters: number; loves: unknown[] } }).case).toMatchObject({ max_meters: 1500, loves: expect.any(Array) });
+    const c = ((await ok.json()) as { case: { max_meters: number; loves: { name: string }[] } }).case;
+    expect(c).toMatchObject({ max_meters: 1500 });
+    expect(c.loves.map((l) => l.name)).toEqual(["Qloo love 0", "Qloo love 1", "Qloo love 2"]);
+    expect(seen).toEqual(["/v2/tags", "/v2/tags", "/v2/tags"]);
+  });
+
+  it("/api/resolve refuses clinical words and contact data before any Qloo request; tastes pass the screen (QA round 3)", async () => {
+    vi.stubEnv("QLOO_API_KEY", "test-key");
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      calls.push(new URL(url).pathname);
+      return Response.json({ results: [] });
+    });
+    const get = (text: string) => resolveRoute(new Request(`http://x/api/resolve?text=${encodeURIComponent(text)}&kind=artist`, { headers: { "x-forwarded-for": `10.7.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } }));
+    for (const t of ["PHQ-9 score 22", "suicidal ideation", "sertraline 50 mg", "rosa@example.com", "+1 718 555 0199"]) {
+      const r = await get(t);
+      expect(r.status).toBe(400);
+    }
+    expect(calls).toEqual([]);
+    expect((await get("Phoebe Bridgers")).status).toBe(200);
+    vi.unstubAllGlobals();
+    expect(calls).toEqual(["/search"]);
+    for (const t of ["Depression Cherry", "Sober", "ramen", "The Bear", "Hamilton (cast album)", "Blink-182"]) expect(screenLoveText(t)).toBeNull();
+  });
+
+  it("intake refuses duplicate loves, fabricated IDs and clinical text before any Qloo request; unknown entities after one (QA round 3)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    vi.stubEnv("QLOO_API_KEY", "test-key");
+    const calls: string[] = [];
+    vi.stubGlobal("fetch", async (url: string) => {
+      calls.push(new URL(url).pathname);
+      return Response.json({ results: [{ entity_id: "AFBC71A7-9439-4AB0-AB68-D14B11AAF836", name: "Phoebe Bridgers", types: ["urn:entity:artist"] }] });
+    });
+    const pb = { text: "Phoebe Bridgers", qloo_id: "AFBC71A7-9439-4AB0-AB68-D14B11AAF836", qloo_kind: "entity", entity_type: "urn:entity:artist", name: "Phoebe Bridgers" };
+    const base = { label: "Rosa", locality: "Williamsburg, Brooklyn", lon: -73.9571, lat: 40.7081, energy: 1 };
+    const post = async (loves: unknown[]) => {
+      const r = await casesRoute(req("/api/cases", "POST", { ...base, loves }));
+      return { status: r.status, body: (await r.json()) as { error?: string; issues?: { message: string }[]; case?: { loves: { name: string }[] } } };
+    };
+    const dup = await post([pb, pb, pb]);
+    expect(dup.status).toBe(400);
+    expect(JSON.stringify(dup.body)).toMatch(/different Qloo entity/);
+    const fake = await post([0, 1, 2].map((n) => ({ ...pb, qloo_id: `not-a-qloo-id-${n}`, name: "PHQ-9 score 22, suicidal ideation" })));
+    expect(fake.status).toBe(400);
+    expect(fake.body.error).toMatch(/Qloo entity ID/);
+    const clinical = await post([{ ...pb, text: "PHQ-9 score 22" }, { ...pb, qloo_id: "4C305B2F-5A46-4885-A6DA-5E22D11E86E0" }, { ...pb, qloo_id: "1A9BE260-F41E-4592-9EAF-BDD6AE774F69" }]);
+    expect(clinical.status).toBe(400);
+    expect(clinical.body.error).toMatch(/health information/);
+    expect(calls).toEqual([]);
+    // well-formed but unknown to Qloo (only Phoebe Bridgers comes back): one /entities request, then a 400
+    const unknown = await post([pb, { ...pb, text: "The Bear", qloo_id: "4C305B2F-5A46-4885-A6DA-5E22D11E86E0" }, { ...pb, text: "Joni", qloo_id: "1A9BE260-F41E-4592-9EAF-BDD6AE774F69" }]);
+    vi.unstubAllGlobals();
+    expect(unknown.status).toBe(400);
+    expect(unknown.body.error).toMatch(/Qloo does not know/);
+    expect(calls).toEqual(["/entities"]);
   });
 
   it("seed preset=recovery clones a profile with 'in recovery' on (the /judge REVIEW button); an unknown preset is a 400", async () => {
