@@ -7,6 +7,7 @@ const body = Atkinson_Hyperlegible({ variable: "--font-atkinson", weight: ["400"
 const data = IBM_Plex_Mono({ variable: "--font-plex-mono", weight: ["400", "500"], subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://rekindle-one.vercel.app"),
   title: "Rekindle",
   description:
     "A behavioral-activation planning agent for clinicians: a verified, clinician-approved week of real activities built from what a patient used to love, via Qloo.",

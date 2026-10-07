@@ -8,7 +8,14 @@ import { printSheet, stampLabel } from "@/lib/view";
 import s from "./print.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Activity sheet · Rekindle", robots: { index: false } };
+/** a missing week is titled as such (the 404 used to say "Activity sheet") */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const plan = await storeFor({ headers: await headers() })
+    .getPlan(id)
+    .catch(() => null);
+  return { title: plan ? "Activity sheet · Rekindle" : "Not found · Rekindle", robots: { index: false } };
+}
 
 /**
  * Patient print view: the approved activities only, A4/Letter, with a P and M box to fill in by hand.

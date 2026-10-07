@@ -30,6 +30,14 @@
 .input {
   width: 100%;
 }
+.input:hover,
+.select:hover {
+  border-color: var(--ink);
+}
+.input,
+.select {
+  transition: border-color 0.15s ease;
+}
 .input:focus-visible,
 .select:focus-visible {
   outline: 2px solid var(--ink);
@@ -103,6 +111,18 @@
   align-items: center;
   min-height: 44px;
   font-size: 17px;
+}
+.flag {
+  cursor: pointer;
+}
+.flag:hover input {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
+}
+.flag:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--ink);
+  text-underline-offset: 4px;
 }
 .flag input {
   width: 20px;

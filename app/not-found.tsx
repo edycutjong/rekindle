@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import r from "@/components/rekindle.module.css";
 import s from "./home.module.css";
+
+export const metadata: Metadata = { title: "Not found · Rekindle", robots: { index: false } };
 
 /** Unknown plan, case or route: the site header and a way back, in the paper style (never Next's bare 404). */
 export default function NotFound() {

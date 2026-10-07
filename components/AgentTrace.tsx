@@ -44,7 +44,7 @@ export function AgentTrace({ lines, stats, live }: { lines: string[]; stats: Tra
           </div>
         )}
         <p>
-          <Link className={s.link} href={stats.planId ? `/integrations/qloo?plan=${stats.planId}` : "/integrations/qloo"}>
+          <Link className={`${s.link} ${s.linkTarget}`} href={stats.planId ? `/integrations/qloo?plan=${stats.planId}` : "/integrations/qloo"}>
             Every Qloo request behind this week →
           </Link>
         </p>
