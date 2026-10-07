@@ -70,6 +70,29 @@ describe("tools over captured responses", () => {
     expect(r.refusals[0]).toMatchObject({ name: "Dun-Well Doughnuts", rule: "R-OPEN", detail: "closes 18:00 · slot 18:00", movedTo: 15 });
   });
 
+  it("an LLM-narrowed radius that verifies nothing is retried once at the case radius before the slot is left empty", async () => {
+    const seen: QlooParams[] = [];
+    const inner = replayClient(seen);
+    // the narrowed query returns nothing; the case-radius query returns the captured pool
+    const q = { insights: async (p: QlooParams) => (p["filter.location.radius"] === 600 ? (seen.push(p), { results: { entities: [] } }) : inner.insights(p)) } as unknown as QlooClient;
+    const r = await findOutings(ctx({ ...MAYA, inRecovery: true }, q), { day: "thursday", hour: 15, rung: "solo" }, { narrowMeters: 600 });
+    expect(seen.map((p) => p["filter.location.radius"])).toEqual([600, 1500]);
+    expect(r.card).not.toBeNull();
+
+    // both empty: the reason names the radius actually queried last (the case radius)
+    const none = { insights: async (p: QlooParams) => (seen.push(p), { results: { entities: [] } }) } as unknown as QlooClient;
+    seen.length = 0;
+    const e = await findOutings(ctx(MAYA, none), { day: "thursday", hour: 15, rung: "solo" }, { narrowMeters: 800 });
+    expect(seen.map((p) => p["filter.location.radius"])).toEqual([800, 1500]);
+    expect(e.card).toBeNull();
+    expect(e.empty).toBe("Qloo returned no places for these filters within 1500 m");
+
+    // no narrowing → exactly one request
+    seen.length = 0;
+    await findOutings(ctx(MAYA, none), { day: "thursday", hour: 15, rung: "solo" });
+    expect(seen).toHaveLength(1);
+  });
+
   it("a Qloo outage leaves the slot empty with the reason — never an LLM fill", async () => {
     const r = await findOutings(ctx(MAYA, replayClient([], true)), { day: "thursday", hour: 18, rung: "solo" });
     expect(r.card).toBeNull();

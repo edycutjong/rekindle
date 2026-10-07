@@ -350,7 +350,14 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
       }
     }
   }
-  return { card: null, refusals, review, empty: list.length ? `no candidate passed all rules (${list.length} checked)` : "Qloo returned no places for these filters", returned: list.length };
+  const queried = !o.geohash && !o.center ? Math.min(o.narrowMeters ?? ctx.case.maxMeters, ctx.case.maxMeters) : null;
+  // The LLM may narrow the radius (I6: it can only tighten). If that narrowed query verifies nothing, retry once at the
+  // case's own radius before the slot is left empty, so a coverage refusal "within <case radius>" is literally true.
+  if (queried !== null && queried < ctx.case.maxMeters) {
+    const wide = await findOutings(ctx, slot, { ...o, narrowMeters: undefined });
+    return { ...wide, refusals: [...refusals, ...wide.refusals], review: [...review, ...wide.review].slice(0, Math.max(MAX_REVIEW_PER_SLOT, review.length)), returned: list.length + wide.returned };
+  }
+  return { card: null, refusals, review, empty: list.length ? `no candidate passed all rules (${list.length} checked${queried !== null ? ` within ${queried} m` : ""})` : `Qloo returned no places for these filters${queried !== null ? ` within ${queried} m` : ""}`, returned: list.length };
 }
 
 /** Social outing: heatmap → top-affinity geohash cell → places in that cell (POINT fallback at the cell centre). */
