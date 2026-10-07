@@ -41,8 +41,8 @@
     "@vercel/blob": "^2.8.1",
     "ai": "^7.0.129",
     "next": "15.5.27",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
