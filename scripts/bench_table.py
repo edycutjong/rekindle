@@ -7,6 +7,7 @@ bench/audit.json (scripts/manual_audit.py summary). Each target file carries mar
   <!-- bench:killer:start --> … <!-- bench:killer:end -->   one-line killer number (README first screen)
   <!-- bench:table:start -->  … <!-- bench:table:end -->    the full arm table + ablation + latency + re-plan
   <!-- bench:predates:start --> … <!-- bench:predates:end --> the plan-path commits made after the bench run (git log)
+  <!-- bench:caveat:start -->  … <!-- bench:caveat:end -->   one-line "predates N changes" caveat under the killer number
 
 bench/predates.json (read by /judge) carries the same commit list.
 
@@ -31,7 +32,27 @@ def pct(x):
     return f"{x * 100:.1f}%"
 
 
-def killer(r) -> str:
+def audit_pair(au) -> str:
+    """The manual-audit cross-check beside the Qloo-graded headline: the only grade not done by Qloo, and the smaller one."""
+    a, b = au["arms"]["A"], au["arms"]["B"]
+    return (
+        f" Manual audit against public listings (a sample of {a['sampled']} venues per arm; not blind, done by the build agent): "
+        f"**{pct(a['rate'])} vs {pct(b['rate'])}** ({a['violations']} of {a['checked']} checkable vs {b['violations']} of {b['checked']}; "
+        f"{a['inconclusive']} and {b['inconclusive']} inconclusive, `bench/audit.json`)."
+    )
+
+
+def caveat_md(rows) -> str:
+    """One line under the killer number (README, JUDGE): the full commit list lives in DEMO.md's predates block."""
+    if not rows:
+        return "No plan-path code has changed since this bench run."
+    return (
+        f"**Caveat: this bench run predates {len(rows)} later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). "
+        "Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission."
+    )
+
+
+def killer(r, au) -> str:
     # same grader first (QA round 1): arm A is graded by the address pipeline (Nominatim + /search name match), and so
     # is B-sym (Rekindle's own cards through that pipeline); B by Qloo ID is 0 by construction and is stated second
     a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
@@ -42,6 +63,7 @@ def killer(r) -> str:
         f"{a['unverifiable']} unverifiable, {a['closed_at_slot']} closed at the slot, {a['alcohol']} serving alcohol to a patient in recovery. "
         f"Rekindle: {bs['violation']} of {bs['outing_venues']} through the same pipeline ("
         f"{'all ' if bs['unverifiable'] == bs['violation'] else ''}{bs['unverifiable']} unverifiable, i.e. geocode or name-match misses on venues Qloo verified), {b['violation']} of {b['outing_venues']} by Qloo ID (`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
+        + audit_pair(au)
     )
 
 
@@ -184,7 +206,7 @@ def main() -> int:
         if not p.exists():
             continue
         doc = p.read_text()
-        new = replace(replace(replace(doc, "killer", killer(r)), "table", table(r, rp, au)), "predates", predates_md(rows))
+        new = replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows))
         if new != doc:
             stale.append(p.name)
             if "--check" not in sys.argv:

@@ -37,8 +37,12 @@
 ## 🎯 The number
 
 <!-- bench:killer:start -->
-**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC).
+**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC). Manual audit against public listings (a sample of 20 venues per arm; not blind, done by the build agent): **41.2% vs 0.0%** (7 of 17 checkable vs 0 of 14; 3 and 6 inconclusive, `bench/audit.json`).
 <!-- bench:killer:end -->
+
+<!-- bench:caveat:start -->
+**Caveat: this bench run predates 16 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+<!-- bench:caveat:end -->
 
 The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, the B-sym noise floor, the alcohol-screen ablation, latency, and re-plan responsiveness. It also says how to read it. Qloo grades both arms, and the manual audit was not blind.
 
@@ -129,7 +133,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Coverage (`lib/`, API routes) | 92.7% lines · 79.9% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 100 performance · 100 accessibility · 100 best practices · 100 SEO (local run, 2026-10-07) | `lighthouserc.json` |
-| Plan latency, hosted | p50 17.43 s · p95 20.61 s | `bench/results.json` |
+| Plan latency, hosted | p50 17.43 s · p95 20.61 s (bench run; it predates later plan-path changes, see the caveat under The number) | `bench/results.json` |
 
 ### Attacks defeated
 

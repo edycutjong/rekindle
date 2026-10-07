@@ -17,7 +17,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 ## Receipts
 
 <!-- bench:killer:start -->
-**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC).
+**73.4% vs 9.1% through the same address pipeline** (0.0% when Rekindle's cards are checked by their Qloo ID). Across 20 fictional profiles, 58 of 79 outing venues in plans from the same LLM asked for named places were wrong: 48 unverifiable, 9 closed at the slot, 1 serving alcohol to a patient in recovery. Rekindle: 6 of 66 through the same pipeline (all 6 unverifiable, i.e. geocode or name-match misses on venues Qloo verified), 0 of 66 by Qloo ID (`bench/results.json`, run 2026-10-07 13:11 UTC). Manual audit against public listings (a sample of 20 venues per arm; not blind, done by the build agent): **41.2% vs 0.0%** (7 of 17 checkable vs 0 of 14; 3 and 6 inconclusive, `bench/audit.json`).
 <!-- bench:killer:end -->
 
 | Receipt | Value | Source |
@@ -29,7 +29,11 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 | Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
 
-The bench predates later plan-path changes and is re-run before submission; [DEMO.md](DEMO.md#bench-reproduce) lists them and explains how to read the table (Qloo grades both arms; the manual audit was not blind).
+<!-- bench:caveat:start -->
+**Caveat: this bench run predates 16 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+<!-- bench:caveat:end -->
+
+[DEMO.md](DEMO.md#bench-reproduce) explains how to read the table (Qloo grades both arms; the manual audit was not blind).
 
 ## Reproduce (the real path)
 
