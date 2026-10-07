@@ -1,11 +1,14 @@
 import { errorResponse, json } from "@/lib/http";
+import { guard } from "@/lib/ratelimit";
 import { caseFromSeed, SEEDS } from "@/lib/service";
 import { storeFromEnv } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 /** POST /api/cases/seed/maya — clone a fictional seeded profile (inputs only) into a fresh case for this visitor. */
-export async function POST(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
+export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const g = await guard(req, "write");
+  if (g.deny) return g.deny;
   try {
     const { slug } = await params;
     const doc = caseFromSeed(slug);

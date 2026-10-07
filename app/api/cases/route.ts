@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
+import { guard } from "@/lib/ratelimit";
 import { wkt } from "@/lib/plan";
 import { CaseDoc, newId, storeFromEnv } from "@/lib/store";
 
@@ -25,6 +26,8 @@ const Intake = z.object({
 
 /** POST /api/cases — intake. Stores the case row; no plan is run until POST /api/cases/:id/plan. */
 export async function POST(req: Request) {
+  const g = await guard(req, "write");
+  if (g.deny) return g.deny;
   try {
     const b = Intake.parse(await req.json());
     const doc = CaseDoc.parse({

@@ -1,11 +1,12 @@
 /** Small helpers for the route handlers: JSON responses, error mapping, and a Server-Sent Events stream. */
 import { ZodError } from "zod";
-import { NotFound } from "./service";
+import { Conflict, NotFound } from "./service";
 
-export const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "cache-control": "no-store" } });
+export const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(body, { status, headers: { ...headers, "cache-control": "no-store" } });
 
 export function errorResponse(e: unknown): Response {
   if (e instanceof NotFound) return json({ error: e.message }, 404);
+  if (e instanceof Conflict) return json({ error: e.message }, 409);
   if (e instanceof ZodError) return json({ error: "invalid input", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, 400);
   if (e instanceof Error && e.message === "invalid id") return json({ error: "invalid id" }, 400);
   console.error(e);
@@ -15,7 +16,7 @@ export function errorResponse(e: unknown): Response {
 export type Send = (event: string, data: unknown) => void;
 
 /** One SSE frame per event: `event: <type>` + `data: <json>`. The stream closes when `run` settles. */
-export function sseResponse(run: (send: Send) => Promise<void>): Response {
+export function sseResponse(run: (send: Send) => Promise<void>, extraHeaders: Record<string, string> = {}): Response {
   const enc = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -39,7 +40,7 @@ export function sseResponse(run: (send: Send) => Promise<void>): Response {
       }
     },
   });
-  return new Response(stream, { headers: { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store, no-transform", connection: "keep-alive", "x-accel-buffering": "no" } });
+  return new Response(stream, { headers: { ...extraHeaders, "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store, no-transform", connection: "keep-alive", "x-accel-buffering": "no" } });
 }
 
 /** Parse an SSE body into {event, data} frames (tests and scripts). */
