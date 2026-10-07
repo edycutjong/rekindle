@@ -70,18 +70,22 @@ export interface Strike {
   hour: number;
   movedTo: number | null;
   byToggle: boolean;
+  /** other rules that refused the same venue in the same day (one strike per venue, not one per rule) */
+  also: string[];
 }
 
 export function strikesByDay(plan: Pick<PlanDoc, "refusals" | "cards">): Record<DayName, Strike[]> {
   const out = Object.fromEntries(DAYS.map((d) => [d, [] as Strike[]])) as Record<DayName, Strike[]>;
-  const seen = new Set<string>();
   // refusals struck by a constraint toggle first: they are the ones that just changed on the sheet
   const ordered = [...plan.refusals].sort((a, b) => Number(!!b.struck_by_toggle) - Number(!!a.struck_by_toggle));
   for (const r of ordered) {
-    const key = `${r.day_name}|${r.qloo_entity_id}|${r.rule}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out[r.day_name].push({ key, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, hour: r.hour, movedTo: r.moved_to ?? null, byToggle: !!r.struck_by_toggle });
+    const key = `${r.day_name}|${r.qloo_entity_id}`;
+    const prev = out[r.day_name].find((x) => x.key === key);
+    if (prev) {
+      if (r.rule !== prev.rule && !prev.also.includes(r.rule)) prev.also.push(r.rule);
+      continue;
+    }
+    out[r.day_name].push({ key, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, hour: r.hour, movedTo: r.moved_to ?? null, byToggle: !!r.struck_by_toggle, also: [] });
   }
   return out;
 }
@@ -96,6 +100,7 @@ export function shortDetail(detail: string, max = 2): string {
 /** The reason line under a strike, e.g. `R-ALC · cocktail_bar · struck when a constraint changed`. */
 export function strikeReason(s: Strike): string {
   const parts = [s.rule, shortDetail(s.detail)];
+  if (s.also.length) parts.push(`also ${s.also.join(", ")}`);
   if (s.movedTo !== null) parts.push(`→ moved to ${fmtHour(s.movedTo)}`);
   if (s.byToggle) parts.push("struck when a constraint changed");
   return parts.join(" · ");
@@ -271,4 +276,38 @@ export function coverageRefusal(plan: Pick<PlanDoc, "cards" | "empty_slots">, c:
 export function outageState(plan: Pick<PlanDoc, "empty_slots" | "fault">): { slots: number; injected: boolean } | null {
   const n = plan.empty_slots.filter((e) => isOutage(e.reason)).length;
   return n ? { slots: n, injected: plan.fault === "qloo_unreachable" } : null;
+}
+
+/* ------------------------------------------------------------------ patient print view (ui.md 7) */
+
+export interface PrintRow {
+  day: string;
+  time: string;
+  activity: string;
+  kind: string;
+  /** the address for outings; "at home" for home doses */
+  where: string;
+  /** the clinician-approved coaching line (the dose) */
+  how: string;
+}
+
+/**
+ * The patient-facing sheet: approved cards only, in day order, with what / when / where / how and nothing else —
+ * no strikes, no trace, no explainability weights, no rule IDs (ui.md 7). A week that is still a draft prints nothing:
+ * nothing reaches the patient without the clinician's approval (spec, decision condition 1).
+ */
+export function printSheet(plan: Pick<PlanDoc, "status" | "cards">): { printable: boolean; rows: PrintRow[] } {
+  if (plan.status === "draft") return { printable: false, rows: [] };
+  const rows = plan.cards
+    .filter((c) => c.clinician_action === "approved")
+    .sort((a, b) => a.day - b.day || a.hour - b.hour)
+    .map((c) => ({
+      day: c.day_name.charAt(0).toUpperCase() + c.day_name.slice(1),
+      time: c.rung === "home" ? `${fmtHour(c.hour)} · about 10 minutes` : fmtHour(c.hour),
+      activity: c.name,
+      kind: c.rung === "home" ? typeLabel(c.home_type ? `urn:entity:${c.home_type}` : c.entity_type) : c.rung === "social" ? "outing with people around" : "outing on your own",
+      where: c.rung === "home" ? "at home" : (c.address ?? "address on the clinician's sheet"),
+      how: c.coaching,
+    }));
+  return { printable: true, rows };
 }

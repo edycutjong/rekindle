@@ -29,7 +29,6 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
     <div className={r.wrap}>
       <SiteHeader />
       <main className={s.page}>
-        <p className={s.eyebrow}>/integrations/qloo</p>
         <h1 className={s.title}>Qloo requests, as the agent made them</h1>
         <p className={s.lead}>
           {planId ? (

@@ -38,7 +38,6 @@ export default async function Judge() {
     <div className={r.wrap}>
       <SiteHeader />
       <main className={s.page}>
-        <p className={s.eyebrow}>/judge</p>
         <h1 className={s.title}>Receipts: what the agent did, and how often a plan was wrong</h1>
         <p className={s.lead}>
           No login. Every case is fictional. Plans below run live against Qloo and the model when you click; nothing on this page is replayed. Numbers come from{" "}

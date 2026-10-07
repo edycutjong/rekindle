@@ -1,11 +1,6 @@
 .page {
   padding: 32px 0;
 }
-.eyebrow {
-  font: 14px var(--font-data);
-  color: var(--muted);
-  margin: 0;
-}
 .title {
   font-size: clamp(30px, 4vw, 40px);
   margin: 4px 0 10px;

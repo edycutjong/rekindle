@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
 import { changedRatings, clampScore, coverageRefusal, emberLabel, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
-import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
+import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
   id: "c1",
@@ -72,6 +72,15 @@ describe("ledger view helpers (lib/view.ts)", () => {
     expect(s.thursday.map((x) => x.name)).toEqual(["The Meat Hook", "Patisserie Tomoko"]);
     expect(strikeReason(s.thursday[1])).toBe("R-OPEN · closes 18:00 · slot 18:00 · → moved to 15:00");
     expect(strikeReason(s.thursday[0])).toMatch(/^R-ALC · craft_beer · struck when a constraint changed$/);
+  });
+
+  it("one strike per venue per day: a venue refused by two rules shows once, naming the other rule", () => {
+    const r = (o: Partial<PlanDoc["refusals"][number]>) => ({ id: "r", plan_id: "p", qloo_entity_id: "D", name: "Dokebi Bar and Grill", rule: "R-OPEN", detail: "opens 12:00 · slot 11:00", verdict: "REFUSE" as const, day_name: "saturday" as const, hour: 11, ...o });
+    const s = strikesByDay({ cards: [], refusals: [r({}), r({ rule: "R-ALC", detail: "offerings:place:alcohol", struck_by_toggle: true }), r({ day_name: "sunday" })] });
+    expect(s.saturday).toHaveLength(1);
+    expect(s.saturday[0].rule).toBe("R-ALC");
+    expect(strikeReason(s.saturday[0])).toBe("R-ALC · offerings:place:alcohol · also R-OPEN · struck when a constraint changed");
+    expect(s.sunday).toHaveLength(1);
   });
 
   it("trace lines: live events and a stored plan both name the tool, params and refusals by rule", () => {
@@ -152,5 +161,24 @@ describe("edge states (D10)", () => {
     expect(outageState({ empty_slots: [e, e], fault: "qloo_unreachable" })).toEqual({ slots: 2, injected: true });
     expect(outageState({ empty_slots: [e], fault: null })).toEqual({ slots: 1, injected: false });
     expect(outageState({ empty_slots: [], fault: null })).toBeNull();
+  });
+});
+
+describe("patient print view (ui.md 7)", () => {
+  const base = { id: "c", plan_id: "p", slot_hour: 15, qloo_entity_id: "E", affinity: 0.9, explain_json: [{ entity_id: "B", name: "Phoebe Bridgers", score: 0.54 }], tags: [], checks: [], verdict: "PASS" as const, routed_by: "llm" as const, tool_params: {}, pleasure: null, mastery: null };
+  const cards = [
+    { ...base, id: "a", day: 3, day_name: "thursday" as const, hour: 15, rung: "solo" as const, name: "Dun-Well Doughnuts", entity_type: "urn:entity:place", address: "222 Montrose Ave Brooklyn, NY 11206", coaching: "Go at 15:00; twenty minutes is enough.", clinician_action: "approved" as const },
+    { ...base, id: "b", day: 0, day_name: "monday" as const, hour: 19, rung: "home" as const, home_type: "artist" as const, name: "Lucy Dacus", entity_type: "urn:entity:artist", coaching: "Put on one song.", clinician_action: "approved" as const },
+    { ...base, id: "c", day: 1, day_name: "tuesday" as const, hour: 19, rung: "home" as const, home_type: "podcast" as const, name: "Not approved", entity_type: "urn:entity:podcast", coaching: "x", clinician_action: null },
+  ];
+
+  it("a draft week prints nothing; an approved week prints approved cards in day order, without weights or rules", () => {
+    expect(printSheet({ status: "draft", cards: cards as never })).toEqual({ printable: false, rows: [] });
+    const p = printSheet({ status: "approved", cards: cards as never });
+    expect(p.printable).toBe(true);
+    expect(p.rows.map((r) => r.activity)).toEqual(["Lucy Dacus", "Dun-Well Doughnuts"]);
+    expect(p.rows[0]).toEqual({ day: "Monday", time: "19:00 · about 10 minutes", activity: "Lucy Dacus", kind: "artist", where: "at home", how: "Put on one song." });
+    expect(p.rows[1].where).toBe("222 Montrose Ave Brooklyn, NY 11206");
+    expect(JSON.stringify(p.rows)).not.toMatch(/0\.54|R-|Bridgers/);
   });
 });

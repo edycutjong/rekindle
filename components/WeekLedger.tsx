@@ -114,13 +114,16 @@ export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: Em
       {h && <HoursCheck h={h} geohash={c.rung === "social" ? c.geohash : undefined} />}
       {c.address && <div className={s.addr}>{c.address}</div>}
       {checks.length > 0 && (
-        <div className={s.checks} aria-label="Verifier checks passed">
+        <details className={s.checks} data-testid="checks">
+          <summary>
+            {checks.length} rule{checks.length === 1 ? "" : "s"} passed ✓
+          </summary>
           {checks.map((x) => (
             <abbr key={x.rule} title={x.detail}>
               {x.rule} ✓
             </abbr>
           ))}
-        </div>
+        </details>
       )}
       {g && <CardActions g={g} name={c.name} />}
       <PMBox g={g} />

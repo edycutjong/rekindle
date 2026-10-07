@@ -17,7 +17,6 @@ export default function Home() {
       <SiteHeader />
       <main className={s.home}>
         <section className={s.intro}>
-          <p className={s.eyebrow}>Behavioural activation · activity scheduling</p>
           <h1 className={s.title}>A week of things she used to love, checked before it reaches her.</h1>
           <p className={s.lead}>
             Rekindle is a planning agent for clinicians. From what a patient loved before the illness, it builds a graded week of real activities with Qloo: each

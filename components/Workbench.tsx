@@ -424,9 +424,14 @@ function GateBar(o: { plan: PlanDoc | null; mode: "draft" | "rate" | "locked" | 
     return (
       <div className={s.gateBar} data-testid="gate-bar">
         <p>This week was re-planned from its ratings; the ratings are locked.</p>
-        <Link className={`${s.btn} ${s.btnQuiet}`} href={`/plans/${plan.next_plan_id}`} data-testid="next-week">
-          Week {plan.week + 1} →
-        </Link>
+        <div className={s.gateBtns}>
+          <Link className={`${s.btn} ${s.btnQuiet}`} href={`/plans/${plan.id}/print`} data-testid="print-link">
+            Patient sheet
+          </Link>
+          <Link className={`${s.btn} ${s.btnQuiet}`} href={`/plans/${plan.next_plan_id}`} data-testid="next-week">
+            Week {plan.week + 1} →
+          </Link>
+        </div>
       </div>
     );
   }
@@ -441,6 +446,9 @@ function GateBar(o: { plan: PlanDoc | null; mode: "draft" | "rate" | "locked" | 
         </span>
       </p>
       <div className={s.gateBtns}>
+        <Link className={`${s.btn} ${s.btnQuiet}`} href={`/plans/${plan.id}/print`} data-testid="print-link">
+          Patient sheet
+        </Link>
         <button type="button" className={`${s.btn} ${s.btnQuiet}`} disabled={o.busy || o.dirty === 0} onClick={o.onSave} data-testid="save-ratings">
           Save ratings
         </button>

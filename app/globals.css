@@ -35,6 +35,17 @@ h3 {
   font-weight: 400;
 }
 
+::selection {
+  background: var(--rule);
+  color: var(--ink);
+}
+
+code,
+kbd,
+samp {
+  font-variant-numeric: tabular-nums;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
