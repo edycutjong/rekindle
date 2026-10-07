@@ -278,7 +278,7 @@
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: auto;
-  font-size: clamp(16px, 1.25vw, 20px);
+  font-size: clamp(15px, 1.1vw, 20px);
   line-height: 1.25;
   margin: 2px 0 0;
   font-weight: 700;
