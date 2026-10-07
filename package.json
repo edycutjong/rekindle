@@ -35,5 +35,8 @@
     "vitest": "^5.0.3"
   },
   "description": "Behavioral-activation planning agent for clinicians, built on Qloo Taste AI",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "postcss": "^8.5.29"
+  }
 }
