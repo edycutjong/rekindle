@@ -17,9 +17,18 @@ export const metadata: Metadata = {
     siteName: "Rekindle",
     description:
       "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from pleasure ratings.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    url: "https://rekindle-one.vercel.app",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Rekindle" }],
+    locale: "en_US",
+    type: "website",
   },
-  twitter: { card: "summary_large_image", images: ["/og-image.png"] },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rekindle",
+    description:
+      "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from pleasure ratings.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
