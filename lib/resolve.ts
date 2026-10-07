@@ -1,5 +1,5 @@
 /**
- * resolveLove — intake resolution of a typed love to Qloo IDs (architecture "Agent tools"; used by /api/resolve, the
+ * resolveLove — intake resolution of a typed love to Qloo IDs (used by /api/resolve, the
  * same rule as scripts/seed.py). Entities via /search pinned to a type (P1: "Phoebe Bridgers" is an artist AND a
  * person); food / activity loves via /v2/tags (P2/P3: "ramen" is a tag, not the place named Ramen). The clinician
  * confirms one of the top 3; nothing is guessed when Qloo returns nothing.

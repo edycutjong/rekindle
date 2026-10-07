@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Judge receipts · Rekindle" };
 const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ?? slug;
 
 /**
- * /judge (ui.md 8, build-plan D10): the receipts a judge needs without reading code — the six edge states to click,
+ * /judge: the receipts a judge needs without reading code — the six edge states to click,
  * the bench table (Qloo-graded and manually audited side by side), the ablation, re-plan responsiveness, and the
  * refusals by rule of the latest live runs. Every number is read from a committed script output or a stored call log.
  */

@@ -1,5 +1,5 @@
 /**
- * The clinician gate and the ratings loop (build-plan D7, spec Core Features 4–5).
+ * The clinician gate and the ratings loop.
  *
  *   draft     per card: approve / unapprove / swap / remove; constraint toggles (lib/service.ts)
  *     │  approveWeek — the one "Approve week" action; nothing reaches the patient without it (I4)
@@ -22,7 +22,7 @@ import { callsDoc, cardFromDoc, cardToDoc, caseRowFromDoc, newId, PlanDoc, planD
 
 export type CardAction = "approve" | "unapprove" | "swap" | "remove";
 
-/** The re-plan button is enabled at this many rated activities (ui.md 5). */
+/** The re-plan button is enabled at this many rated activities. */
 export const MIN_RATED_FOR_REPLAN = 3;
 
 type QlooFactory = (onCall: (l: QlooCallLog) => void) => QlooClient;

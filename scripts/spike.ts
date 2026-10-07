@@ -1,12 +1,12 @@
 /**
- * Qloo spike (build-plan D1). Asserts result DIFFERENCES, not HTTP 200s.
+ * Qloo spike. Asserts result DIFFERENCES, not HTTP 200s.
  *
  * For every parameter the product relies on, the spike sends a baseline request and the same request with the
  * parameter changed, then checks (a) that the result set/order/scores changed and (b) a semantic assertion where
  * one exists (e.g. every result carries the required tag, every distance is inside the radius). A control pair of
  * identical requests checks that the API is deterministic, so a "changed" verdict is not noise.
  *
- * Any parameter whose verdict is "no change" must be struck from the specs (build-plan D1 exit gate).
+ * Any parameter whose verdict is "no change" must be dropped from the product.
  *
  *   QLOO_API_KEY=… npx tsx scripts/spike.ts [--out spike/qloo-spike.json] [--capture fixtures/qloo_captured]
  */

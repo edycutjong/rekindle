@@ -164,7 +164,7 @@ describe("edge states (D10)", () => {
   });
 });
 
-describe("patient print view (ui.md 7)", () => {
+describe("patient print view", () => {
   const base = { id: "c", plan_id: "p", slot_hour: 15, qloo_entity_id: "E", affinity: 0.9, explain_json: [{ entity_id: "B", name: "Phoebe Bridgers", score: 0.54 }], tags: [], checks: [], verdict: "PASS" as const, routed_by: "llm" as const, tool_params: {}, pleasure: null, mastery: null };
   const cards = [
     { ...base, id: "a", day: 3, day_name: "thursday" as const, hour: 15, rung: "solo" as const, name: "Dun-Well Doughnuts", entity_type: "urn:entity:place", address: "222 Montrose Ave Brooklyn, NY 11206", coaching: "Go at 15:00; twenty minutes is enough.", clinician_action: "approved" as const },

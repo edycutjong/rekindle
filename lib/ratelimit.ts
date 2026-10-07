@@ -1,7 +1,7 @@
 /**
- * Rate limiting (build-plan D5). Protects the Qloo and LLM keys on a zero-login path without ever locking judges out.
+ * Rate limiting. Protects the Qloo and LLM keys on a zero-login path without ever locking judges out.
  *
- * Three namespaces (architecture.md "Rate limiting", production-plan.md "Key safety"):
+ * Three namespaces:
  *   public  everyone else: per-IP hourly limit + a global daily cap on plan runs
  *   judge   carries the judge token (cookie set by `/?judge=<token>`, or the `x-judge-token` header): its own daily
  *           ceiling, never counted against the public cap
@@ -38,7 +38,7 @@ export function limitsFromEnv(env: Record<string, string | undefined> = process.
   return {
     public: {
       perIpPerHour: { plan: num(env.RL_PUBLIC_PLANS_PER_IP_HOUR, 20), toggle: 40, resolve: 120, write: 40, health: 30 },
-      // 600/day ≈ 4× the D15–D20 traction estimate (production-plan.md); re-size from the counter
+      // 600/day ≈ 4× the expected judging-period traffic; re-size from the counter
       dailyPlans: num(env.RL_PUBLIC_DAILY_PLANS, 600),
     },
     judge: {

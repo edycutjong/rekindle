@@ -68,7 +68,7 @@ export interface RunPlanOptions {
 
 export type BenchArm = "B" | "B-" | "B-4";
 
-/** Arm → tool options (complexity.md §2): B− turns R-ALC's screen off, B−4 also sends only the 4 bar tags. */
+/** Arm → tool options: B− turns R-ALC's screen off, B−4 also sends only the 4 bar tags. */
 export function benchToolOptions(arm: BenchArm) {
   return { alcoholScreen: arm === "B", excludeTagSet: arm === "B-4" ? ALCOHOL_EXCLUDE_4 : ALCOHOL_EXCLUDE_14 };
 }
@@ -159,7 +159,7 @@ async function runWeekOne(o: RunPlanOptions, c: CaseDoc): Promise<PlanDoc> {
   return doc;
 }
 
-/** The constraint tabs (ui.md Case strip). Distance and budget can be tightened or loosened; flags switch on/off. */
+/** The constraint tabs (case strip). Distance and budget can be tightened or loosened; flags switch on/off. */
 export interface ConstraintPatch {
   in_recovery?: boolean;
   need_quiet?: boolean;

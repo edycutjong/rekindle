@@ -89,7 +89,7 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory, keptNote: 
   return out;
 }
 
-/** Seed rating rule (seed-data.md): top at-home card P7, top outing P8, lowest outing P2. Needs ≥ 2 verified outings. */
+/** Seed rating rule: top at-home card P7, top outing P8, lowest outing P2. Needs ≥ 2 verified outings. */
 export function seedRatings(w: WeekPlan): Rating[] | null {
   const cards = w.slots.flatMap((s) => (s.card ? [s.card] : []));
   const home = cards.filter((c) => c.rung === "home").sort((a, b) => b.affinity - a.affinity);

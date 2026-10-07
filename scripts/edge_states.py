@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The six failure/edge states (ui.md "States every component must render"; build-plan D10 gate), checked on a real
+"""The six failure/edge states checked on a real
 deployment from a fresh logged-out browser, starting from /judge as a judge would:
   loading (pencil skeleton while the live plan streams) · refused (struck candidates) · REVIEW (clinician-decides box)
   · empty (slot left empty with its reason) · coverage refusal (sparse-coverage profile, live) · Qloo unavailable

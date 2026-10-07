@@ -1,6 +1,6 @@
 "use client";
 /**
- * Clinician gate + ratings controls (ui.md 2, 4, 5): per-card approve / swap / remove on a draft week, and the large
+ * Clinician gate + ratings controls: per-card approve / swap / remove on a draft week, and the large
  * pleasure / mastery steppers on an approved week. Pure presentation; Workbench owns the requests.
  */
 import type { CardAction } from "@/lib/gate";

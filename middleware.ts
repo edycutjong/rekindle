@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Judge entry (production-plan.md "Key safety"): `/?judge=<token>` from the Devpost testing instructions sets an
+ * Judge entry: `/?judge=<token>` from the Devpost testing instructions sets an
  * httpOnly cookie and redirects to the same page without the token, so judges get their own quota (lib/ratelimit.ts)
  * and are never counted against the public daily cap. A wrong token is silently ignored (public namespace).
  */

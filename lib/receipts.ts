@@ -1,5 +1,5 @@
 /**
- * Receipts for /integrations/qloo (build-plan D5): the Qloo requests behind the most recent plans, read from the stored
+ * Receipts for /integrations/qloo: the Qloo requests behind the most recent plans, read from the stored
  * call logs (path, params, status, ms, result count — never the key, I5). Aggregates are computed here from those
  * logs, so every number on the page comes from a stored call.
  */

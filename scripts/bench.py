@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rekindle bench (build-plan D9; definitions in README "Bench"): the killer number, the R-ALC ablation and plan latency,
+"""Rekindle bench (definitions in README "Bench"): the killer number, the R-ALC ablation and plan latency,
 measured LIVE against a deployment (Qloo + LLM on every run; nothing is replayed).
 
 Killer number: of the outing venues in each arm's plans across the 20 seeded profiles, the share that are
@@ -16,7 +16,7 @@ unverifiable, closed at the slot, or serve alcohol to a patient in recovery. `un
   that carries an R-ALC deny tag or keyword (the plan's `bench.pool_alcohol`), before R-KIND or any other rule.
 
 Every run uses the bench token: its own daily quota and the bench/ store prefix (never the public counter).
-Maya is set in recovery for every arm (seed-data.md), so 10 profiles are in recovery.
+Maya is set in recovery for every arm, so 10 profiles are in recovery.
 
 Usage: BENCH_TOKEN=... QWEN_API_KEY=... QWEN_BASE_URL=... QWEN_MODEL=qwen3.8-flash \\
        python3 scripts/bench.py --base https://rekindle-one.vercel.app --out bench/results.json [--only maya,theo] [--arms A,B,B-,B-4]

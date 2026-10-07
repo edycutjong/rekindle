@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Activity sheet · Rekindle", robots: { index: false } };
 
 /**
- * Patient print view (ui.md 7): the approved activities only, A4/Letter, with a P and M box to fill in by hand.
+ * Patient print view: the approved activities only, A4/Letter, with a P and M box to fill in by hand.
  * No strikes, trace, weights or rule IDs. A draft week prints nothing (nothing reaches the patient unapproved).
  */
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {

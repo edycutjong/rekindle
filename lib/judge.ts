@@ -1,5 +1,5 @@
 /**
- * /judge view model (build-plan D10, ui.md 8): the bench table, ablation, re-plan responsiveness and the manual audit,
+ * /judge view model: the bench table, ablation, re-plan responsiveness and the manual audit,
  * read from the committed files that scripts produce (bench/results.json ← scripts/bench.py, bench/replan.json ←
  * scripts/replan_check.py, bench/audit.json ← scripts/manual_audit.py). Nothing here computes a new claim: rates are
  * the scripts' own fields, formatted. A missing file renders as "not run yet", never as a number.

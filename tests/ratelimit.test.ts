@@ -70,7 +70,7 @@ describe("rate limiting (lib/ratelimit.ts)", () => {
     expect(clientIp(req(h))).toBe("5.5.5.5");
   });
 
-  it("defaults: 20 plans/IP/hour and 600/day public (production-plan.md)", () => {
+  it("defaults: 20 plans/IP/hour and 600/day public", () => {
     const l = limitsFromEnv({});
     expect(l.public.perIpPerHour.plan).toBe(20);
     expect(l.public.dailyPlans).toBe(600);

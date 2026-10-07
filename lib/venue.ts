@@ -1,5 +1,5 @@
 /**
- * Venue verification for the bench (build-plan D9, `/api/verify-venue`). Grades ONE named venue at ONE slot with the
+ * Venue verification for the bench (`/api/verify-venue`). Grades ONE named venue at ONE slot with the
  * same oracle for every arm:
  *
  *   by name + address (arm A, and arm B's symmetry check)

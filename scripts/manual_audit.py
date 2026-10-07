@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Manual audit of the bench's oracle (complexity.md L4 bias disclosure; build-plan D9).
+"""Manual audit of the bench's oracle (the bias disclosure).
 
 The bench grades both arms with Qloo as the oracle. This script draws a sample the auditor checks against PUBLIC
 sources instead (the venue's own site, its map listing, its menu), and summarises the verdicts.

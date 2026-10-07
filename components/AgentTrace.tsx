@@ -11,7 +11,7 @@ export interface TraceStats {
   planId: string | null;
 }
 
-/** Right rail (ui.md 3): the agent's tool calls with result counts and refusals by rule; collapsible below 1100px. */
+/** Right rail: the agent's tool calls with result counts and refusals by rule; collapsible below 1100px. */
 export function AgentTrace({ lines, stats, live }: { lines: string[]; stats: TraceStats; live: boolean }) {
   const [open, setOpen] = useState(true);
   const ref = useRef<HTMLOListElement>(null);

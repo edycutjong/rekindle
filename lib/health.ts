@@ -1,5 +1,5 @@
 /**
- * Liveness (build-plan D5, architecture.md `GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping.
+ * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping.
  * Reports status and latency for each and never a key. Results are cached per instance for 60 s so an uptime pinger or
  * a refresh loop cannot turn the endpoint into a key-spending loop.
  */

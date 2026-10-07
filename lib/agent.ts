@@ -1,5 +1,5 @@
 /**
- * Agent loop (build-plan D3). A real LLM tool loop (Vercel AI SDK `generateText` + typed tools) routes the week:
+ * Agent loop. A real LLM tool loop (Vercel AI SDK `generateText` + typed tools) routes the week:
  * for each slot of the energy ladder it picks the tool, the at-home domain, an optional slot hour and an optional
  * tighter radius, then writes one ≤25-word coaching line per placed card.
  *

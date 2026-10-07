@@ -1,4 +1,4 @@
-/* Product screens (specs/ui.md). Tokens only from app/globals.css (design.md §4) — no new colours or faces here.
+/* Product screens. Tokens only from app/globals.css — no new colours or faces here.
    --before is graphite for strike lines and pencilled names only; reasons under a strike are --muted (AA). */
 
 .wrap {
@@ -575,7 +575,7 @@
   border-color: var(--ink);
 }
 
-/* ------------------------------------------------------------ clinician gate (ui.md 2, 4) — --stamp only here */
+/* ------------------------------------------------------------ clinician gate — --stamp only here */
 .approved {
   border-color: var(--stamp);
   box-shadow: inset 0 0 0 1px var(--stamp);
@@ -666,7 +666,7 @@
   margin-left: 4px;
 }
 
-/* ------------------------------------------------------------ ratings (ui.md 5): large 0–10 steppers */
+/* ------------------------------------------------------------ ratings: large 0–10 steppers */
 .rate {
   display: grid;
   gap: 4px;
@@ -717,7 +717,7 @@
   margin: 0;
 }
 
-/* ------------------------------------------------------------ the ember re-plan (ui.md 6) — --after only here */
+/* ------------------------------------------------------------ the ember re-plan — --after only here */
 .emberWrap {
   position: relative;
   min-width: 0;
@@ -834,7 +834,7 @@
   }
 }
 
-/* ------------------------------------------------------------ responsive (ui.md) */
+/* ------------------------------------------------------------ responsive */
 @media (max-width: 1099px) {
   .grid {
     grid-template-columns: 1fr;

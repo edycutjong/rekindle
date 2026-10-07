@@ -1,5 +1,5 @@
 /**
- * Pure view helpers for the week ledger (specs/ui.md). Every string a card shows is derived here from the stored plan
+ * Pure view helpers for the week ledger. Every string a card shows is derived here from the stored plan
  * (Qloo data + verifier results), so the UI never states a fact the plan does not carry. Unit-tested in tests/view.test.ts.
  */
 import type { CardDoc, CaseDoc, PlanDoc, RefusalDoc } from "./store";
@@ -301,7 +301,7 @@ export interface CoverageRefusal {
 }
 
 /**
- * Coverage refusal (architecture.md failure state 2): outing slots left empty because no candidate within the case's
+ * Coverage refusal (failure state 2): outing slots left empty because no candidate within the case's
  * radius passed the verifier — never filled with an unverified suggestion. Outage-empty slots are not coverage.
  */
 export function coverageRefusal(plan: Pick<PlanDoc, "cards" | "empty_slots">, c: Pick<CaseDoc, "max_meters" | "need_quiet" | "need_wheelchair" | "in_recovery" | "price_max">): CoverageRefusal | null {
@@ -323,7 +323,7 @@ export function outageState(plan: Pick<PlanDoc, "empty_slots" | "fault">): { slo
   return n ? { slots: n, injected: plan.fault === "qloo_unreachable" } : null;
 }
 
-/* ------------------------------------------------------------------ patient print view (ui.md 7) */
+/* ------------------------------------------------------------------ patient print view */
 
 export interface PrintRow {
   day: string;
@@ -338,7 +338,7 @@ export interface PrintRow {
 
 /**
  * The patient-facing sheet: approved cards only, in day order, with what / when / where / how and nothing else —
- * no strikes, no trace, no explainability weights, no rule IDs (ui.md 7). A week that is still a draft prints nothing:
+ * no strikes, no trace, no explainability weights, no rule IDs. A week that is still a draft prints nothing:
  * nothing reaches the patient without the clinician's approval (spec, decision condition 1).
  */
 export function printSheet(plan: Pick<PlanDoc, "status" | "cards">): { printable: boolean; rows: PrintRow[] } {

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Re-plan responsiveness (build-plan D9; definitions in README "Bench"), LIVE against a deployment with the bench token.
+"""Re-plan responsiveness (definitions in README "Bench"), LIVE against a deployment with the bench token.
 
 For every arm-B week-1 plan in bench/results.json:
   N = profiles whose week 1 has >= 2 verified outings and >= 1 at-home card (the seed rating rule needs them);
       the others are excluded and named.
-  rating rule (seed-data.md, lib/replan.ts seedRatings): highest-affinity at-home card P7/M5, highest-affinity outing
+  rating rule (lib/replan.ts seedRatings): highest-affinity at-home card P7/M5, highest-affinity outing
       P8/M6, lowest-affinity outing P2/M3. The week is approved, rated and re-planned through the product's own routes
       (POST /approve, /ratings, /replan) — the same agent loop, tools and verifier as week 1.
   PASS for a profile when week 2

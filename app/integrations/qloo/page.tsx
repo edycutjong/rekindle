@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Qloo receipts · Rekindle" };
 const ID_RE = /^[0-9a-f-]{36}$/i;
 
 /**
- * Sponsor verification view (architecture.md): every Qloo request behind the most recent plans, as stored by the plan
+ * Sponsor verification view: every Qloo request behind the most recent plans, as stored by the plan
  * that made it — path, params, HTTP status, latency and result count. The key is never stored, so it cannot appear.
  */
 export default async function QlooReceipts({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {

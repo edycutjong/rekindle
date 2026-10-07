@@ -17,7 +17,7 @@ import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
 import s from "./rekindle.module.css";
 import { WeekLedger, type DayView } from "./WeekLedger";
 
-/** the re-plan button is enabled at this many rated activities (ui.md 5; lib/gate.ts MIN_RATED_FOR_REPLAN) */
+/** the re-plan button is enabled at this many rated activities (lib/gate.ts MIN_RATED_FOR_REPLAN) */
 const MIN_RATED = 3;
 
 type Ev = { type: string } & Record<string, unknown>;
@@ -408,7 +408,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
 
 const ratingsSaved = (p: PlanDoc) => p.cards.filter((c) => c.pleasure !== null).length;
 
-/** Approve bar (ui.md 4) on a draft; ratings + re-plan (ui.md 5) on an approved week; a link once re-planned. */
+/** Approve bar on a draft; ratings + re-plan on an approved week; a link once re-planned. */
 function GateBar(o: { plan: PlanDoc | null; mode: "draft" | "rate" | "locked" | null; busy: boolean; rated: number; dirty: number; onApprove: () => void; onSave: () => void; onReplan: () => void }) {
   const { plan, mode } = o;
   if (!plan || !mode) return null;

@@ -1,4 +1,4 @@
-/* Patient print view (ui.md 7). Tokens from app/globals.css only; prints in ink on paper. */
+/* Patient print view. Tokens from app/globals.css only; prints in ink on paper. */
 .page {
   max-width: 900px;
   margin: 0 auto;

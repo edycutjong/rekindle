@@ -1,6 +1,6 @@
 "use client";
 /**
- * The ember moment (ui.md 6, design.md §5). Week 1 as rated sits above the week-2 ledger in the same seven columns:
+ * The ember moment. Week 1 as rated sits above the week-2 ledger in the same seven columns:
  * activities rated ≥ 7 get the single ember underline, ≤ 3 are struck in graphite. A thin ember thread runs from a rated
  * activity to each week-2 card whose TOP-weighted Qloo input it is, labelled with that weight. `--after` appears nowhere
  * else in the product, so the colour means "rekindled". Below 720 px the thread becomes the inline label on the card.

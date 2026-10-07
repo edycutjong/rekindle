@@ -290,7 +290,7 @@ export async function findAtHome(ctx: ToolContext, slot: SlotSpec, type: HomeTyp
 }
 
 /** Solo outing: verified place open at the slot, near, within budget, allowed. */
-/** at most this many ambiguous candidates per slot are shown to the clinician (design.md: REVIEW is a dashed box, not a list) */
+/** at most this many ambiguous candidates per slot are shown to the clinician (REVIEW is a dashed box, not a list) */
 export const MAX_REVIEW_PER_SLOT = 2;
 
 /**

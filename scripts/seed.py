@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Deterministic seed resolver (build-plan D4, seed-data.md). Python 3 stdlib only.
+"""Deterministic seed resolver. Python 3 stdlib only.
 
 The 20 bench profiles are FICTIONAL input profiles (loves + constraints). `--resolve` resolves every love live against
 Qloo once — /search pinned to an entity type, or /v2/tags for food/activity loves — and writes:
 
-  fixtures/profiles.csv   one row per love (the columns seed-data.md names, then slug/locality/lon/lat/type/name)
+  fixtures/profiles.csv   one row per love (case, love columns, then slug/locality/lon/lat/type/name)
   fixtures/profiles.json  the same profiles, grouped, for POST /api/cases/seed/:slug
 
 A love that does not resolve fails the run loudly (no guessed IDs). Output is a pure function of the Qloo responses
@@ -30,7 +30,7 @@ BASE = "https://hackathon.api.qloo.com"
 # (slug, label, locality, lon, lat, energy, in_recovery, need_quiet, need_wheelchair, loves)
 # love = (text as the clinician typed it, Qloo query, kind) with kind in artist|tv_show|movie|book|podcast|album|tag.
 # energy → radius: 1 → 1500 m, 2 → 3000 m, 3 → 5000 m. price_max = 2 (≤$$) for every profile.
-# Maya's in_recovery is False here: the demo toggles it live (seed-data.md); the bench sets it per arm.
+# Maya's in_recovery is False here: the demo toggles it live; the bench sets it per arm.
 PROFILES = [
     ("maya", "Maya", "Williamsburg, Brooklyn", -73.9571, 40.7081, 1, False, False, False,
      [("Phoebe Bridgers", "Phoebe Bridgers", "artist"), ("Fleabag", "Fleabag", "tv_show"), ("ramen", "ramen", "tag")]),

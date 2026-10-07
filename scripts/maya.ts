@@ -1,5 +1,5 @@
 /**
- * Maya end-to-end (build-plan D2), live against Qloo. Fictional case; every card comes from this run.
+ * Maya end-to-end, live against Qloo. Fictional case; every card comes from this run.
  *
  *   1. resolve Maya's loves (/search pinned by type, /v2/tags for "ramen")
  *   2. week 1 with "in recovery" OFF

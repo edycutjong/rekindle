@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Logged-out end-to-end run of the ONE flow (build-plan D5-D8 gates), Playwright against a real deployment:
+"""Logged-out end-to-end run of the ONE flow, Playwright against a real deployment:
 home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows the same week -> clinician gate
 (swap one card live, approve one card, approve the week -> stamp) -> rate 3 activities (P/M) -> re-plan week 2 (live)
 -> diff + ember underline + top-weighted ember threads -> reload keeps week 2 -> week 1 links to week 2 ->
@@ -110,7 +110,7 @@ with sync_playwright() as p:
     week2_url = pg.url
     pg.goto(week1_url, wait_until="networkidle")
     res["week1_links_week2"] = pg.locator("[data-testid=next-week]").count() == 1 and pg.locator("[data-testid=pm-locked]").count() > 0
-    # ---- patient print view (D12, ui.md 7): approved cards only, no weights / rule IDs / strikes
+    # ---- patient print view: approved cards only, no weights / rule IDs / strikes
     week1_cards = pg.locator("[data-testid=slot-card]").count()
     pg.click("[data-testid=print-link]")
     pg.wait_for_selector("[data-testid=print-sheet]", timeout=20000)

@@ -1,5 +1,5 @@
 /**
- * LLM spike (build-plan D1): is the routing model served, does it return a valid typed tool call,
+ * LLM spike: is the routing model served, does it return a valid typed tool call,
  * and what is its latency? Runs N identical tool-call requests per provider/variant and prints p50/p95.
  *
  * Decision rule (specs, D1): if qwen3.8-flash is not served or its p50 > 15 s, switch LLM_PROVIDER to groq.

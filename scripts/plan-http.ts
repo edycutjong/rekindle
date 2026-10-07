@@ -1,5 +1,5 @@
 /**
- * HTTP end-to-end (build-plan D3/D4 gates) against a running app — local `next start` or the live URL:
+ * HTTP end-to-end against a running app — local `next start` or the live URL:
  *   POST /api/cases/seed/maya → POST /api/cases/:id/plan (reads the SSE stream) → GET /api/plans/:id (reload)
  * Prints the event timeline, the D3 gate (plan ≤ 30 s, LLM-routed, 0 cards without an entity_id) and the D4 gate
  * (the reloaded plan equals the streamed plan).

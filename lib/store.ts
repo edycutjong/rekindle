@@ -1,5 +1,5 @@
 /**
- * Persistence (build-plan D4). One JSON document per case, per plan and per plan's Qloo call log, validated with zod on
+ * Persistence. One JSON document per case, per plan and per plan's Qloo call log, validated with zod on
  * every read and write. The schema mirrors the relational plan (cases / loves / plans / cards / refusals / qloo_calls):
  * loves are embedded in their case, cards and refusals in their plan, and the call log is its own document.
  *
@@ -46,7 +46,7 @@ export const CaseDoc = z.object({
   in_recovery: z.boolean(),
   need_quiet: z.boolean(),
   need_wheelchair: z.boolean(),
-  /** fictional seeded profile (seed-data.md); real patient names are never entered */
+  /** fictional seeded profile (fixtures/profiles.csv); real patient names are never entered */
   is_seed: z.boolean().default(false),
   seed_slug: z.string().optional(),
   loves: z.array(LoveDoc).min(1).max(8),

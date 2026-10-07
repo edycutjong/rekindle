@@ -6,7 +6,7 @@ import s from "./rekindle.module.css";
 
 const ENERGY = { 1: "low", 2: "some", 3: "good" } as const;
 
-/** Case strip (ui.md 1): the case label, constraint tabs (toggling re-runs only the affected slots) and the loves. */
+/** Case strip: the case label, constraint tabs (toggling re-runs only the affected slots) and the loves. */
 export function CaseStrip({ c, week, disabled, onToggle, stamp }: { c: CaseDoc; week: number; disabled: boolean; onToggle: (p: ConstraintPatch) => void; stamp?: string | null }) {
   const distances = [...new Set([...DISTANCE_OPTIONS, c.max_meters])].sort((a, b) => a - b);
   return (
