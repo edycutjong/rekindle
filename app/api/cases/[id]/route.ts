@@ -3,7 +3,7 @@ import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/cases/:id */
+/** GET /api/cases/:id — the stored case: loves, neighbourhood point, energy and constraints. */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

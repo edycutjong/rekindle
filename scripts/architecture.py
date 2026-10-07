@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Regenerate the code-derived tables in ARCHITECTURE.md (R6: architecture is read off the code, not the plan).
+
+Rewrites everything between `<!-- generated:start -->` and `<!-- generated:end -->` from:
+  - app/**/route.ts        HTTP method exports + the route's doc comment (first sentence)
+  - app/**/page.tsx        pages
+  - lib/*.ts               each module's header comment (first sentence) + line count
+  - lib/verify.ts          the rule table in its header comment (R-ID … R-HIST)
+  - lib/agent.ts           the typed tools offered to the model (`<name>: tool({`)
+  - lib/qloo.ts / lib/plan.ts / lib/replan.ts / lib/resolve.ts / lib/venue.ts   the Qloo parameters the code sends
+
+  python3 scripts/architecture.py          rewrite ARCHITECTURE.md in place
+  python3 scripts/architecture.py --check  exit 1 if ARCHITECTURE.md is stale (no write)
+"""
+import pathlib
+import re
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+DOC = ROOT / "ARCHITECTURE.md"
+START, END = "<!-- generated:start -->", "<!-- generated:end -->"
+
+
+def first_sentence(text: str) -> str:
+    text = re.sub(r"\s+", " ", text).strip()
+    m = re.match(r"(.+?\.)(\s|$)", text)
+    s = (m.group(1) if m else text).rstrip(".")
+    if len(s) > 170:
+        s = s[:170].rsplit(" ", 1)[0] + " …"
+    return s.replace("|", "\\|")
+
+
+def doc_comment(src: str, before: str | None = None) -> str:
+    """The /** … */ block (at the top, or the last one before `before`)."""
+    if before and before in src:
+        head = src[: src.index(before)]
+        blocks = re.findall(r"/\*\*(.*?)\*/", head, re.S)
+    else:
+        blocks = re.findall(r"/\*\*(.*?)\*/", src, re.S)[:1]
+    if not blocks:
+        return ""
+    lines = [re.sub(r"^\s*\* ?", "", l) for l in blocks[-1].splitlines()]
+    return " ".join(l for l in lines if l.strip())
+
+
+def route_path(p: pathlib.Path) -> str:
+    rel = p.relative_to(ROOT / "app").parent.as_posix()
+    return "/" + re.sub(r"\[(\w+)\]", r":\1", rel)
+
+
+def routes() -> list[str]:
+    rows = ["| Method | Path | What it does (from the route's doc comment) |", "|---|---|---|"]
+    for p in sorted((ROOT / "app").rglob("route.ts")):
+        src = p.read_text()
+        for m in re.finditer(r"export async function (GET|POST|PATCH|PUT|DELETE)\b", src):
+            desc = doc_comment(src, m.group(0))
+            desc = re.sub(r"^(GET|POST|PATCH|PUT|DELETE) /\S+\s+[—-]\s+", "", desc.strip())
+            rows.append(f"| {m.group(1)} | `{route_path(p)}` | {first_sentence(desc) or '—'} |")
+    return rows
+
+
+def pages() -> list[str]:
+    rows = ["| Page | Source |", "|---|---|"]
+    for p in sorted((ROOT / "app").rglob("page.tsx")):
+        rel = p.relative_to(ROOT / "app").parent.as_posix()
+        path = "/" if rel == "." else "/" + re.sub(r"\[(\w+)\]", r":\1", rel)
+        rows.append(f"| `{path}` | `{p.relative_to(ROOT).as_posix()}` |")
+    return rows
+
+
+def modules() -> list[str]:
+    rows = ["| Module | Lines | Role (first sentence of its header comment) |", "|---|---|---|"]
+    for p in sorted((ROOT / "lib").glob("*.ts")):
+        src = p.read_text()
+        rows.append(f"| `lib/{p.name}` | {src.count(chr(10))} | {first_sentence(doc_comment(src)) or '—'} |")
+    return rows
+
+
+def rules() -> list[str]:
+    src = (ROOT / "lib" / "verify.ts").read_text()
+    rows = ["| Rule | Check (from `lib/verify.ts`) |", "|---|---|"]
+    for m in re.finditer(r"^\s*\*\s+(R-[A-Z]+)\s+(.+)$", doc_comment_raw(src), re.M):
+        rows.append(f"| `{m.group(1)}` | {m.group(2).strip().replace('|', chr(92) + '|')} |")
+    return rows
+
+
+def doc_comment_raw(src: str) -> str:
+    m = re.search(r"/\*\*(.*?)\*/", src, re.S)
+    return m.group(1) if m else ""
+
+
+def tools() -> list[str]:
+    src = (ROOT / "lib" / "agent.ts").read_text()
+    names = re.findall(r"^\s+(\w+): tool\(\{", src, re.M)
+    return [f"Tools offered to the model (`lib/agent.ts`): {', '.join(f'`{n}`' for n in names)}."]
+
+
+def qloo_params() -> list[str]:
+    found: set[str] = set()
+    for name in ["plan.ts", "replan.ts", "resolve.ts", "venue.ts", "qloo.ts", "health.ts", "gate.ts"]:
+        src = (ROOT / "lib" / name).read_text()
+        found |= set(re.findall(r'"((?:filter|signal|feature|output|operator|bias|diversify)\.[a-z_.]+)"', src))
+        if re.search(r"\btake\b\s*[:=]", src):
+            found.add("take")
+    endpoints = set()
+    for name in ["qloo.ts", "venue.ts"]:
+        endpoints |= set(re.findall(r'"(/(?:v2/insights|v2/tags|search|entities))', (ROOT / "lib" / name).read_text()))
+    p = sorted(found)
+    return [
+        f"Qloo endpoints called (`lib/qloo.ts`, `lib/venue.ts`): {', '.join(f'`{e}`' for e in sorted(endpoints))}.",
+        "",
+        f"Qloo parameters the code sends ({len(p)}, grepped from `lib/`): " + ", ".join(f"`{x}`" for x in p) + ".",
+    ]
+
+
+def generated() -> str:
+    parts = [
+        "_Generated by `python3 scripts/architecture.py` from the source tree. Do not edit by hand; re-run it._",
+        "",
+        "### HTTP routes",
+        "",
+        *routes(),
+        "",
+        "### Pages",
+        "",
+        *pages(),
+        "",
+        "### Modules",
+        "",
+        *modules(),
+        "",
+        "### Verifier rules",
+        "",
+        *rules(),
+        "",
+        "### Agent tools and Qloo surface",
+        "",
+        *tools(),
+        "",
+        *qloo_params(),
+    ]
+    return "\n".join(parts)
+
+
+def main() -> int:
+    doc = DOC.read_text()
+    if START not in doc or END not in doc:
+        print("ARCHITECTURE.md has no generated markers", file=sys.stderr)
+        return 1
+    new = doc[: doc.index(START) + len(START)] + "\n" + generated() + "\n" + doc[doc.index(END):]
+    if "--check" in sys.argv:
+        if new != doc:
+            print("ARCHITECTURE.md is stale: run python3 scripts/architecture.py", file=sys.stderr)
+            return 1
+        print("ARCHITECTURE.md is current")
+        return 0
+    DOC.write_text(new)
+    print("ARCHITECTURE.md regenerated")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

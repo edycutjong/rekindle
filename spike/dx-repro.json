@@ -1,0 +1,215 @@
+{
+ "generated_by": "scripts/dx-repro.ts",
+ "at": "2026-10-07T13:32:36.714Z",
+ "base": "https://hackathon.api.qloo.com",
+ "F1_heatmap_locality": {
+  "locality": {
+   "status": 500,
+   "body": {
+    "errors": [
+     {
+      "message": "System Error"
+     }
+    ]
+   }
+  },
+  "invalid_value": {
+   "status": 400,
+   "body": {
+    "errors": [
+     {
+      "message": "output.heatmap.boundary must be \"urn:geohash\" or \"urn:entity:locality\"",
+      "path": "output.heatmap.boundary"
+     }
+    ]
+   }
+  },
+  "geohash_status": 200
+ },
+ "F2_exclude_tags_leak": [
+  {
+   "label": "no exclusion",
+   "status": 200,
+   "results": 25,
+   "alcohol_refused_by_screen": 19,
+   "review": 0,
+   "examples": [
+    {
+     "name": "Patisserie Tomoko",
+     "hits": [
+      "urn:tag:service_type:qloo:bar_service",
+      "urn:tag:beverage_offering:qloo:wine",
+      "urn:tag:amenity:qloo:wine_pairing"
+     ]
+    },
+    {
+     "name": "Brooklyn Ball Factory",
+     "hits": [
+      "urn:tag:offerings:place:alcohol",
+      "urn:tag:amenities:place:bar_onsite"
+     ]
+    },
+    {
+     "name": "Dokebi Bar and Grill",
+     "hits": [
+      "urn:tag:offerings:place:alcohol",
+      "urn:tag:offerings:place:hard_liquor",
+      "urn:tag:category:place:bar_grill"
+     ]
+    },
+    {
+     "name": "Pokito",
+     "hits": [
+      "urn:tag:offerings:place:hard_liquor",
+      "urn:tag:beverage_offering:qloo:full_bar",
+      "urn:tag:offerings:place:sake"
+     ]
+    }
+   ]
+  },
+  {
+   "label": "4 bar tags",
+   "status": 200,
+   "results": 25,
+   "alcohol_refused_by_screen": 17,
+   "review": 0,
+   "examples": [
+    {
+     "name": "Patisserie Tomoko",
+     "hits": [
+      "urn:tag:service_type:qloo:bar_service",
+      "urn:tag:beverage_offering:qloo:wine",
+      "urn:tag:amenity:qloo:wine_pairing"
+     ]
+    },
+    {
+     "name": "Brooklyn Ball Factory",
+     "hits": [
+      "urn:tag:offerings:place:alcohol",
+      "urn:tag:amenities:place:bar_onsite"
+     ]
+    },
+    {
+     "name": "Dokebi Bar and Grill",
+     "hits": [
+      "urn:tag:offerings:place:alcohol",
+      "urn:tag:offerings:place:hard_liquor",
+      "urn:tag:category:place:bar_grill"
+     ]
+    },
+    {
+     "name": "Suzume",
+     "hits": [
+      "urn:tag:activity_type:qloo:happy_hour",
+      "urn:tag:beverage_offering:qloo:full_bar",
+      "urn:tag:amenity:qloo:bar_seating"
+     ]
+    }
+   ]
+  },
+  {
+   "label": "14 alcohol tags",
+   "status": 200,
+   "results": 25,
+   "alcohol_refused_by_screen": 2,
+   "review": 2,
+   "examples": [
+    {
+     "name": "Hungry Ghost Coffee",
+     "hits": [
+      "urn:tag:beverage_offering:qloo:specialty_alcoholic"
+     ]
+    },
+    {
+     "name": "The Meat Hook",
+     "hits": [
+      "urn:tag:beverage_offering:qloo:craft_beer",
+      "urn:tag:amenity:qloo:craft_beer_selection"
+     ]
+    }
+   ]
+  }
+ ],
+ "F3_hours": {
+  "insights_filter_hours_thursday": {
+   "results": 25,
+   "unknown_thursday_hours": 0,
+   "closed_at_18": 12,
+   "unknown_examples": []
+  },
+  "search_hits": 20,
+  "search_hits_without_hours_object": 3
+ },
+ "F4_search_fuzzy": {
+  "query": "Dun-Well Doughnuts",
+  "hits": 20,
+  "names": [
+   "Dun-Well Doughnuts",
+   "PrintWithMe Print Kiosk at Dunwell Doughnuts Brooklyn",
+   "Dunkin'",
+   "Dunkin'",
+   "Nike Well Collective - Williamsburg",
+   "BAGOCK Fried Chicken & Doughnuts",
+   "Brynne Billingsley Coaching, Well-being with Brynne",
+   "Stitch Well",
+   "Dunkin'",
+   "Dunkin'",
+   "Dunkin'",
+   "Restore Hyper Wellness",
+   "Tula Health & Wellness",
+   "Artful Souls and Wellness",
+   "Afterglow | Sex Toy Store | Sex Toys | Lingerie Store | Sex Shop | Sexual Health & Wellness | Williamsburg",
+   "ALQUIMIA WELLNESS",
+   "Kriptoknight-X Exercise Therapy & Wellness Center",
+   "WellTab",
+   "Dunkin'",
+   "Pharm.NYC CBD & Canna-Wellness"
+  ],
+  "exact_name_hits": 1
+ },
+ "F5_location_query": {
+  "results": 50,
+  "with_address": 50,
+  "address_not_brooklyn": 29,
+  "examples": [
+   {
+    "name": "MoMA PS1",
+    "address": "22-25 Jackson Ave Queens, NY 11101"
+   },
+   {
+    "name": "Tenement Museum",
+    "address": "103 Orchard St New York, NY 10002"
+   },
+   {
+    "name": "Mmuseumm",
+    "address": "4 Cortlandt Alley New York, NY 10013"
+   },
+   {
+    "name": "Westfield World Trade Center",
+    "address": "185 Greenwich St New York, NY 10007"
+   }
+  ]
+ },
+ "F6_shapes": {
+  "insights_tag_keys": [
+   "id",
+   "name",
+   "type",
+   "weight"
+  ],
+  "search_tag_keys": [
+   "name",
+   "tag_id",
+   "type",
+   "value"
+  ],
+  "insights_artist_type": "urn:entity",
+  "insights_artist_subtype": "urn:entity:artist"
+ },
+ "F7_explainability": {
+  "keys": [
+   "signal.interests.entities"
+  ],
+  "has_tag_input": false
+ }
+}
