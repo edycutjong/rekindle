@@ -70,7 +70,7 @@ Rekindle depends on these parts of the Qloo API:
 The plan loop (every plan, re-plan, swap and toggle) can send up to 16 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (20 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
 <!-- arch:qloo:end -->
 
-Every request behind every plan is shown on [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo), without the key.
+The Qloo requests behind the latest plans (or any one plan, via `/integrations/qloo?plan=<id>`) are shown on [`/integrations/qloo`](https://rekindle-one.vercel.app/integrations/qloo), without the key. Intake lookups (`/search`, `/v2/tags`) are not logged there.
 
 ## 🔍 For judges
 
@@ -126,7 +126,7 @@ npm run dev                    # http://localhost:3000
 
 ## ⚠️ Limitations
 
-- **It is not a clinical tool.** It is clinician support only: no diagnosis, no efficacy claims, no patient logins. Every case in the app is fictional. Only taste entities and a map point are sent to Qloo, never health data.
+- **It is not a clinical tool.** It is clinician support only: no diagnosis, no efficacy claims, no patient logins. Every case in the app is fictional. Taste entities, a map point and constraint filters are sent to Qloo (for example the alcohol-tag exclusions when "in recovery" is on, which a reader of the requests could take as a proxy for that flag); never a diagnosis, a name or free text.
 - **The plan depends on Qloo's coverage.** In thin areas, outing slots stay empty and the app shows a coverage refusal. It does not guess.
   In the bench, 4 of 20 profiles had too few verified week-1 outings for the re-plan check and are excluded (`bench/replan.json`).
 - **A plan is slow:** p50 is about 17 s from click (see the latency table in DEMO.md). It meets the 30 s gate we set, but not the 15 s we aimed for. The LLM coaching step dominates.

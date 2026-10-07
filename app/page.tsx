@@ -88,8 +88,8 @@ export default function Home() {
         </section>
 
         <p className={s.footnote}>
-          Clinician-support only: no diagnosis, no efficacy claims, nothing reaches a patient without a clinician. Every profile here is fictional; only taste
-          entities and a map point are sent to Qloo, never health data.
+          Clinician-support only: no diagnosis, no efficacy claims, nothing reaches a patient without a clinician. Every profile here is fictional; taste
+          entities, a map point and constraint filters (such as alcohol-tag exclusions) are sent to Qloo, never a diagnosis, a name or free text.
         </p>
       </main>
     </div>
