@@ -164,6 +164,25 @@ jobs:
           path: .next
       - name: Lighthouse (/, /judge, /cases/new; accessibility >= 0.9 blocks)
         run: npm run lighthouse
+      - name: Scores to the job summary (outlives the temporary report links)
+        if: always()
+        run: |
+          {
+            echo "## Lighthouse (desktop) for ${GITHUB_SHA::7}"
+            echo "| page | performance | accessibility | best practices | SEO |"
+            echo "|---|---|---|---|---|"
+            for f in .lighthouseci/lhr-*.json; do
+              jq -r '"| \(.finalDisplayedUrl|sub("http://localhost:3000";"")) | \(.categories.performance.score*100|round) | \(.categories.accessibility.score*100|round) | \(.categories["best-practices"].score*100|round) | \(.categories.seo.score*100|round) |"' "$f"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep the Lighthouse reports (LHR JSON + HTML)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          include-hidden-files: true
+          retention-days: 90
 
   # ── STAGE 6: Deploy gate (main only) ─────────────────────────
   deploy-gate:
