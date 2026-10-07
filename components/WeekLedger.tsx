@@ -179,7 +179,7 @@ function PencilledCard({ name, label }: { name: string; label: string }) {
 
 function Skeleton() {
   return (
-    <div className={s.slot} aria-busy="true" aria-label="Planning this slot">
+    <div className={s.slot} aria-busy="true" aria-label="Planning this slot" data-testid="skeleton">
       <div className={s.sketch} />
       <div className={s.sketch} />
       <div className={s.sketch} />
