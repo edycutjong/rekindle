@@ -4,10 +4,12 @@ deployment from a fresh logged-out browser, starting from /judge as a judge woul
   loading (pencil skeleton while the live plan streams) · refused (struck candidates) · REVIEW (clinician-decides box)
   · empty (slot left empty with its reason) · coverage refusal (sparse-coverage profile, live) · Qloo unavailable
   (the labelled outage demo).
-REVIEW depends on what Qloo returns that day: the script tries the profile /judge links for REVIEW, then Maya with
-"in recovery" toggled on, and reports which one showed it. Nothing is mocked.
+REVIEW depends on what Qloo returns that day; the /judge REVIEW button (Maya with "in recovery" preset) must show at
+least one REVIEW box, or the run fails. Nothing is mocked.
 Usage: python3 scripts/edge_states.py <base-url> <screenshot-dir> [tag]   -> prints JSON; exits 1 on a failed state."""
-import json, sys, time
+import json, re, sys, time
+
+ALC = re.compile(r"\b(drinks?|beers?|wines?|cocktails?|bars?)\b", re.I)
 from playwright.sync_api import sync_playwright
 
 base, out = sys.argv[1].rstrip("/"), sys.argv[2]
@@ -48,24 +50,15 @@ with sync_playwright() as p:
     res["maya_struck"] = pg.locator("[data-testid=struck]").count()
     res["maya_review"] = pg.locator("[data-testid=review]").count()
     pg.screenshot(path=f"{out}/{tag}-state-refused-1440.png", full_page=True)
-    review_where = "maya" if res["maya_review"] else None
-    if not review_where:
-        pg.click("[data-testid=tab-in_recovery]")
-        pg.wait_for_selector("[data-testid=toggle-notice]", timeout=60000)
-        if pg.locator("[data-testid=review]").count():
-            review_where = "maya + in recovery"
-
-    # 3 REVIEW: the profile /judge links for it (from the committed bench run)
-    if not review_where:
-        pg.goto(base + "/judge", wait_until="networkidle")
-        btns = pg.locator("[data-testid^=start-]:not([data-testid=start-maya]):not([data-testid=start-maya-outage])")
-        ids = [btns.nth(i).get_attribute("data-testid") for i in range(btns.count())]
-        for tid in ids:
-            start(pg, tid)
-            done(pg)
-            if pg.locator("[data-testid=review]").count():
-                review_where = tid.removeprefix("start-")
-                break
+    # 3 REVIEW: the /judge REVIEW button (Maya with "in recovery" preset) must show at least one REVIEW box (QA round 1:
+    # a button that yields no REVIEW is a dead end for a judge)
+    start(pg, "start-maya-recovery")
+    done(pg)
+    res["review_button_boxes"] = pg.locator("[data-testid=review]").count()
+    res["review_button_coaching_alc"] = [t for t in pg.locator("[data-testid=coach]").all_inner_texts() if ALC.search(t)]
+    review_where = "maya in recovery (REVIEW button)" if res["review_button_boxes"] else None
+    gates["review_button_shows_review"] = res["review_button_boxes"] > 0
+    gates["review_button_coaching_alcohol_free"] = not res["review_button_coaching_alc"]
     gates["review"] = bool(review_where)
     res["review_shown_on"] = review_where
     if review_where:
@@ -81,6 +74,13 @@ with sync_playwright() as p:
     res["coverage_text"] = pg.locator("[data-testid=coverage-refusal]").inner_text()[:300] if gates["coverage_refusal"] else None
     res["widen_button"] = pg.locator("[data-testid=widen-radius]").count()
     pg.screenshot(path=f"{out}/{tag}-state-coverage-1440.png", full_page=True)
+    # widening with consent retries the empty outings live; the notice must say so (QA round 1)
+    if res["widen_button"]:
+        pg.click("[data-testid=widen-radius]")
+        pg.wait_for_selector("[data-testid=toggle-notice]", timeout=60000)
+        res["widen_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
+        gates["widen_notice_reports_retry"] = bool(re.match(r"Retried \d+ empty outings? within [\d.]+ km: \d+ filled", res["widen_notice"]))
+        pg.screenshot(path=f"{out}/{tag}-state-widened-1440.png", full_page=True)
 
     # 6 Qloo unavailable (labelled outage demo)
     start(pg, "start-maya-outage")

@@ -59,15 +59,17 @@ export default async function Judge() {
           </li>
           <li>
             <b>REVIEW.</b> A candidate the screen cannot decide (e.g. bar seating alone on an in-recovery case) goes to the clinician in a dashed box, never onto the
-            sheet unasked. Toggle <i>in recovery</i> on Maya&apos;s sheet: ambiguous venues in Qloo&apos;s answers are listed for review. It depends on what Qloo returns
-            that day.
-            {reviewSlug ? (
-              <span className={j.go}>
-                <StartCase slug={reviewSlug} label={`Plan ${seedLabel(reviewSlug)} (REVIEW in the bench run)`} />
-              </span>
-            ) : (
-              <span className={r.reason}> No seeded profile produced a REVIEW item in the last bench run.</span>
-            )}
+            sheet unasked. This runs Maya with <i>in recovery</i> already on, so the screen checks every outing candidate Qloo returns; how many land in REVIEW
+            depends on what Qloo returns that day.
+            <span className={j.go}>
+              <StartCase slug="maya" preset="recovery" label="Plan Maya in recovery, live" />
+              {reviewSlug && reviewSlug !== "maya" && (
+                <>
+                  {" "}
+                  <StartCase slug={reviewSlug} label={`Plan ${seedLabel(reviewSlug)} (REVIEW in the bench run)`} />
+                </>
+              )}
+            </span>
           </li>
           <li>
             <b>Empty.</b> A slot with no verified candidate is left empty with the reason. Also: the clinician&apos;s <i>remove</i>.

@@ -104,7 +104,11 @@ export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: Em
       </div>
       <h3 className={s.name}>{c.name}</h3>
       <div className={s.etype}>{typeLabel(c.entity_type)}</div>
-      {c.coaching && <p className={s.coach}>{c.coaching}</p>}
+      {c.coaching && (
+        <p className={s.coach} data-testid="coach">
+          {c.coaching}
+        </p>
+      )}
       <WhyLine parts={why} />
       {ember && (
         <div className={s.emberLabel} data-testid="ember-label">

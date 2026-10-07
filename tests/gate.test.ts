@@ -14,6 +14,7 @@ import { POST as approveRoute } from "../app/api/plans/[id]/approve/route";
 import { POST as ratingsRoute } from "../app/api/plans/[id]/ratings/route";
 import { POST as replanRoute } from "../app/api/plans/[id]/replan/route";
 import { POST as casesRoute } from "../app/api/cases/route";
+import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
 import { POST as constraintsRoute } from "../app/api/plans/[id]/constraints/route";
 
 /** deterministic route only (every LLM provider "down"), so these tests exercise the gate, not routing */
@@ -320,6 +321,18 @@ describe("gate routes", () => {
       expect(r.status).toBe(400);
       expect(await r.json()).toEqual({ error: "invalid JSON" });
     }
+  });
+
+  it("seed preset=recovery clones a profile with 'in recovery' on (the /judge REVIEW button); an unknown preset is a 400", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const slug = (s: string) => ({ params: Promise.resolve({ slug: s }) });
+    const on = await seedRoute(req("/api/cases/seed/maya?preset=recovery", "POST"), slug("maya"));
+    expect(on.status).toBe(201);
+    expect(((await on.json()) as { case: { in_recovery: boolean } }).case.in_recovery).toBe(true);
+    const plain = await seedRoute(req("/api/cases/seed/maya", "POST"), slug("maya"));
+    expect(((await plain.json()) as { case: { in_recovery: boolean } }).case.in_recovery).toBe(false);
+    expect((await seedRoute(req("/api/cases/seed/maya?preset=party", "POST"), slug("maya"))).status).toBe(400);
   });
 
   it("re-plan streams SSE ending in the stored week 2; a repeat returns it as JSON", async () => {
