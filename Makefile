@@ -7,7 +7,7 @@ help:
 	@echo "make e2e            Playwright against a local keyless next start (run npm run build first)"
 	@echo "make e2e-live       Playwright against https://rekindle-one.vercel.app, live Qloo calls"
 	@echo "make lighthouse     Lighthouse CI on /, /judge, /cases/new (run npm run build first)"
-	@echo "make security-scan  npm audit + license check + gitleaks over full history"
+	@echo "make security-scan  prod npm audit + license allowlist + gitleaks over full history (all blocking)"
 
 check:
 	npm run check
@@ -27,9 +27,11 @@ lighthouse:
 	npm run lighthouse
 
 security-scan:
-	@echo "=== NPM AUDIT (all deps) ==="
-	npm audit --audit-level=high || true
+	@echo "=== NPM AUDIT (production deps, blocking) ==="
+	npm audit --omit=dev --audit-level=high
+	@echo "=== NPM AUDIT (all deps, advisory) ==="
+	-npm audit --audit-level=high
 	@echo "=== LICENSE CHECK ==="
 	npm run license
 	@echo "=== GITLEAKS (full history) ==="
-	gitleaks git --no-banner --redact . || true
+	gitleaks git --no-banner --redact .

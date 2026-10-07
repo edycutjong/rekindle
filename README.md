@@ -200,7 +200,7 @@ npm run test:coverage  # Vitest + v8 coverage
 npm run ci             # production-dependency audit + check + coverage
 npm run build && npm run e2e         # Playwright, keyless: the app must refuse to plan, never invent a week
 npm run build && npm run lighthouse  # Lighthouse CI, accessibility >= 0.9 blocks
-make security-scan     # npm audit + license check + gitleaks over the full history
+make security-scan     # prod npm audit + license allowlist + gitleaks over the full history (fails on any finding)
 
 # ── live: real Qloo + model calls ──────────────
 npm run e2e:live                                                             # Playwright live-plan spec
