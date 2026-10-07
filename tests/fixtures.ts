@@ -16,3 +16,7 @@ export function byName(list: QlooEntity[], name: string): QlooEntity {
   if (!e) throw new Error(`fixture has no entity named ${name}`);
   return e;
 }
+
+export function capturedRaw<T = unknown>(name: string): T {
+  return JSON.parse(readFileSync(join(DIR, `${CAPTURE_DATE}-${name}.json`), "utf8")) as T;
+}
