@@ -1,0 +1,15 @@
+{
+ "generated_by": "scripts/ember-margins.ts",
+ "generated_at": "2026-10-07T15:54:05.682Z",
+ "definition": "Live product re-plans on this deployment (newest version of each week). For each new week-2 card whose explainability names a rekindled (rated >= 7) entity: margin = that entity's weight - the card's strongest other input. A thread and \"because of\" need margin >= 0.02; a smaller lead is shown as a tie.",
+ "threshold": 0.02,
+ "replans": 18,
+ "new_cards_naming_a_rating": 95,
+ "rekindled_top": 73,
+ "threaded": 2,
+ "tied": 71,
+ "margin_median": 0.0068,
+ "margin_min": 0.0006,
+ "margin_max": 0.0236,
+ "margin_over_original_loves_median": 0.0073
+}

@@ -122,7 +122,7 @@ export const ReplanDiffDoc = z.object({
   /** the live re-check of the top-rated activity (kept in its slot, or why not) */
   kept_check: z.object({ entity_id: z.string(), name: z.string(), ok: z.boolean(), detail: z.string() }).nullable().default(null),
   /** every week-2 card whose explainability names a rekindled (≥ 7) entity; `top` = it is that card's strongest input */
-  ember: z.array(z.object({ from: z.string(), from_id: z.string(), to: z.string(), to_id: z.string(), day: day, score: z.number(), top: z.boolean() })),
+  ember: z.array(z.object({ from: z.string(), from_id: z.string(), to: z.string(), to_id: z.string(), day: day, score: z.number(), top: z.boolean(), margin: z.number().optional() })),
 });
 export type ReplanDiffDoc = z.infer<typeof ReplanDiffDoc>;
 

@@ -94,7 +94,8 @@ function DayColumn({ d }: { d: DayView }) {
 
 export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: EmberLink | null }) {
   const h = hoursCheck(c);
-  const why = whyParts(c.explain_json);
+  // a card with an ember label shows 3 decimals, so a "because of" claim is never printed next to a displayed tie
+  const why = whyParts(c.explain_json, ember ? 3 : 2);
   const checks = passedChecks(c);
   const approved = c.clinician_action === "approved";
   return (
@@ -117,7 +118,7 @@ export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: Em
       )}
       <WhyLine parts={why} />
       {ember && (
-        <div className={s.emberLabel} data-testid="ember-label">
+        <div className={ember.tied ? s.emberTied : s.emberLabel} data-testid={ember.tied ? "ember-tied" : "ember-label"}>
           {emberLabel(ember)}
         </div>
       )}

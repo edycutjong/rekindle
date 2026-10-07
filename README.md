@@ -50,7 +50,7 @@ Behavioural activation (BA) is a first-line, low-cost treatment for depression. 
 3. **Every candidate is verified.** Deterministic rules check what Qloo returned: open at the slot, near, within budget, an activity category, alcohol-free in recovery (exact tags plus a token screen), quiet or accessible when required, and not rated low before.
    Refused candidates **stay on the sheet, struck through, with their rule**. Ambiguous ones go to the clinician in a dashed REVIEW box.
 4. **The clinician gate.** Approve, swap (re-runs that one slot live) or remove each card, then **Approve week**. Nothing reaches the patient without approval. A patient sheet prints only the approved activities.
-5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to each week-2 card where Qloo's explainability names it as the strongest input.
+5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to a week-2 card only where Qloo's explainability names it as the strongest input by at least 0.02; a narrower lead is labelled a tie. The top-rated activity itself comes back in its slot ("↻ kept") after a live re-check.
 
 Every card carries a **because** line with Qloo's per-love explainability weights, for example "because Phoebe Bridgers 0.54 · Fleabag 0.46".
 
@@ -132,7 +132,7 @@ npm run dev                    # http://localhost:3000
 - **A plan is slow:** p50 is about 17 s from click (see the latency table in DEMO.md). It meets the 30 s gate we set, but not the 15 s we aimed for. The LLM coaching step dominates.
 - **Opening hours come from Qloo.** A venue whose hours are wrong upstream will pass R-OPEN. Missing hours are refused, never assumed open.
 - **The alcohol screen is a deny list.** It is measured (see the ablation), but a venue that serves alcohol and carries none of the tags or keywords would get through.
-- **The ember thread is Qloo's attribution, not causation.** It is drawn when a rated activity is a week-2 card's top-weighted explainability input.
+- **The ember thread is Qloo's attribution, not causation.** It is drawn when a rated activity is a week-2 card's top-weighted explainability input by at least 0.02. Qloo splits explainability nearly evenly across signals, so on live re-plans most leads are ties (the live distribution is on /judge, from `scripts/ember-margins.ts`).
 - **Not built yet:** free-text address geocoding at intake (seeded neighbourhood points only), the heatmap map tile, mastery-driven rung changes (mastery is recorded and shown, but does not change the plan), multi-clinician use.
 
 ## 🤦 What we got wrong

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
+import { EMBER_MIN_MARGIN, explainMargin } from "../lib/replan";
 import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
@@ -118,22 +119,41 @@ describe("gate + re-plan view helpers", () => {
     expect(["", "0", "7", "10", "15", "-1", "6.5", "1e1", "abc"].map(parseScore)).toEqual([null, 0, 7, 10, "invalid", "invalid", "invalid", "invalid", "invalid"]);
   });
 
-  it("ember threads: only top-weighted links, one per week-2 card, with the week-1 rating", () => {
+  it("ember threads: a clear lead (≥ EMBER_MIN_MARGIN) threads 'because of'; a tie or sub-threshold lead gets no thread (QA round 3)", () => {
+    const ex = (pairs: [string, string, number][]) => pairs.map(([entity_id, name, score]) => ({ entity_id, name, score }));
     const diff = {
       from_plan_id: "w1",
       kept: [],
       added: [],
       removed: [], signals: [], kept_check: null,
       ember: [
-        { from: "Dun-Well", from_id: "D", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
-        { from: "Fleabag", from_id: "F", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
-        { from: "Fleabag", from_id: "F", to: "Bakeri", to_id: "B", day: "sunday" as const, score: 0.2, top: false },
+        { from: "Lucy Dacus", from_id: "L", to: "Seek Treatment", to_id: "S", day: "friday" as const, score: 0.35, top: true },
+        { from: "Lucy Dacus", from_id: "L", to: "Ceremonia", to_id: "C", day: "saturday" as const, score: 0.41, top: true },
+        { from: "Lucy Dacus", from_id: "L", to: "Bakeri", to_id: "B", day: "sunday" as const, score: 0.2, top: false },
       ],
     };
-    const t = emberThreads(diff, [{ qloo_entity_id: "D", pleasure: 8 }]);
-    expect(t).toEqual([{ from: "Dun-Well", from_id: "D", to: "Ceremonia", to_id: "C", score: 0.41, rated: 8 }]);
-    expect(emberLabel(t[0])).toBe("← because of Dun-Well, rated 8 · 0.41");
+    const cards = [
+      // the live re-plan bc750936: 0.3500 vs 0.3470 — a displayed tie
+      { qloo_entity_id: "S", explain_json: ex([["L", "Lucy Dacus", 0.35], ["F", "Fleabag", 0.347], ["P", "Phoebe Bridgers", 0.303]]) },
+      { qloo_entity_id: "C", explain_json: ex([["L", "Lucy Dacus", 0.41], ["F", "Fleabag", 0.3], ["P", "Phoebe Bridgers", 0.29]]) },
+      { qloo_entity_id: "B", explain_json: ex([["F", "Fleabag", 0.5], ["L", "Lucy Dacus", 0.2]]) },
+    ];
+    const t = emberThreads(diff, [{ qloo_entity_id: "L", pleasure: 9 }], cards);
+    expect(t.map((x) => [x.to_id, x.tied])).toEqual([["S", true], ["C", false]]);
+    expect(emberLabel(t[0]!)).toBe("with Lucy Dacus, rated 9 · tied with Fleabag (0.350 vs 0.347)");
+    expect(emberLabel(t[1]!)).toBe("← because of Lucy Dacus, rated 9 · 0.410, +0.110 over Fleabag");
+    // the stored `top` flag alone never threads a tie: margins come from the card's own explainability
+    expect(t.filter((x) => !x.tied).map((x) => x.to_id)).toEqual(["C"]);
+    // a stored diff (before margins) without cards: the old `top` links are kept but count as a zero-lead tie
+    expect(emberThreads(diff, []).every((x) => x.tied)).toBe(true);
     expect(emberThreads(null)).toEqual([]);
+  });
+
+  it("diffWeeks marks top only above the margin and stores the margin", () => {
+    const why = [{ entity_id: "L", name: "Lucy Dacus", score: 0.3495 }, { entity_id: "P", name: "Phoebe Bridgers", score: 0.3463 }];
+    expect(explainMargin(why, "L")).toBeCloseTo(0.0032, 6);
+    expect(explainMargin(why, "P")).toBeLessThan(0);
+    expect(EMBER_MIN_MARGIN).toBe(0.02);
   });
 
   it("swap notice names both cards, or says the slot is left empty", () => {

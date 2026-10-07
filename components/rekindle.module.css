@@ -790,6 +790,12 @@
   color: var(--after);
   margin-top: 6px;
 }
+/* a rekindled input that only ties: muted ink, never the ember colour (QA round 3) */
+.emberTied {
+  font: 13px/1.4 var(--font-data);
+  color: var(--muted);
+  margin-top: 6px;
+}
 .prevWeek {
   margin-bottom: 56px;
 }

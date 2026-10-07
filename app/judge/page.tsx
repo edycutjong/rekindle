@@ -21,7 +21,7 @@ const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ??
  * refusals by rule of the latest live runs. Every number is read from a committed script output or a stored call log.
  */
 export default async function Judge() {
-  const { bench, replan, audit, predates } = await loadJudgeData();
+  const { bench, replan, audit, predates, emberLive } = await loadJudgeData();
   let live: Receipts | null = null;
   let liveError: string | null = null;
   try {
@@ -222,6 +222,16 @@ export default async function Judge() {
               entities back in week 2: {replan.low_rated_reappearing}. New week-2 cards whose top input is a rekindled rating: {replan.attributed_new_cards_total} of{" "}
               {replan.new_cards_total}. Median margin over the best original love: {replan.ember_margin_median_of_profiles ?? "—"}. Re-plan p50 {replan.replan_seconds_p50} s.
             </p>
+            {emberLive && (
+              <p className={j.def} data-testid="ember-live">
+                <strong>Live margins on this deployment</strong> (<code>bench/ember-live.json</code>, scripts/ember-margins.ts, {emberLive.generated_at.slice(0, 16).replace("T", " ")} UTC): over{" "}
+                {emberLive.replans} re-plans, {emberLive.rekindled_top} new cards had a rated activity as their strongest input. Median lead{" "}
+                {emberLive.margin_median ?? "—"} over the next input ({emberLive.margin_over_original_loves_median ?? "—"} over the best original love, the bench&apos;s measure, against its{" "}
+                {replan.ember_margin_median_of_profiles ?? "—"}). {emberLive.threaded} cleared the {emberLive.threshold} lead the product needs to draw an ember thread and say
+                &ldquo;because of&rdquo;; the other {emberLive.tied} are shown as ties.
+                {emberLive.tied > emberLive.threaded && " Qloo splits explainability nearly evenly across signals, so most live re-plan picks are not attributable to one rating."}
+              </p>
+            )}
           </>
         )}
 

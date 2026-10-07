@@ -95,6 +95,7 @@ export interface JudgeData {
   replan: ReplanResults | null;
   audit: AuditResults | null;
   predates: Predates | null;
+  emberLive: EmberLive | null;
 }
 
 async function readJson<T>(file: string): Promise<T | null> {
@@ -105,9 +106,29 @@ async function readJson<T>(file: string): Promise<T | null> {
   }
 }
 
+/** bench/ember-live.json ← scripts/ember-margins.ts: ember margins measured on this deployment's live re-plans */
+export interface EmberLive {
+  generated_at: string;
+  definition: string;
+  threshold: number;
+  replans: number;
+  new_cards_naming_a_rating: number;
+  rekindled_top: number;
+  threaded: number;
+  tied: number;
+  margin_median: number | null;
+  margin_over_original_loves_median: number | null;
+}
+
 export async function loadJudgeData(dir = path.join(process.cwd(), "bench")): Promise<JudgeData> {
-  const [bench, replan, audit, predates] = await Promise.all([readJson<BenchResults>(path.join(dir, "results.json")), readJson<ReplanResults>(path.join(dir, "replan.json")), readJson<AuditResults>(path.join(dir, "audit.json")), readJson<Predates>(path.join(dir, "predates.json"))]);
-  return { bench, replan, audit, predates };
+  const [bench, replan, audit, predates, emberLive] = await Promise.all([
+    readJson<BenchResults>(path.join(dir, "results.json")),
+    readJson<ReplanResults>(path.join(dir, "replan.json")),
+    readJson<AuditResults>(path.join(dir, "audit.json")),
+    readJson<Predates>(path.join(dir, "predates.json")),
+    readJson<EmberLive>(path.join(dir, "ember-live.json")),
+  ]);
+  return { bench, replan, audit, predates, emberLive };
 }
 
 export const ARM_LABEL: Record<string, string> = {

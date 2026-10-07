@@ -97,6 +97,7 @@ with sync_playwright() as p:
     res["rekindled_underlined"] = pg.locator("[data-testid=rekindled]").count()
     res["ember_labels"] = pg.locator("[data-testid=ember-label]").all_inner_texts()
     res["ember_thread_paths"] = pg.locator("[data-testid=ember-threads] path").count()
+    res["ember_tied_labels"] = pg.locator("[data-testid=ember-tied]").all_inner_texts()
     res["diff_summary"] = pg.locator("[data-testid=replan-summary] p").first.inner_text()
     res["leaving_out"] = pg.locator("[data-testid=replan-summary] .leaving-out li, [data-testid=replan-summary] li").all_inner_texts()
     res["kept_notes"] = pg.locator("[data-testid=kept-note]").all_inner_texts()
@@ -158,6 +159,8 @@ gates = {
     "week 2 re-planned with a diff": res["week2_heading"].startswith("Week 2") and res["week2_cards"] > 0,
     "ember underline on the >= 7 activities": res["rekindled_underlined"] == 2,
     "ember threads only for top-weighted links (one per card)": res["ember_thread_paths"] == len(res["ember_labels"]),
+    # QA round 3: a "because of" label always shows a lead >= 0.020; ties say "tied with" and carry no thread
+    "ember 'because of' only on a lead >= 0.02": all(re.search(r"\+0\.(\d{3})", t) and int(re.search(r"\+0\.(\d{3})", t).group(1)) >= 20 for t in res["ember_labels"]) and all("because of" not in t for t in res["ember_tied_labels"]),
     "week 2 survives a reload": res["week2_reload_same"],
     "week 1 locked and links to week 2": res["week1_links_week2"],
     "patient sheet prints the approved week only, without weights or rule IDs": res["print_rows"] == week1_cards and not res["print_has_weights_or_rules"] and res["print_button_hidden_in_print"],

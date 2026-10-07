@@ -49,9 +49,25 @@ export interface ReplanDiff {
   /**
    * Week-2 cards whose explainability names a rekindled (≥ 7) entity. Qloo spreads explainability across every signal
    * entity, so almost every week-2 card names every rekindled entity; `top` marks the stronger claim — the rekindled
-   * entity is that card's highest-weighted input. The UI draws an ember thread only for `top` links.
+   * entity is that card's highest-weighted input by at least EMBER_MIN_MARGIN over every other input. `margin` = its
+   * weight minus the strongest other input's. The UI draws an ember thread only for `top` links; a rekindled entity
+   * that leads by less is shown as a tie, never as "because of" (QA round 3: threads drawn on 0.003 margins).
    */
-  ember: { from: string; from_id: string; to: string; to_id: string; day: DayName; score: number; top: boolean }[];
+  ember: { from: string; from_id: string; to: string; to_id: string; day: DayName; score: number; top: boolean; margin: number }[];
+}
+
+/**
+ * Minimum lead of a rekindled entity's explainability weight over the card's next-strongest input before the UI says
+ * "because of" it. Qloo splits explainability roughly evenly across signals (≈ 1/3 each with three loves), so smaller
+ * leads are ties; 0.02 is the bench's PASS definition for "the rated input leads".
+ */
+export const EMBER_MIN_MARGIN = 0.02;
+
+/** Weight of `id` minus the strongest other input in the same explainability list (negative: another input leads). */
+export function explainMargin(why: readonly { entity_id: string; score: number }[], id: string): number {
+  const own = why.find((w) => w.entity_id === id)?.score ?? 0;
+  const other = Math.max(0, ...why.filter((w) => w.entity_id !== id).map((w) => w.score));
+  return Math.round((own - other) * 1e6) / 1e6;
 }
 
 /** The live re-check of the top-rated activity on a re-plan (lib/plan.ts recheckKept), stored with the diff. */
@@ -71,10 +87,10 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory, keptNote: 
     if (!s.card) continue;
     if (ids1.has(s.card.entity_id)) out.kept.push({ day: s.slot.day, name: s.card.name, ...(rek.has(s.card.entity_id) ? { reason: keptNote?.entity_id === s.card.entity_id && keptNote.ok ? `rated ≥7 — ${keptNote.detail}` : "rated ≥7 — kept" } : {}) });
     else out.added.push({ day: s.slot.day, name: s.card.name, because: s.card.why.map((w) => ({ name: w.name, score: w.score })) });
-    const best = Math.max(0, ...s.card.why.map((w) => w.score));
     for (const w of s.card.why) {
       if (!rek.has(w.entity_id) || w.score <= 0) continue;
-      out.ember.push({ from: rek.get(w.entity_id)!, from_id: w.entity_id, to: s.card.name, to_id: s.card.entity_id, day: s.slot.day, score: w.score, top: w.score === best });
+      const margin = explainMargin(s.card.why, w.entity_id);
+      out.ember.push({ from: rek.get(w.entity_id)!, from_id: w.entity_id, to: s.card.name, to_id: s.card.entity_id, day: s.slot.day, score: w.score, top: margin >= EMBER_MIN_MARGIN, margin });
     }
   }
   for (const s of w1.slots) {

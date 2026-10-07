@@ -2,6 +2,7 @@
  * Pure view helpers for the week ledger. Every string a card shows is derived here from the stored plan
  * (Qloo data + verifier results), so the UI never states a fact the plan does not carry. Unit-tested in tests/view.test.ts.
  */
+import { EMBER_MIN_MARGIN, explainMargin } from "./replan";
 import type { CardDoc, CaseDoc, PlanDoc, RefusalDoc } from "./store";
 import { DAYS, type DayName } from "./verify";
 
@@ -31,12 +32,12 @@ export function rungLabel(c: Pick<CardDoc, "rung" | "hour">): string {
 }
 
 /** Why line: the per-love explainability split (never the bare affinity), highest first, at most three loves. */
-export function whyParts(explain: CardDoc["explain_json"]): { name: string; weight: string }[] {
+export function whyParts(explain: CardDoc["explain_json"], digits = 2): { name: string; weight: string }[] {
   return [...explain]
     .filter((e) => e.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
-    .map((e) => ({ name: e.name || e.entity_id, weight: e.score.toFixed(2) }));
+    .map((e) => ({ name: e.name || e.entity_id, weight: e.score.toFixed(digits) }));
 }
 
 const check = (c: CardDoc, rule: string) => c.checks.find((x) => x.rule === rule);
@@ -247,27 +248,52 @@ export interface EmberLink {
   score: number;
   /** the pleasure the patient gave the week-1 activity */
   rated: number | null;
+  /** lead over the card's strongest other input (explainability weight) */
+  margin: number;
+  /** that strongest other input, by name */
+  runner_up: string | null;
+  /** the rekindled entity leads by less than EMBER_MIN_MARGIN: shown as a tie, no thread, no "because of" */
+  tied: boolean;
 }
 
 /**
- * The ember threads to draw: only links where the rekindled entity is the week-2 card's TOP-weighted input (Qloo spreads
- * explainability across every signal entity, so "names it at all" would thread nearly every card). One per week-2 card.
+ * Per week-2 card, the rekindled entity that is its highest-weighted input (Qloo spreads explainability across every
+ * signal entity, so "names it at all" would thread nearly every card). Margins are recomputed from the card's own
+ * explainability when `cards` is given (stored diffs before QA round 3 have no margin). Links that lead by less than
+ * EMBER_MIN_MARGIN come back `tied`: the UI draws no thread and says "tied with", never "because of".
  */
-export function emberThreads(diff: NonNullable<PlanDoc["diff"]> | null, prevCards: readonly Pick<CardDoc, "qloo_entity_id" | "pleasure">[] = []): EmberLink[] {
+export function emberThreads(
+  diff: NonNullable<PlanDoc["diff"]> | null,
+  prevCards: readonly Pick<CardDoc, "qloo_entity_id" | "pleasure">[] = [],
+  cards: readonly Pick<CardDoc, "qloo_entity_id" | "explain_json">[] = [],
+): EmberLink[] {
   if (!diff) return [];
   const rated = new Map(prevCards.map((c) => [c.qloo_entity_id, c.pleasure]));
-  const seen = new Set<string>();
-  const out: EmberLink[] = [];
+  const explain = new Map(cards.map((c) => [c.qloo_entity_id, c.explain_json]));
+  const best = new Map<string, (typeof diff.ember)[number] & { m: number }>();
   for (const e of diff.ember) {
-    if (!e.top || seen.has(e.to_id)) continue;
-    seen.add(e.to_id);
-    out.push({ from: e.from, from_id: e.from_id, to: e.to, to_id: e.to_id, score: e.score, rated: rated.get(e.from_id) ?? null });
+    const why = explain.get(e.to_id);
+    const m = why ? explainMargin(why, e.from_id) : (e.margin ?? (e.top ? 0 : -1));
+    if (m < 0) continue; // another input leads: no claim at all
+    const cur = best.get(e.to_id);
+    if (!cur || e.score > cur.score) best.set(e.to_id, { ...e, m });
   }
-  return out;
+  return [...best.values()].map((e) => {
+    const why = explain.get(e.to_id) ?? [];
+    const runner = [...why].filter((w) => w.entity_id !== e.from_id).sort((a, b) => b.score - a.score)[0];
+    return { from: e.from, from_id: e.from_id, to: e.to, to_id: e.to_id, score: e.score, rated: rated.get(e.from_id) ?? null, margin: e.m, runner_up: runner ? runner.name || runner.entity_id : null, tied: e.m < EMBER_MIN_MARGIN };
+  });
 }
 
-/** Inline ember label (and the mobile form of the thread): "← because she rated Dun-Well Doughnuts 8 · 0.41" */
-export const emberLabel = (l: EmberLink) => `← because of ${l.from}${l.rated !== null ? `, rated ${l.rated}` : ""} · ${l.score.toFixed(2)}`;
+/**
+ * Inline ember label (and the mobile form of the thread). A clear lead: "← because of Lucy Dacus, rated 9 · 0.412,
+ * +0.031 over Fleabag". A sub-threshold lead: "with Lucy Dacus, rated 9 · tied with Fleabag (0.350 vs 0.347)".
+ */
+export function emberLabel(l: EmberLink): string {
+  const who = `${l.from}${l.rated !== null ? `, rated ${l.rated}` : ""}`;
+  if (l.tied) return `with ${who} · ${l.runner_up ? `tied with ${l.runner_up} (${l.score.toFixed(3)} vs ${(l.score - l.margin).toFixed(3)})` : `tied (${l.score.toFixed(3)})`}`;
+  return `← because of ${who} · ${l.score.toFixed(3)}${l.runner_up ? `, +${l.margin.toFixed(3)} over ${l.runner_up}` : ""}`;
+}
 
 /** Ember mark on the activity a re-plan kept: "↻ kept: rated 9 last week · re-checked live" */
 export function keptLabel(c: Pick<CardDoc, "routed_by" | "tool_params">): string | null {

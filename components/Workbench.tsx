@@ -281,7 +281,9 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   }, [c.id]);
   const coverage = useMemo(() => (plan ? coverageRefusal(plan, c) : null), [plan, c]);
   const outage = useMemo(() => (plan ? outageState(plan) : null), [plan]);
-  const threads = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards) : []), [plan, prev]);
+  // every rekindled-led card gets a label; only a clear lead (not a tie) gets a thread and counts as rekindled
+  const links = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards, plan.cards) : []), [plan, prev]);
+  const threads = useMemo(() => links.filter((l) => !l.tied), [links]);
 
   const days: DayView[] = useMemo(() => {
     const strikes = plan ? strikesByDay(plan) : null;
@@ -314,10 +316,10 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
                 onRate: (r: PendingRating) => setPending((p) => ({ ...p, [card.id]: r })),
               }
             : null,
-        ember: card ? (threads.find((t) => t.to_id === card.qloo_entity_id) ?? null) : null,
+        ember: card ? (links.find((t) => t.to_id === card.qloo_entity_id) ?? null) : null,
       };
     });
-  }, [plan, streamed, phase, fresh, mode, swapping, pending, act, threads]);
+  }, [plan, streamed, phase, fresh, mode, swapping, pending, act, links]);
 
   const traceLines = plan && live.length === 0 ? traceFromPlan(plan) : live;
   const stats = {

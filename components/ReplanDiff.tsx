@@ -2,7 +2,7 @@
 /**
  * The ember moment. Week 1 as rated sits above the week-2 ledger in the same seven columns:
  * activities rated ≥ 7 get the single ember underline, ≤ 3 are struck in graphite. A thin ember thread runs from a rated
- * activity to each week-2 card whose TOP-weighted Qloo input it is, labelled with that weight. `--after` appears nowhere
+ * activity to each week-2 card whose TOP-weighted Qloo input it is by at least EMBER_MIN_MARGIN, labelled with that lead. `--after` appears nowhere
  * else in the product, so the colour means "rekindled". Below 720 px the thread becomes the inline label on the card.
  */
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -113,7 +113,7 @@ export function EmberThreads({ threads, children }: { threads: EmberLink[]; chil
         const x2 = rb.left + rb.width / 2 - box.left;
         const y2 = rb.top - box.top;
         const my = (y1 + y2) / 2;
-        out.push({ d: `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`, x: x2 + 4, y: y2 - 6, label: t.score.toFixed(2), key: t.from_id + t.to_id });
+        out.push({ d: `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`, x: x2 + 4, y: y2 - 6, label: `+${t.margin.toFixed(3)}`, key: t.from_id + t.to_id });
       }
       setPaths(out);
     };
