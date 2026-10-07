@@ -139,7 +139,7 @@ export default async function Judge() {
               </table>
             </div>
             <p className={j.def}>
-              <b>Bias.</b> {bench.definitions.oracle}. Qloo is the oracle for both arms, so Rekindle&apos;s Qloo-graded rate is low by construction; the manual audit checks
+              <b>Bias.</b> {bench.definitions.oracle}. So Rekindle&apos;s Qloo-graded rate is low by construction; the manual audit checks
               the venues against public listings instead.{" "}
               {audit ? (
                 <>
