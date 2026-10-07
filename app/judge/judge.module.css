@@ -20,3 +20,70 @@
   font: 40px/1.1 var(--font-data);
   margin: 4px 0;
 }
+
+/* arm column: a row header, left-aligned like the old first cell */
+.stack .armCell,
+.armCell {
+  text-align: left;
+  font-weight: 400;
+  font-family: var(--font-data);
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 10px;
+  vertical-align: top;
+}
+/* Below 720 px each arm becomes a stacked card: arm heading, then label: value rows with the decisive columns
+   (wrong, alcohol, manual audit / flagged on the final plan) first. No sideways scroll, nothing clipped (QA round 3). */
+@media (max-width: 719px) {
+  .stack,
+  .stack tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .stack tr {
+    display: flex;
+    flex-direction: column;
+    border-top: 2px solid var(--ink);
+    padding: 10px 0 14px;
+  }
+  .stack th,
+  .stack td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    border: 0;
+    padding: 3px 0;
+    white-space: normal;
+    text-align: left;
+    order: 2;
+  }
+  .stack .armCell {
+    display: block;
+    order: 0;
+    font: 600 16px/1.3 var(--font-data);
+    padding-bottom: 6px;
+  }
+  .stack .key {
+    order: 1;
+  }
+  .stack td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    margin-right: auto;
+    padding-right: 12px;
+  }
+  .stack td > b {
+    margin-right: 0.35em;
+  }
+}

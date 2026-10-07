@@ -121,7 +121,7 @@ export default async function Judge() {
               unknown hours by construction.
             </p>
             <div className={s.tableWrap}>
-              <table className={s.table} data-testid="bench-table">
+              <table className={`${s.table} ${j.stack}`} data-testid="bench-table">
                 <thead>
                   <tr>
                     <th>arm</th>
@@ -137,16 +137,22 @@ export default async function Judge() {
                 <tbody>
                   {benchRows(bench, audit).map((x) => (
                     <tr key={x.arm}>
-                      <td>{x.label}</td>
-                      <td>{x.venues}</td>
-                      <td>
+                      <th scope="row" className={j.armCell}>
+                        {x.label}
+                      </th>
+                      <td data-label="outing venues">{x.venues}</td>
+                      <td data-label="wrong (Qloo-graded)" className={j.key}>
                         <b>{x.rate}</b> ({x.violations})
                       </td>
-                      <td>{x.unverifiable}</td>
-                      <td>{x.closed}</td>
-                      <td>{x.alcohol}</td>
-                      <td>{x.unknownHours}</td>
-                      <td>{x.audited}</td>
+                      <td data-label="unverifiable">{x.unverifiable}</td>
+                      <td data-label="closed at slot">{x.closed}</td>
+                      <td data-label="alcohol / in-recovery" className={j.key}>
+                        {x.alcohol}
+                      </td>
+                      <td data-label="unknown hours">{x.unknownHours}</td>
+                      <td data-label="wrong (manual audit)" className={j.key}>
+                        {x.audited}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -166,7 +172,7 @@ export default async function Judge() {
 
             <h2 className={s.h2}>Ablation: is the alcohol screen load-bearing?</h2>
             <div className={s.tableWrap}>
-              <table className={s.table} data-testid="ablation-table">
+              <table className={`${s.table} ${j.stack}`} data-testid="ablation-table">
                 <thead>
                   <tr>
                     <th>arm</th>
@@ -179,15 +185,17 @@ export default async function Judge() {
                 <tbody>
                   {Object.entries(bench.ablation_in_recovery).map(([arm, a]) => (
                     <tr key={arm}>
-                      <td>{ARM_LABEL[arm] ?? arm}</td>
-                      <td>{a.pool_candidates}</td>
-                      <td>
+                      <th scope="row" className={j.armCell}>
+                        {ARM_LABEL[arm] ?? arm}
+                      </th>
+                      <td data-label="places Qloo returned">{a.pool_candidates}</td>
+                      <td data-label="of them alcohol-flagged">
                         {a.pool_alcohol} ({pctLabel(a.pool_alcohol_rate)})
                       </td>
-                      <td>
+                      <td data-label="profiles with a flagged place">
                         {a.profiles_with_pool_alcohol} / {a.profiles}
                       </td>
-                      <td>
+                      <td data-label="flagged places on the final plan" className={j.key}>
                         <b>{a.plan_alcohol_leak}</b> / {a.outing_cards} outings
                       </td>
                     </tr>
