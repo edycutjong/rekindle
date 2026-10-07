@@ -333,7 +333,7 @@ async function main() {
   const fallbackTrigger = rows.filter((r) => ["I6", "I9", "I10", "I11", "I5"].includes(r.id) && !(r.changed && r.ok));
   console.log(fallbackTrigger.length ? `FALLBACK TRIGGER: hours/filters unusable → ${fallbackTrigger.map((r) => r.param).join("; ")}` : "FALLBACK TRIGGER: not hit (hours + filters usable)");
 
-  if (OUT) writeFileSync(OUT, JSON.stringify({ at: new Date().toISOString(), deterministic, rows, calls: calls.map(({ at, ...c }) => c) }, null, 2) + "\n");
+  if (OUT) writeFileSync(OUT, JSON.stringify({ at: new Date().toISOString(), deterministic, rows, calls: calls.map((c) => ({ path: c.path, params: c.params, status: c.status, ms: c.ms, n_results: c.n_results, attempts: c.attempts, ...(c.error ? { error: c.error } : {}) })) }, null, 2) + "\n");
   if (CAPTURE) {
     mkdirSync(CAPTURE, { recursive: true });
     for (const [name, body] of Object.entries(captured)) writeFileSync(join(CAPTURE, `${name}.json`), JSON.stringify(body) + "\n");

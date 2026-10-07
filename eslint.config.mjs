@@ -12,6 +12,11 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    // spike/probe scripts read untyped exploratory JSON; the app and lib/ stay strict
+    files: ["scripts/**/*.ts"],
+    rules: { "@typescript-eslint/no-explicit-any": "off" },
+  },
+  {
     ignores: [
       "node_modules/**",
       ".next/**",

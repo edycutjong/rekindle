@@ -62,13 +62,15 @@ export function encodeParams(params: QlooParams): Record<string, string> {
 
 /** Count results across the response shapes Qloo returns (entities, tags, heatmap, search). */
 export function countResults(body: unknown): number {
-  const b = body as Record<string, any> | null;
+  const b = body as { results?: unknown } | null;
   if (!b) return 0;
   const r = b.results;
   if (Array.isArray(r)) return r.length;
   if (r && typeof r === "object") {
+    const o = r as Record<string, unknown>;
     for (const key of ["entities", "tags", "heatmap", "trends"]) {
-      if (Array.isArray(r[key])) return r[key].length;
+      const v = o[key];
+      if (Array.isArray(v)) return v.length;
     }
   }
   return 0;
@@ -100,7 +102,7 @@ export class QlooClient {
     this.random = opts.random ?? Math.random;
   }
 
-  async get<T = any>(path: string, params: QlooParams = {}): Promise<T> {
+  async get<T = unknown>(path: string, params: QlooParams = {}): Promise<T> {
     const encoded = encodeParams(params);
     const url = `${this.baseUrl}${path}?${new URLSearchParams(encoded).toString()}`;
     const t0 = Date.now();
