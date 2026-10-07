@@ -13,7 +13,7 @@ Every plan, re-plan, swap and toggle below calls Qloo live; plans and re-plans a
 | 4 | On one card, click **swap** | That one slot runs again through the same tool and verifier. Everything already on the sheet is excluded. The old card stays as a `CLINICIAN` strike. |
 | 5 | Click **approve** on a card, then **Approve week** | Every card left on the sheet is stamped, and the sheet header shows the stamp ("APPROVED · <day> · <time> UTC"). The week is now locked. |
 | 6 | Set **P** (pleasure) and **M** (mastery) on 3 cards, for example 8, 9 and 2 | The counter reads "3 rated · ready to re-plan" and **Re-plan week 2** is enabled. It stays disabled below 3 ratings. |
-| 7 | Click **Re-plan week 2** | Week 2 streams in the same way. Above it, week 1 appears as rated: cards rated 7 or more get an ember underline, and cards rated 3 or less are struck as excluded. An ember thread joins each rekindled card to the week-2 card whose top-weighted Qloo input it is, with the weight on the thread. Below week 2, a summary lists kept, new and rekindled cards, and **Leaving out** gives the reasons. |
+| 7 | Click **Re-plan week 2** | Week 2 streams in the same way. Above it, week 1 appears as rated: cards rated 7 or more get an ember underline, and cards rated 3 or less are struck as excluded. An ember thread joins each rekindled card to the week-2 card whose top-weighted Qloo input it is, with the weight on the thread. The top-rated activity comes back in its own slot, marked "↻ kept from last week", after a live Qloo `/entities` re-check of the same rules (open at the slot, near, price, alcohol, kind). Other activities rated 7 or more are listed under **Now a signal for week 2**. Anything the clinician swapped out or removed in week 1 never returns. Below week 2, a summary counts kept, new and rekindled cards, and **Leaving out** gives the reasons. |
 | 8 | Go back to week 1 (or stay on any approved week) and click **Patient sheet** | `/plans/<id>/print` shows only the approved activities, each with what, when, where and the coaching line, plus empty P and M boxes to fill in by hand. It has no weights, rule IDs or strikes. A draft week prints nothing. |
 | 9 | Open **Judge receipts** (`/judge`) | Six edge states, each with a live start button (loading, refused, REVIEW, empty, coverage refusal, Qloo unavailable). Below them: the bench table, the ablation, latency, re-plan N/N, and refusals by rule from the latest live runs. |
 | 10 | Open **Qloo calls** (`/integrations/qloo`) | Every Qloo request behind the latest plans: path, parameters, status, ms and result count. The key is never shown. |
@@ -21,7 +21,9 @@ Every plan, re-plan, swap and toggle below calls Qloo live; plans and re-plans a
 **Thin coverage:** on `/judge`, click **Plan Cal (sparse coverage)** (Bozeman, MT, with *quiet* on). The sheet says how many outings it could verify and why each empty slot is empty.
 It offers a wider radius only with the clinician's consent. It never fills a slot with an unverified suggestion.
 
-**Week 2 is mostly new cards.** That is expected. When the signals change, Qloo returns different entities, so the diff usually reads "1 kept · 6 new · …".
+**Your own fictional case.** On `/`, **New fictional case** opens the intake (`/cases/new`): type 3–6 loves, confirm each against Qloo's live matches (`/search` for entities, `/v2/tags` for food and activities), pick a neighbourhood, energy, budget and constraints, and save. Week 1 then plans live, as in step 1.
+
+**Week 2 is mostly new cards.** That is expected. When the signals change, Qloo returns different entities, so the diff usually reads "1 kept · 6 new · …" or "2 kept · 5 new · …": the kept activity, plus any card Qloo happens to return again.
 The ember thread is drawn only where Qloo's own explainability names a rated activity as a card's strongest input.
 
 ## Bench (reproduce)
