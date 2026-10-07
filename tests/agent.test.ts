@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assembleCoaching, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
+import { assembleCoaching, coachingAlcohol, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
 import { llmChainFromEnv, makeLlm, type LlmHandle } from "../lib/llm";
 import type { QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14 } from "../lib/tags";
@@ -214,6 +214,21 @@ describe("coaching assembler + LLM config", () => {
     const dropped = assembleCoaching([ok, ...bad], [{ entity_id: "A", line: "Twenty minutes is enough." }, { entity_id: "B", line: "Only 563 m from you." }, { entity_id: "C", line: "Spend under $10." }, { entity_id: "D", line: "A five-minute walk away." }], []);
     expect(ok.coachingBy).toBe("llm");
     expect(dropped.map((d) => d.rule)).toEqual(["COACH-FACT", "COACH-FACT", "COACH-FACT"]);
+  });
+
+  it("drops drinking language on every case (COACH-ALC): the live QA line falls back to the template dose", () => {
+    // QA round 1, live 375 px run, Maya with "In recovery" on, Monday card
+    const lucy = slot(card("L", "Lucy Dacus", "home"));
+    lucy.slot = { ...lucy.slot, homeType: "artist" };
+    const tea = slot(card("T", "Ten Tea Bar"));
+    const dropped = assembleCoaching([lucy, tea], [{ entity_id: "L", line: "Put on Lucy Dacus at 19:00 and just let one song play while you sit with a drink. No need to do more." }, { entity_id: "T", line: "Sit at Ten Tea Bar with one pot of tea." }], []);
+    expect(dropped).toEqual([expect.objectContaining({ rule: "COACH-ALC", entity_id: "L" })]);
+    expect(lucy.coaching).toBe("Put on one Lucy Dacus song you choose and give it ten minutes.");
+    expect(lucy.coachingBy).toBe("template");
+    // the card's own name is not screened ("Tea Bar"); the rest of the line is
+    expect(tea.coachingBy).toBe("llm");
+    for (const l of ["Grab a beer after.", "Raise a glass of something.", "Happy hour starts at five.", "Meet a friend at the bar.", "Enjoy a cocktail.", "A glass of wine is fine."]) expect(coachingAlcohol(l)).not.toBeNull();
+    for (const l of ["Listen to one song you choose.", "Twenty minutes is enough.", "Order one pastry and sit by the window.", "Browse the barbecue sauces.", "Do it for its own sake."]) expect(coachingAlcohol(l)).toBeNull();
   });
 
   it("template coaching sets the dose by domain and never claims Qloo picked a song or episode", () => {

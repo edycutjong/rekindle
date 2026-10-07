@@ -59,6 +59,19 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     expect(calls.length).toBeGreaterThan(plan.qloo_calls);
   });
 
+  it("in recovery ON re-screens every card's coaching, home cards too (COACH-ALC): a drinking line becomes the template dose", async () => {
+    const { store, plan } = await mayaWeek();
+    const home = plan.cards.find((x) => x.rung === "home")!;
+    const line = "Put on Lucy Dacus at 19:00 and just let one song play while you sit with a drink. No need to do more.";
+    await store.putPlan(PlanDoc.parse({ ...plan, cards: plan.cards.map((x) => (x.id === home.id ? { ...x, coaching: line, coaching_by: "llm" } : x)) }));
+    const { plan: next } = await toggleConstraints({ store, planId: plan.id, patch: { in_recovery: true }, qloo: loggingReplay });
+    const after = next.cards.find((x) => x.qloo_entity_id === home.qloo_entity_id)!;
+    expect(after.coaching).not.toBe(line);
+    expect(after.coaching_by).toBe("template");
+    expect(next.dropped).toContainEqual(expect.objectContaining({ rule: "COACH-ALC", entity_id: home.qloo_entity_id }));
+    for (const c of next.cards) expect(c.coaching).not.toMatch(/\b(drinks?|beer|wine|cocktail|bar)\b/i);
+  });
+
   it("tightening the distance strikes outings beyond it with R-NEAR; a no-op patch returns the same plan", async () => {
     const { store, plan } = await mayaWeek();
     const far = plan.cards.filter((x) => x.rung !== "home" && (x.distance_m ?? 0) > 800);

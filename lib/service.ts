@@ -3,14 +3,14 @@
  * for a stored case with its Qloo call log persisted beside the plan.
  */
 import profiles from "../fixtures/profiles.json";
-import { runAgent, templateCoaching, type AgentEvent } from "./agent";
+import { coachingAlcohol, runAgent, templateCoaching, type AgentEvent } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
 import { ALCOHOL_EXCLUDE_4, ALCOHOL_EXCLUDE_14 } from "./tags";
 import { alcoholScreen } from "./verify";
 import { diffWeeks } from "./replan";
-import { callsDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type Store } from "./store";
+import { callsDoc, cardFromDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type Store } from "./store";
 
 export interface SeedProfile {
   slug: string;
@@ -164,12 +164,29 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
   const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history, { refillEmpty: loosens(c, next) });
   const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
-  const doc = await refreshDiff(o.store, planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) }));
+  const toggled = planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) });
+  const doc = await refreshDiff(o.store, next.in_recovery ? screenCoaching(toggled) : toggled);
   await o.store.putCase(next);
   await o.store.putPlan(doc);
   const merged = callsDoc(doc.id, calls);
   await o.store.putCalls({ plan_id: doc.id, calls: [...prior, ...merged.calls] });
   return { plan: doc, case: next };
+}
+
+/**
+ * COACH-ALC over a whole week (home cards too): every coaching line that mentions drinking is replaced by the template
+ * dose and logged as a truth-boundary drop. Run when a case is in recovery after a constraint toggle, because the lines
+ * were written before the flag was set (the model never sees the flag).
+ */
+export function screenCoaching(plan: PlanDoc): PlanDoc {
+  const dropped: PlanDoc["dropped"] = [];
+  const cards = plan.cards.map((c) => {
+    const hit = coachingAlcohol(c.coaching, c.name);
+    if (!hit) return c;
+    dropped.push({ rule: "COACH-ALC", entity_id: c.qloo_entity_id, detail: `coaching line mentions drinking ("${hit}"); replaced by the template dose` });
+    return { ...c, coaching: templateCoaching(cardFromDoc(c), c.home_type), coaching_by: "template" as const };
+  });
+  return dropped.length ? PlanDoc.parse({ ...plan, cards, dropped: [...plan.dropped, ...dropped] }) : plan;
 }
 
 /** Did the change loosen any constraint (wider radius, higher budget, a flag switched off)? Then empty outings are retried. */

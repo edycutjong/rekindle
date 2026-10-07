@@ -8,7 +8,7 @@
  *     (lib/plan.ts, I6/I7). `narrowMeters` can only tighten.
  *   - Cards are assembled in code from tool outputs keyed by `entity_id`. The LLM never names a venue: its only free
  *     text is the coaching line, which is dropped (and logged) if it references an ID no tool returned this run (R-ID),
- *     runs past 25 words, or names another entity seen in this run.
+ *     runs past 25 words, names another entity seen in this run, or mentions drinking (COACH-ALC, every case).
  *   - A slot the LLM never routed is filled by the same deterministic tool (`routedBy: "fallback"`); a slot is never
  *     filled from the model's own text. If every LLM provider fails, the whole week is routed deterministically.
  */
@@ -37,7 +37,7 @@ export interface AgentSlot {
 
 export interface Dropped {
   /** R-ID: an ID no tool returned; COACH-LENGTH / COACH-NAME: coaching line rejected */
-  rule: "R-ID" | "COACH-LENGTH" | "COACH-NAME" | "COACH-FACT" | "COACH-DUPLICATE";
+  rule: "R-ID" | "COACH-LENGTH" | "COACH-NAME" | "COACH-FACT" | "COACH-DUPLICATE" | "COACH-ALC";
   entity_id: string;
   detail: string;
 }
@@ -97,6 +97,19 @@ export function templateCoaching(card: Card, homeType?: HomeType): string {
   return `Go to ${card.name} at ${fmtHour(card.hour)}; twenty minutes is enough.`;
 }
 
+/**
+ * COACH-ALC: drinking language in a coaching line. The model is never told a patient is in recovery (constraints stay
+ * out of the prompt), so it cannot be trusted to avoid "sit with a drink" (QA, live: Maya in recovery, Mon card). The
+ * screen runs on every case — a dropped line falls back to the template dose, which costs nothing — and again over every
+ * card when a constraint toggle switches "in recovery" on. The card's own name is removed first ("Ten Tea Bar").
+ */
+const COACH_ALC = /\b(?:drinks?|drinking|booze|boozy|beers?|wines?|cocktails?|bars?|pubs?|taverns?|brewery|breweries|taproom|happy[- ]hour|glass of|pint|shots?|toast(?:ing)?|cheers|liquor|alcohol(?:ic)?|tipsy|nightcap|prosecco|champagne|whiske?y|vodka|gin|rum|tequila|cider|lager|ale|mimosa|margarita|sangria)\b/i;
+export function coachingAlcohol(line: string, ownName = ""): string | null {
+  let text = line;
+  if (ownName.trim()) text = text.split(new RegExp(ownName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")).join(" ");
+  return COACH_ALC.exec(text)?.[0] ?? null;
+}
+
 export const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 /**
@@ -125,6 +138,11 @@ export function assembleCoaching(slots: AgentSlot[], submitted: { entity_id: str
     const fact = FACT_PATTERN.exec(text);
     if (fact) {
       dropped.push({ rule: "COACH-FACT", entity_id, detail: `coaching line states a fact the card owns ("${fact[0]}")` });
+      continue;
+    }
+    const alc = coachingAlcohol(text, s.card!.name);
+    if (alc) {
+      dropped.push({ rule: "COACH-ALC", entity_id, detail: `coaching line mentions drinking ("${alc}")` });
       continue;
     }
     const lower = text.toLowerCase();
