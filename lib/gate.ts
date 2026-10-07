@@ -156,7 +156,7 @@ export const ratingsOf = (plan: PlanDoc): Rating[] => plan.cards.filter((c) => c
  * with ≥ 3 ratings. Routes call this before the rate limiter so a refused re-plan is a plain 404 / 409 and never
  * costs quota.
  */
-export async function replanPrecheck(store: Store, planId: string, now = Date.now()): Promise<{ parent: PlanDoc; existing: PlanDoc | null }> {
+export async function replanPrecheck(store: Store, planId: string, now = Date.now(), o: { ownClaim?: boolean } = {}): Promise<{ parent: PlanDoc; existing: PlanDoc | null }> {
   const parent = await store.getPlan(planId);
   if (!parent) throw new NotFound(`plan ${planId} not found`);
   if (parent.next_plan_id) {
@@ -168,7 +168,8 @@ export async function replanPrecheck(store: Store, planId: string, now = Date.no
     const existing = await store.getPlan(run.plan_id);
     if (existing) return { parent, existing };
   }
-  if (run?.status === "running" && now - Date.parse(run.started_at) < RUN_STALE_MS) throw runningConflict("this week is already being re-planned", run);
+  // the caller that holds the claim (the route claimed before opening the stream) is not blocked by its own marker
+  if (!o.ownClaim && run?.status === "running" && now - Date.parse(run.started_at) < RUN_STALE_MS) throw runningConflict("this week is already being re-planned", run);
   if (parent.status !== "rated") throw new Conflict(parent.status === "draft" ? "approve the week before re-planning it" : "rate the week before re-planning it");
   const n = ratingsOf(parent).length;
   if (n < MIN_RATED_FOR_REPLAN) throw new Conflict(`rate at least ${MIN_RATED_FOR_REPLAN} activities before re-planning (${n} rated)`);
@@ -197,7 +198,7 @@ export async function claimReplan(store: Store, parent: PlanDoc, now = Date.now(
  * or a second tab never spends a second agent run.
  */
 export async function replanWeek(o: Omit<RunPlanOptions, "caseId"> & { planId: string }): Promise<{ plan: PlanDoc; reused: boolean }> {
-  const { parent, existing } = await replanPrecheck(o.store, o.planId);
+  const { parent, existing } = await replanPrecheck(o.store, o.planId, Date.now(), { ownClaim: !!o.claimed });
   if (existing) return { plan: existing, reused: true };
   let startedAt = o.claimed?.started_at;
   if (!startedAt) {

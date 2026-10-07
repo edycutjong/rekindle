@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { actOnCard, approveWeek, MIN_RATED_FOR_REPLAN, rateWeek, ratingsOf, replanPrecheck, replanWeek } from "../lib/gate";
+import { actOnCard, approveWeek, claimReplan, MIN_RATED_FOR_REPLAN, rateWeek, ratingsOf, replanPrecheck, replanWeek } from "../lib/gate";
 import { parseSse } from "../lib/http";
 import { makeLlm } from "../lib/llm";
 import type { QlooCallLog, QlooClient, QlooParams } from "../lib/qloo";
@@ -440,6 +440,13 @@ describe("gate routes", () => {
     const w2 = ok[0].value.plan;
     expect((await store.getPlan(r.plan.id))!.next_plan_id).toBe(w2.id);
     expect(await store.getReplanRun(r.plan.id)).toMatchObject({ status: "done", plan_id: w2.id, parent_plan_id: r.plan.id });
+    // the route's own path: claim first, then run with that claim — its own marker must not block it (live QA-2 regression)
+    const r3 = await ratedWeek(store);
+    const claim = await claimReplan(store, (await store.getPlan(r3.plan.id))!);
+    expect("claimed" in claim).toBe(true);
+    const viaRoute = await replanWeek({ store, planId: r3.plan.id, claimed: (claim as { claimed: { started_at: string } }).claimed, qloo: loggingReplay(), llms: [downLlm()] });
+    expect(viaRoute.reused).toBe(false);
+    expect(viaRoute.plan.week).toBe(2);
     // while a re-plan is in flight the route answers 409 running before the rate limiter
     const r2 = await ratedWeek(store);
     const t0 = new Date().toISOString();
