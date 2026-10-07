@@ -3,7 +3,10 @@
  *
  * - Base URL is pinned to https://hackathon.api.qloo.com (other hosts reject hackathon keys with 401).
  * - GET only (the hackathon guide documents /v2/insights as GET).
- * - One jittered retry on 429 / 5xx / network error / timeout; 8 s timeout per attempt.
+ * - One jittered retry on 5xx / network error / timeout; up to two on 429 (Retry-After honoured, capped at 3 s);
+ *   8 s timeout per attempt.
+ * - At most `maxConcurrent` requests in flight (default 3): the agent runs tools in parallel, and an unthrottled burst
+ *   of 7+ calls drew a 429 in the first agent run (2026-10-07).
  * - Every request is reported to `onCall` (path, params, status, ms, result count). The key is never part of it.
  */
 
@@ -43,6 +46,8 @@ export interface QlooClientOptions {
   /** injectable for tests */
   sleep?: (ms: number) => Promise<void>;
   random?: () => number;
+  /** max requests in flight from this client (default 3) */
+  maxConcurrent?: number;
 }
 
 /** Serialise params for a GET: arrays → comma-joined, booleans → "true"/"false", empty values dropped. */
@@ -77,6 +82,34 @@ export function countResults(body: unknown): number {
 }
 
 const RETRYABLE = (status: number) => status === 429 || status >= 500;
+const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS_429 = 3;
+
+/** Retry-After (seconds or HTTP date) → ms, capped. */
+export function retryAfterMs(h: string | null, cap = 3000): number | null {
+  if (!h) return null;
+  const n = Number(h);
+  if (Number.isFinite(n)) return Math.min(cap, Math.max(0, n * 1000));
+  const t = Date.parse(h);
+  return Number.isFinite(t) ? Math.min(cap, Math.max(0, t - Date.now())) : null;
+}
+
+/** Minimal FIFO semaphore. */
+class Gate {
+  private active = 0;
+  private readonly queue: (() => void)[] = [];
+  constructor(private readonly max: number) {}
+  async run<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.active >= this.max) await new Promise<void>((r) => this.queue.push(r));
+    this.active++;
+    try {
+      return await fn();
+    } finally {
+      this.active--;
+      this.queue.shift()?.();
+    }
+  }
+}
 
 export class QlooClient {
   private readonly apiKey: string;
@@ -86,6 +119,7 @@ export class QlooClient {
   private readonly onCall?: (log: QlooCallLog) => void;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly random: () => number;
+  private readonly gate: Gate;
 
   constructor(opts: QlooClientOptions) {
     if (!opts.apiKey) throw new Error("QLOO_API_KEY is not set");
@@ -100,17 +134,25 @@ export class QlooClient {
     this.onCall = opts.onCall;
     this.sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
     this.random = opts.random ?? Math.random;
+    this.gate = new Gate(Math.max(1, opts.maxConcurrent ?? 3));
   }
 
-  async get<T = unknown>(path: string, params: QlooParams = {}): Promise<T> {
+  get<T = unknown>(path: string, params: QlooParams = {}): Promise<T> {
+    return this.gate.run(() => this.getNow<T>(path, params));
+  }
+
+  private async getNow<T>(path: string, params: QlooParams): Promise<T> {
     const encoded = encodeParams(params);
     const url = `${this.baseUrl}${path}?${new URLSearchParams(encoded).toString()}`;
     const t0 = Date.now();
     let attempts = 0;
     let lastStatus = 0;
     let lastError = "";
-    while (attempts < 2) {
+    let wait: number | null = null;
+    const maxAttempts = () => (lastStatus === 429 ? MAX_ATTEMPTS_429 : MAX_ATTEMPTS);
+    while (attempts < maxAttempts()) {
       attempts++;
+      wait = null;
       try {
         const res = await this.fetchImpl(url, {
           method: "GET",
@@ -126,11 +168,12 @@ export class QlooClient {
         const text = await res.text().catch(() => "");
         lastError = text.slice(0, 300);
         if (!RETRYABLE(res.status)) break;
+        if (res.status === 429) wait = retryAfterMs(res.headers.get("retry-after")) ?? 800 * attempts;
       } catch (e) {
         lastStatus = 0;
         lastError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       }
-      if (attempts < 2) await this.sleep(250 + Math.floor(this.random() * 500));
+      if (attempts < maxAttempts()) await this.sleep((wait ?? 250) + Math.floor(this.random() * 500));
     }
     this.log(path, encoded, lastStatus, t0, 0, attempts, lastError);
     throw new QlooError(`Qloo ${path} failed (${lastStatus || "network"}): ${lastError}`, lastStatus, path);

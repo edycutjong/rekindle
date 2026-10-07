@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { QlooClient, QlooError, countResults, encodeParams, type QlooCallLog } from "../lib/qloo";
+import { QlooClient, QlooError, countResults, encodeParams, retryAfterMs, type QlooCallLog } from "../lib/qloo";
 
 const KEY = "test-key-never-logged";
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -75,5 +75,33 @@ describe("lib/qloo", () => {
     const { c, fetchImpl } = client([new DOMException("The operation was aborted due to timeout", "TimeoutError"), json(200, { results: [] })]);
     await expect(c.search("Fleabag", { types: ["urn:entity:tv_show"] })).resolves.toEqual({ results: [] });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("backs off on 429 (Retry-After honoured, capped) and allows a second retry for 429 only", async () => {
+    const r429 = (ra?: string) => new Response("rate limited", { status: 429, headers: ra ? { "retry-after": ra } : {} });
+    const { c, fetchImpl, sleep, logs } = client([r429("1"), r429(), json(200, { results: [] })]);
+    await expect(c.search("Fleabag")).resolves.toEqual({ results: [] });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(sleep).toHaveBeenNthCalledWith(1, 1000 + 250);
+    expect(sleep).toHaveBeenNthCalledWith(2, 1600 + 250);
+    expect(logs[0].attempts).toBe(3);
+    expect(retryAfterMs("120")).toBe(3000);
+    expect(retryAfterMs(null)).toBeNull();
+  });
+
+  it("keeps at most maxConcurrent requests in flight (parallel agent tools)", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const fetchImpl = vi.fn(async () => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight--;
+      return json(200, { results: [] });
+    });
+    const c = new QlooClient({ apiKey: KEY, fetchImpl: fetchImpl as unknown as typeof fetch, maxConcurrent: 3 });
+    await Promise.all(Array.from({ length: 9 }, (_, i) => c.search(`q${i}`)));
+    expect(fetchImpl).toHaveBeenCalledTimes(9);
+    expect(peak).toBe(3);
   });
 });
