@@ -1,0 +1,706 @@
+{
+  "fictional": true,
+  "source": "scripts/seed.py --resolve",
+  "profiles": [
+    {
+      "slug": "maya",
+      "label": "Maya",
+      "locality": "Williamsburg, Brooklyn",
+      "lon": -73.9571,
+      "lat": 40.7081,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Phoebe Bridgers",
+          "qloo_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Phoebe Bridgers"
+        },
+        {
+          "text": "Fleabag",
+          "qloo_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Fleabag"
+        },
+        {
+          "text": "ramen",
+          "qloo_id": "urn:tag:genre:place:restaurant:ramen",
+          "qloo_kind": "tag",
+          "name": "Ramen restaurant"
+        }
+      ]
+    },
+    {
+      "slug": "theo",
+      "label": "Theo",
+      "locality": "Park Slope, Brooklyn",
+      "lon": -73.9776,
+      "lat": 40.671,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Radiohead",
+          "qloo_id": "70CAE5BF-2F4C-445C-A3E5-4EDACFC3591C",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Radiohead"
+        },
+        {
+          "text": "The Bear",
+          "qloo_id": "4C305B2F-5A46-4885-A6DA-5E22D11E86E0",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "The Bear"
+        },
+        {
+          "text": "coffee",
+          "qloo_id": "urn:tag:genre:place:restaurant:coffee",
+          "qloo_kind": "tag",
+          "name": "Coffee"
+        }
+      ]
+    },
+    {
+      "slug": "ana",
+      "label": "Ana",
+      "locality": "Lower East Side, Manhattan",
+      "lon": -73.988,
+      "lat": 40.715,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Bad Bunny",
+          "qloo_id": "BDA1B73F-10E7-4D09-AC51-B796CCEC5FF3",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Bad Bunny"
+        },
+        {
+          "text": "Jane the Virgin",
+          "qloo_id": "356B4912-0D0E-492E-8ECD-9D7F3574AF26",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Jane the Virgin"
+        },
+        {
+          "text": "tacos",
+          "qloo_id": "urn:tag:genre:place:restaurant:tacos",
+          "qloo_kind": "tag",
+          "name": "Tacos"
+        }
+      ]
+    },
+    {
+      "slug": "sam",
+      "label": "Sam",
+      "locality": "Astoria, Queens",
+      "lon": -73.9235,
+      "lat": 40.7644,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": true,
+      "need_wheelchair": true,
+      "loves": [
+        {
+          "text": "Studio Ghibli films",
+          "qloo_id": "9B33A620-68CA-49B3-BFCF-F09CCF8AD595",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:movie",
+          "name": "Spirited Away"
+        },
+        {
+          "text": "Ursula K. Le Guin",
+          "qloo_id": "4D73C871-CC0F-4FC8-88CD-7C59B26E087E",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:book",
+          "name": "The Left Hand of Darkness"
+        },
+        {
+          "text": "board games",
+          "qloo_id": "urn:tag:genre:place:restaurant:board_game_club",
+          "qloo_kind": "tag",
+          "name": "Board Game Club"
+        }
+      ]
+    },
+    {
+      "slug": "priya",
+      "label": "Priya",
+      "locality": "Harlem, Manhattan",
+      "lon": -73.9465,
+      "lat": 40.8116,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Hamilton (cast album)",
+          "qloo_id": "FCB601A0-7C8B-4BB2-9401-900A2247D122",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:album",
+          "name": "Hamilton (Original Broadway Cast Recording)"
+        },
+        {
+          "text": "Michelle Obama, Becoming",
+          "qloo_id": "4F75B76B-8CE4-4ECA-A5CD-F5866B2A7808",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:book",
+          "name": "Becoming"
+        },
+        {
+          "text": "jazz",
+          "qloo_id": "urn:tag:genre:place:restaurant:jazz_club",
+          "qloo_kind": "tag",
+          "name": "Jazz Club"
+        }
+      ]
+    },
+    {
+      "slug": "jo",
+      "label": "Jo",
+      "locality": "Echo Park, Los Angeles",
+      "lon": -118.2606,
+      "lat": 34.0782,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": true,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Lana Del Rey",
+          "qloo_id": "63BBE4D8-D721-466F-907C-D0007E9B6665",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Lana Del Rey"
+        },
+        {
+          "text": "Twin Peaks",
+          "qloo_id": "5E978EC5-A44F-4644-A808-FA09644259AA",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Twin Peaks"
+        },
+        {
+          "text": "vintage",
+          "qloo_id": "urn:tag:ambience:place:vintage",
+          "qloo_kind": "tag",
+          "name": "Vintage"
+        }
+      ]
+    },
+    {
+      "slug": "marcus",
+      "label": "Marcus",
+      "locality": "Silver Lake, Los Angeles",
+      "lon": -118.2703,
+      "lat": 34.0869,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Kendrick Lamar",
+          "qloo_id": "C915A918-39C5-47A3-A101-D9FA1DECBD9C",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Kendrick Lamar"
+        },
+        {
+          "text": "Atlanta (TV)",
+          "qloo_id": "459C6C03-CF24-4479-90A4-030B371CF9EC",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Atlanta"
+        },
+        {
+          "text": "basketball",
+          "qloo_id": "urn:tag:category:place:basketball",
+          "qloo_kind": "tag",
+          "name": "Basketball"
+        }
+      ]
+    },
+    {
+      "slug": "lena",
+      "label": "Lena",
+      "locality": "Santa Monica, Los Angeles",
+      "lon": -118.4912,
+      "lat": 34.0195,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": true,
+      "loves": [
+        {
+          "text": "Taylor Swift",
+          "qloo_id": "4BBEF799-A0C4-4110-AB01-39216993C312",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Taylor Swift"
+        },
+        {
+          "text": "Gilmore Girls",
+          "qloo_id": "4C60FF74-A236-4488-8FB3-2FE43D1C79FB",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Gilmore Girls"
+        },
+        {
+          "text": "bookstores",
+          "qloo_id": "urn:tag:category:place:book_store",
+          "qloo_kind": "tag",
+          "name": "Book store"
+        }
+      ]
+    },
+    {
+      "slug": "ruth",
+      "label": "Ruth",
+      "locality": "Pasadena, Los Angeles",
+      "lon": -118.1445,
+      "lat": 34.1478,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": true,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Joni Mitchell",
+          "qloo_id": "1A9BE260-F41E-4592-9EAF-BDD6AE774F69",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Joni Mitchell"
+        },
+        {
+          "text": "The Great British Bake Off",
+          "qloo_id": "D2BC4814-6C05-4D98-94C9-EC9DF18F5D85",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "The Great British Baking Show"
+        },
+        {
+          "text": "gardens",
+          "qloo_id": "urn:tag:genre:place:restaurant:garden",
+          "qloo_kind": "tag",
+          "name": "Garden"
+        }
+      ]
+    },
+    {
+      "slug": "dev",
+      "label": "Dev",
+      "locality": "Mission District, San Francisco",
+      "lon": -122.4194,
+      "lat": 37.7599,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Bon Iver",
+          "qloo_id": "E51DB8F2-7A93-4746-A283-E55B5216FDE1",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Bon Iver"
+        },
+        {
+          "text": "Severance",
+          "qloo_id": "569F8294-72DA-4935-B9F2-4FC697AB2A1E",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Severance"
+        },
+        {
+          "text": "hiking",
+          "qloo_id": "urn:tag:genre:place:restaurant:hiking_area",
+          "qloo_kind": "tag",
+          "name": "Hiking Area"
+        }
+      ]
+    },
+    {
+      "slug": "kim",
+      "label": "Kim",
+      "locality": "Inner Sunset, San Francisco",
+      "lon": -122.4663,
+      "lat": 37.7602,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "BTS",
+          "qloo_id": "F347D506-CB6F-46FA-9A8B-AFBC31C71A1A",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "BTS"
+        },
+        {
+          "text": "Crash Landing on You",
+          "qloo_id": "C5D371F0-C14D-457F-B392-10D867454E88",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Crash Landing on You"
+        },
+        {
+          "text": "Korean food",
+          "qloo_id": "urn:tag:genre:place:restaurant:korean",
+          "qloo_kind": "tag",
+          "name": "Korean"
+        }
+      ]
+    },
+    {
+      "slug": "omar",
+      "label": "Omar",
+      "locality": "Wicker Park, Chicago",
+      "lon": -87.6776,
+      "lat": 41.9088,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": true,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Chance the Rapper",
+          "qloo_id": "AA0A1AAB-488D-45C2-B7FC-B73D6C0C877F",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Chance the Rapper"
+        },
+        {
+          "text": "The Office",
+          "qloo_id": "E5AE1F26-04CB-4CDD-BBA4-87FB6541F848",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "The Office"
+        },
+        {
+          "text": "museums",
+          "qloo_id": "urn:tag:genre:place:restaurant:museum",
+          "qloo_kind": "tag",
+          "name": "Museum"
+        }
+      ]
+    },
+    {
+      "slug": "grace",
+      "label": "Grace",
+      "locality": "Hyde Park, Chicago",
+      "lon": -87.5936,
+      "lat": 41.7943,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": true,
+      "loves": [
+        {
+          "text": "Beyoncé",
+          "qloo_id": "F6754C46-B3E7-457F-8B7E-06C613597320",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Beyoncé"
+        },
+        {
+          "text": "Insecure",
+          "qloo_id": "D3CDAF26-7DA8-4BC6-9E8D-E6D821918695",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Insecure"
+        },
+        {
+          "text": "gospel",
+          "qloo_id": "urn:tag:genre:place:restaurant:gospel_church",
+          "qloo_kind": "tag",
+          "name": "Gospel Church"
+        }
+      ]
+    },
+    {
+      "slug": "leo",
+      "label": "Leo",
+      "locality": "Logan Square, Chicago",
+      "lon": -87.7076,
+      "lat": 41.9234,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Arctic Monkeys",
+          "qloo_id": "E3CF515E-C3EA-46DF-92DD-64A0DC360C90",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Arctic Monkeys"
+        },
+        {
+          "text": "Peaky Blinders",
+          "qloo_id": "7909D30F-2ABD-46A4-9335-E0B72F1A10FE",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Peaky Blinders"
+        },
+        {
+          "text": "vinyl",
+          "qloo_id": "urn:tag:genre:place:record_store",
+          "qloo_kind": "tag",
+          "name": "Record store"
+        }
+      ]
+    },
+    {
+      "slug": "hana",
+      "label": "Hana",
+      "locality": "Capitol Hill, Seattle",
+      "lon": -122.3207,
+      "lat": 47.6253,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": true,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Mitski",
+          "qloo_id": "E3BD2650-8E5C-43FB-B5A7-C1C7753A6293",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Mitski"
+        },
+        {
+          "text": "Normal People",
+          "qloo_id": "19DF9974-2931-42F7-AF6F-DC29B9E17974",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Normal People"
+        },
+        {
+          "text": "tea",
+          "qloo_id": "urn:tag:genre:place:restaurant:tea",
+          "qloo_kind": "tag",
+          "name": "Tea"
+        }
+      ]
+    },
+    {
+      "slug": "ben",
+      "label": "Ben",
+      "locality": "Fremont, Seattle",
+      "lon": -122.3496,
+      "lat": 47.651,
+      "radius_m": 5000,
+      "energy": 3,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Pearl Jam",
+          "qloo_id": "6DE25E22-8933-4BC0-B0C3-89D060C034AF",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Pearl Jam"
+        },
+        {
+          "text": "Twin Peaks",
+          "qloo_id": "5E978EC5-A44F-4644-A808-FA09644259AA",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Twin Peaks"
+        },
+        {
+          "text": "coffee",
+          "qloo_id": "urn:tag:genre:place:restaurant:coffee",
+          "qloo_kind": "tag",
+          "name": "Coffee"
+        }
+      ]
+    },
+    {
+      "slug": "ivy",
+      "label": "Ivy",
+      "locality": "Williamsburg, Brooklyn",
+      "lon": -73.9615,
+      "lat": 40.714,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": true,
+      "loves": [
+        {
+          "text": "Fleetwood Mac",
+          "qloo_id": "B1414851-6A23-4C52-B647-2A0249B664F9",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Fleetwood Mac"
+        },
+        {
+          "text": "Schitt's Creek",
+          "qloo_id": "93804FA5-8089-488B-AE2C-C26D9E4F58DB",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Schitt's Creek"
+        },
+        {
+          "text": "pottery",
+          "qloo_id": "urn:tag:genre:place:restaurant:pottery_classes",
+          "qloo_kind": "tag",
+          "name": "Pottery Classes"
+        }
+      ]
+    },
+    {
+      "slug": "nate",
+      "label": "Nate",
+      "locality": "Bushwick, Brooklyn",
+      "lon": -73.9196,
+      "lat": 40.6944,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": true,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Frank Ocean",
+          "qloo_id": "2B134C93-39EB-4A08-A72D-5F8F1167FDAA",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Frank Ocean"
+        },
+        {
+          "text": "Euphoria",
+          "qloo_id": "5A82F9BC-10F6-4A45-8097-6B1E147B7824",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Euphoria"
+        },
+        {
+          "text": "art galleries",
+          "qloo_id": "urn:tag:genre:place:restaurant:art_gallery",
+          "qloo_kind": "tag",
+          "name": "Art Gallery"
+        }
+      ]
+    },
+    {
+      "slug": "ruby",
+      "label": "Ruby",
+      "locality": "Des Moines, IA (thin-coverage control)",
+      "lon": -93.6091,
+      "lat": 41.5868,
+      "radius_m": 3000,
+      "energy": 2,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": false,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Kacey Musgraves",
+          "qloo_id": "9AAE0224-F8E2-447A-BD05-26D2A9E72573",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Kacey Musgraves"
+        },
+        {
+          "text": "Parks and Recreation",
+          "qloo_id": "E4148275-7C7C-4BD6-BB8B-62991B629AE5",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Parks and Recreation"
+        },
+        {
+          "text": "bakeries",
+          "qloo_id": "urn:tag:genre:place:restaurant:bakery",
+          "qloo_kind": "tag",
+          "name": "Bakery"
+        }
+      ]
+    },
+    {
+      "slug": "cal",
+      "label": "Cal",
+      "locality": "Bozeman, MT (thin-coverage control)",
+      "lon": -111.0429,
+      "lat": 45.677,
+      "radius_m": 1500,
+      "energy": 1,
+      "price_max": 2,
+      "in_recovery": false,
+      "need_quiet": true,
+      "need_wheelchair": false,
+      "loves": [
+        {
+          "text": "Zach Bryan",
+          "qloo_id": "3221FBAC-2C10-4BAA-ADE0-AB40D02D5670",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:artist",
+          "name": "Zach Bryan"
+        },
+        {
+          "text": "Yellowstone",
+          "qloo_id": "98AAE03A-A220-4116-BADE-B3A02D909D3D",
+          "qloo_kind": "entity",
+          "entity_type": "urn:entity:tv_show",
+          "name": "Yellowstone"
+        },
+        {
+          "text": "fly fishing",
+          "qloo_id": "urn:tag:amenity:place:fishing",
+          "qloo_kind": "tag",
+          "name": "Fishing"
+        }
+      ]
+    }
+  ]
+}

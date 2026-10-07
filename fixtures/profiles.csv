@@ -1,0 +1,61 @@
+label,point_wkt,radius_m,energy,price_max,in_recovery,need_quiet,need_wheelchair,love_text,qloo_id,qloo_kind,slug,locality,lon,lat,entity_type,resolved_name
+Maya,POINT(-73.9571 40.7081),1500,1,2,false,false,false,Phoebe Bridgers,AFBC71A7-9439-4AB0-AB68-D14B11AAF836,entity,maya,"Williamsburg, Brooklyn",-73.9571,40.7081,urn:entity:artist,Phoebe Bridgers
+Maya,POINT(-73.9571 40.7081),1500,1,2,false,false,false,Fleabag,878680F2-2C8D-4D7A-8288-BEA75D38A843,entity,maya,"Williamsburg, Brooklyn",-73.9571,40.7081,urn:entity:tv_show,Fleabag
+Maya,POINT(-73.9571 40.7081),1500,1,2,false,false,false,ramen,urn:tag:genre:place:restaurant:ramen,tag,maya,"Williamsburg, Brooklyn",-73.9571,40.7081,,Ramen restaurant
+Theo,POINT(-73.9776 40.671),3000,2,2,true,false,false,Radiohead,70CAE5BF-2F4C-445C-A3E5-4EDACFC3591C,entity,theo,"Park Slope, Brooklyn",-73.9776,40.671,urn:entity:artist,Radiohead
+Theo,POINT(-73.9776 40.671),3000,2,2,true,false,false,The Bear,4C305B2F-5A46-4885-A6DA-5E22D11E86E0,entity,theo,"Park Slope, Brooklyn",-73.9776,40.671,urn:entity:tv_show,The Bear
+Theo,POINT(-73.9776 40.671),3000,2,2,true,false,false,coffee,urn:tag:genre:place:restaurant:coffee,tag,theo,"Park Slope, Brooklyn",-73.9776,40.671,,Coffee
+Ana,POINT(-73.988 40.715),5000,3,2,false,false,false,Bad Bunny,BDA1B73F-10E7-4D09-AC51-B796CCEC5FF3,entity,ana,"Lower East Side, Manhattan",-73.988,40.715,urn:entity:artist,Bad Bunny
+Ana,POINT(-73.988 40.715),5000,3,2,false,false,false,Jane the Virgin,356B4912-0D0E-492E-8ECD-9D7F3574AF26,entity,ana,"Lower East Side, Manhattan",-73.988,40.715,urn:entity:tv_show,Jane the Virgin
+Ana,POINT(-73.988 40.715),5000,3,2,false,false,false,tacos,urn:tag:genre:place:restaurant:tacos,tag,ana,"Lower East Side, Manhattan",-73.988,40.715,,Tacos
+Sam,POINT(-73.9235 40.7644),3000,2,2,false,true,true,Studio Ghibli films,9B33A620-68CA-49B3-BFCF-F09CCF8AD595,entity,sam,"Astoria, Queens",-73.9235,40.7644,urn:entity:movie,Spirited Away
+Sam,POINT(-73.9235 40.7644),3000,2,2,false,true,true,Ursula K. Le Guin,4D73C871-CC0F-4FC8-88CD-7C59B26E087E,entity,sam,"Astoria, Queens",-73.9235,40.7644,urn:entity:book,The Left Hand of Darkness
+Sam,POINT(-73.9235 40.7644),3000,2,2,false,true,true,board games,urn:tag:genre:place:restaurant:board_game_club,tag,sam,"Astoria, Queens",-73.9235,40.7644,,Board Game Club
+Priya,POINT(-73.9465 40.8116),1500,1,2,true,false,false,Hamilton (cast album),FCB601A0-7C8B-4BB2-9401-900A2247D122,entity,priya,"Harlem, Manhattan",-73.9465,40.8116,urn:entity:album,Hamilton (Original Broadway Cast Recording)
+Priya,POINT(-73.9465 40.8116),1500,1,2,true,false,false,"Michelle Obama, Becoming",4F75B76B-8CE4-4ECA-A5CD-F5866B2A7808,entity,priya,"Harlem, Manhattan",-73.9465,40.8116,urn:entity:book,Becoming
+Priya,POINT(-73.9465 40.8116),1500,1,2,true,false,false,jazz,urn:tag:genre:place:restaurant:jazz_club,tag,priya,"Harlem, Manhattan",-73.9465,40.8116,,Jazz Club
+Jo,POINT(-118.2606 34.0782),5000,3,2,true,true,false,Lana Del Rey,63BBE4D8-D721-466F-907C-D0007E9B6665,entity,jo,"Echo Park, Los Angeles",-118.2606,34.0782,urn:entity:artist,Lana Del Rey
+Jo,POINT(-118.2606 34.0782),5000,3,2,true,true,false,Twin Peaks,5E978EC5-A44F-4644-A808-FA09644259AA,entity,jo,"Echo Park, Los Angeles",-118.2606,34.0782,urn:entity:tv_show,Twin Peaks
+Jo,POINT(-118.2606 34.0782),5000,3,2,true,true,false,vintage,urn:tag:ambience:place:vintage,tag,jo,"Echo Park, Los Angeles",-118.2606,34.0782,,Vintage
+Marcus,POINT(-118.2703 34.0869),3000,2,2,false,false,false,Kendrick Lamar,C915A918-39C5-47A3-A101-D9FA1DECBD9C,entity,marcus,"Silver Lake, Los Angeles",-118.2703,34.0869,urn:entity:artist,Kendrick Lamar
+Marcus,POINT(-118.2703 34.0869),3000,2,2,false,false,false,Atlanta (TV),459C6C03-CF24-4479-90A4-030B371CF9EC,entity,marcus,"Silver Lake, Los Angeles",-118.2703,34.0869,urn:entity:tv_show,Atlanta
+Marcus,POINT(-118.2703 34.0869),3000,2,2,false,false,false,basketball,urn:tag:category:place:basketball,tag,marcus,"Silver Lake, Los Angeles",-118.2703,34.0869,,Basketball
+Lena,POINT(-118.4912 34.0195),5000,3,2,false,false,true,Taylor Swift,4BBEF799-A0C4-4110-AB01-39216993C312,entity,lena,"Santa Monica, Los Angeles",-118.4912,34.0195,urn:entity:artist,Taylor Swift
+Lena,POINT(-118.4912 34.0195),5000,3,2,false,false,true,Gilmore Girls,4C60FF74-A236-4488-8FB3-2FE43D1C79FB,entity,lena,"Santa Monica, Los Angeles",-118.4912,34.0195,urn:entity:tv_show,Gilmore Girls
+Lena,POINT(-118.4912 34.0195),5000,3,2,false,false,true,bookstores,urn:tag:category:place:book_store,tag,lena,"Santa Monica, Los Angeles",-118.4912,34.0195,,Book store
+Ruth,POINT(-118.1445 34.1478),1500,1,2,false,true,false,Joni Mitchell,1A9BE260-F41E-4592-9EAF-BDD6AE774F69,entity,ruth,"Pasadena, Los Angeles",-118.1445,34.1478,urn:entity:artist,Joni Mitchell
+Ruth,POINT(-118.1445 34.1478),1500,1,2,false,true,false,The Great British Bake Off,D2BC4814-6C05-4D98-94C9-EC9DF18F5D85,entity,ruth,"Pasadena, Los Angeles",-118.1445,34.1478,urn:entity:tv_show,The Great British Baking Show
+Ruth,POINT(-118.1445 34.1478),1500,1,2,false,true,false,gardens,urn:tag:genre:place:restaurant:garden,tag,ruth,"Pasadena, Los Angeles",-118.1445,34.1478,,Garden
+Dev,POINT(-122.4194 37.7599),3000,2,2,true,false,false,Bon Iver,E51DB8F2-7A93-4746-A283-E55B5216FDE1,entity,dev,"Mission District, San Francisco",-122.4194,37.7599,urn:entity:artist,Bon Iver
+Dev,POINT(-122.4194 37.7599),3000,2,2,true,false,false,Severance,569F8294-72DA-4935-B9F2-4FC697AB2A1E,entity,dev,"Mission District, San Francisco",-122.4194,37.7599,urn:entity:tv_show,Severance
+Dev,POINT(-122.4194 37.7599),3000,2,2,true,false,false,hiking,urn:tag:genre:place:restaurant:hiking_area,tag,dev,"Mission District, San Francisco",-122.4194,37.7599,,Hiking Area
+Kim,POINT(-122.4663 37.7602),5000,3,2,false,false,false,BTS,F347D506-CB6F-46FA-9A8B-AFBC31C71A1A,entity,kim,"Inner Sunset, San Francisco",-122.4663,37.7602,urn:entity:artist,BTS
+Kim,POINT(-122.4663 37.7602),5000,3,2,false,false,false,Crash Landing on You,C5D371F0-C14D-457F-B392-10D867454E88,entity,kim,"Inner Sunset, San Francisco",-122.4663,37.7602,urn:entity:tv_show,Crash Landing on You
+Kim,POINT(-122.4663 37.7602),5000,3,2,false,false,false,Korean food,urn:tag:genre:place:restaurant:korean,tag,kim,"Inner Sunset, San Francisco",-122.4663,37.7602,,Korean
+Omar,POINT(-87.6776 41.9088),1500,1,2,true,true,false,Chance the Rapper,AA0A1AAB-488D-45C2-B7FC-B73D6C0C877F,entity,omar,"Wicker Park, Chicago",-87.6776,41.9088,urn:entity:artist,Chance the Rapper
+Omar,POINT(-87.6776 41.9088),1500,1,2,true,true,false,The Office,E5AE1F26-04CB-4CDD-BBA4-87FB6541F848,entity,omar,"Wicker Park, Chicago",-87.6776,41.9088,urn:entity:tv_show,The Office
+Omar,POINT(-87.6776 41.9088),1500,1,2,true,true,false,museums,urn:tag:genre:place:restaurant:museum,tag,omar,"Wicker Park, Chicago",-87.6776,41.9088,,Museum
+Grace,POINT(-87.5936 41.7943),3000,2,2,false,false,true,Beyoncé,F6754C46-B3E7-457F-8B7E-06C613597320,entity,grace,"Hyde Park, Chicago",-87.5936,41.7943,urn:entity:artist,Beyoncé
+Grace,POINT(-87.5936 41.7943),3000,2,2,false,false,true,Insecure,D3CDAF26-7DA8-4BC6-9E8D-E6D821918695,entity,grace,"Hyde Park, Chicago",-87.5936,41.7943,urn:entity:tv_show,Insecure
+Grace,POINT(-87.5936 41.7943),3000,2,2,false,false,true,gospel,urn:tag:genre:place:restaurant:gospel_church,tag,grace,"Hyde Park, Chicago",-87.5936,41.7943,,Gospel Church
+Leo,POINT(-87.7076 41.9234),5000,3,2,true,false,false,Arctic Monkeys,E3CF515E-C3EA-46DF-92DD-64A0DC360C90,entity,leo,"Logan Square, Chicago",-87.7076,41.9234,urn:entity:artist,Arctic Monkeys
+Leo,POINT(-87.7076 41.9234),5000,3,2,true,false,false,Peaky Blinders,7909D30F-2ABD-46A4-9335-E0B72F1A10FE,entity,leo,"Logan Square, Chicago",-87.7076,41.9234,urn:entity:tv_show,Peaky Blinders
+Leo,POINT(-87.7076 41.9234),5000,3,2,true,false,false,vinyl,urn:tag:genre:place:record_store,tag,leo,"Logan Square, Chicago",-87.7076,41.9234,,Record store
+Hana,POINT(-122.3207 47.6253),1500,1,2,true,true,false,Mitski,E3BD2650-8E5C-43FB-B5A7-C1C7753A6293,entity,hana,"Capitol Hill, Seattle",-122.3207,47.6253,urn:entity:artist,Mitski
+Hana,POINT(-122.3207 47.6253),1500,1,2,true,true,false,Normal People,19DF9974-2931-42F7-AF6F-DC29B9E17974,entity,hana,"Capitol Hill, Seattle",-122.3207,47.6253,urn:entity:tv_show,Normal People
+Hana,POINT(-122.3207 47.6253),1500,1,2,true,true,false,tea,urn:tag:genre:place:restaurant:tea,tag,hana,"Capitol Hill, Seattle",-122.3207,47.6253,,Tea
+Ben,POINT(-122.3496 47.651),5000,3,2,false,false,false,Pearl Jam,6DE25E22-8933-4BC0-B0C3-89D060C034AF,entity,ben,"Fremont, Seattle",-122.3496,47.651,urn:entity:artist,Pearl Jam
+Ben,POINT(-122.3496 47.651),5000,3,2,false,false,false,Twin Peaks,5E978EC5-A44F-4644-A808-FA09644259AA,entity,ben,"Fremont, Seattle",-122.3496,47.651,urn:entity:tv_show,Twin Peaks
+Ben,POINT(-122.3496 47.651),5000,3,2,false,false,false,coffee,urn:tag:genre:place:restaurant:coffee,tag,ben,"Fremont, Seattle",-122.3496,47.651,,Coffee
+Ivy,POINT(-73.9615 40.714),1500,1,2,true,false,true,Fleetwood Mac,B1414851-6A23-4C52-B647-2A0249B664F9,entity,ivy,"Williamsburg, Brooklyn",-73.9615,40.714,urn:entity:artist,Fleetwood Mac
+Ivy,POINT(-73.9615 40.714),1500,1,2,true,false,true,Schitt's Creek,93804FA5-8089-488B-AE2C-C26D9E4F58DB,entity,ivy,"Williamsburg, Brooklyn",-73.9615,40.714,urn:entity:tv_show,Schitt's Creek
+Ivy,POINT(-73.9615 40.714),1500,1,2,true,false,true,pottery,urn:tag:genre:place:restaurant:pottery_classes,tag,ivy,"Williamsburg, Brooklyn",-73.9615,40.714,,Pottery Classes
+Nate,POINT(-73.9196 40.6944),3000,2,2,true,false,false,Frank Ocean,2B134C93-39EB-4A08-A72D-5F8F1167FDAA,entity,nate,"Bushwick, Brooklyn",-73.9196,40.6944,urn:entity:artist,Frank Ocean
+Nate,POINT(-73.9196 40.6944),3000,2,2,true,false,false,Euphoria,5A82F9BC-10F6-4A45-8097-6B1E147B7824,entity,nate,"Bushwick, Brooklyn",-73.9196,40.6944,urn:entity:tv_show,Euphoria
+Nate,POINT(-73.9196 40.6944),3000,2,2,true,false,false,art galleries,urn:tag:genre:place:restaurant:art_gallery,tag,nate,"Bushwick, Brooklyn",-73.9196,40.6944,,Art Gallery
+Ruby,POINT(-93.6091 41.5868),3000,2,2,false,false,false,Kacey Musgraves,9AAE0224-F8E2-447A-BD05-26D2A9E72573,entity,ruby,"Des Moines, IA (thin-coverage control)",-93.6091,41.5868,urn:entity:artist,Kacey Musgraves
+Ruby,POINT(-93.6091 41.5868),3000,2,2,false,false,false,Parks and Recreation,E4148275-7C7C-4BD6-BB8B-62991B629AE5,entity,ruby,"Des Moines, IA (thin-coverage control)",-93.6091,41.5868,urn:entity:tv_show,Parks and Recreation
+Ruby,POINT(-93.6091 41.5868),3000,2,2,false,false,false,bakeries,urn:tag:genre:place:restaurant:bakery,tag,ruby,"Des Moines, IA (thin-coverage control)",-93.6091,41.5868,,Bakery
+Cal,POINT(-111.0429 45.677),1500,1,2,false,true,false,Zach Bryan,3221FBAC-2C10-4BAA-ADE0-AB40D02D5670,entity,cal,"Bozeman, MT (thin-coverage control)",-111.0429,45.677,urn:entity:artist,Zach Bryan
+Cal,POINT(-111.0429 45.677),1500,1,2,false,true,false,Yellowstone,98AAE03A-A220-4116-BADE-B3A02D909D3D,entity,cal,"Bozeman, MT (thin-coverage control)",-111.0429,45.677,urn:entity:tv_show,Yellowstone
+Cal,POINT(-111.0429 45.677),1500,1,2,false,true,false,fly fishing,urn:tag:amenity:place:fishing,tag,cal,"Bozeman, MT (thin-coverage control)",-111.0429,45.677,,Fishing
