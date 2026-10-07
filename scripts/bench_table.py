@@ -192,15 +192,20 @@ def replace(doc: str, name: str, body: str) -> str:
     return doc[: doc.index(s) + len(s)] + "\n" + body + "\n" + doc[doc.index(e):]
 
 
-def main() -> int:
-    r, rp, au = load("results.json"), load("replan.json"), load("audit.json")
-    rows = predates(r)
+def head_sha() -> str:
+    try:
+        return subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+
+
+def stale_files(r, rp, au, rows, write: bool) -> list:
     stale = []
     pj = ROOT / "bench" / "predates.json"
     pbody = json.dumps({"generated_by": "scripts/bench_table.py", "bench_finished_at": r["finished_at"], "plan_path": PLAN_PATH, "commits": rows}, indent=1, ensure_ascii=False) + "\n"
     if not pj.exists() or pj.read_text() != pbody:
         stale.append("bench/predates.json")
-        if "--check" not in sys.argv:
+        if write:
             pj.write_text(pbody)
     for p in TARGETS:
         if not p.exists():
@@ -209,15 +214,28 @@ def main() -> int:
         new = replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows))
         if new != doc:
             stale.append(p.name)
-            if "--check" not in sys.argv:
+            if write:
                 p.write_text(new)
-    if "--check" in sys.argv:
-        if stale:
-            print("stale bench numbers in: " + ", ".join(stale) + " (run python3 scripts/bench_table.py)", file=sys.stderr)
-            return 1
-        print("bench numbers in README.md / DEMO.md / JUDGE.md match bench/*.json")
+    return stale
+
+
+def main() -> int:
+    r, rp, au = load("results.json"), load("replan.json"), load("audit.json")
+    rows = predates(r)
+    if "--check" not in sys.argv:
+        print("updated: " + (", ".join(stale_files(r, rp, au, rows, True)) or "nothing"))
         return 0
-    print("updated: " + (", ".join(stale) or "nothing"))
+    stale = stale_files(r, rp, au, rows, False)
+    # A commit cannot contain its own hash: when HEAD itself is a plan-path commit, docs that list everything
+    # BEFORE it are current too (the follow-up `npm run docs` commit adds it). Only HEAD gets this grace; any
+    # older unlisted plan-path commit still fails.
+    if stale and rows and rows[-1]["commit"] == head_sha() and not stale_files(r, rp, au, rows[:-1], False):
+        print(f"bench numbers match bench/*.json; HEAD {rows[-1]['commit']} is a plan-path commit not yet listed (run `npm run docs` in a follow-up commit)")
+        return 0
+    if stale:
+        print("stale bench numbers in: " + ", ".join(stale) + " (run python3 scripts/bench_table.py)", file=sys.stderr)
+        return 1
+    print("bench numbers in README.md / DEMO.md / JUDGE.md match bench/*.json")
     return 0
 
 
