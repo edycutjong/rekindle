@@ -28,12 +28,12 @@
     "lint:fix": "eslint --fix",
     "test:coverage": "vitest run --coverage",
     "audit": "npm audit --omit=dev --audit-level=high",
-    "license": "npx -y license-checker@25.0.1 --production --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;0BSD;CC-BY-4.0;LGPL-3.0-or-later;AFL-2.1 OR BSD-3-Clause\" --summary",
+    "license": "license-checker --production --excludePrivatePackages --onlyAllow \"MIT;Apache-2.0;ISC;BSD-2-Clause;BSD-3-Clause;0BSD;CC-BY-4.0;LGPL-3.0-or-later;AFL-2.1 OR BSD-3-Clause\" --summary",
     "ci": "npm run audit && npm run check && npm run test:coverage",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:live": "E2E_BASE_URL=https://rekindle-one.vercel.app E2E_LIVE=1 playwright test --project=chromium",
-    "lighthouse": "npx -y @lhci/cli@0.15.1 autorun",
+    "lighthouse": "lhci autorun",
     "ci:full": "npm run ci && npm run build && npm run e2e"
   },
   "dependencies": {
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@lhci/cli": "0.15.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19",
@@ -55,6 +56,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.27",
     "fast-check": "^4.10.2",
+    "license-checker": "25.0.1",
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
@@ -62,6 +64,9 @@
   "description": "Behavioral-activation planning agent for clinicians, built on Qloo Taste AI",
   "license": "MIT",
   "overrides": {
-    "postcss": "^8.5.29"
+    "postcss": "^8.5.29",
+    "tmp": "^0.2.7",
+    "basic-ftp": "^6.2.2",
+    "uuid": "^11.1.1"
   }
 }
