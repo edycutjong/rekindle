@@ -1,6 +1,6 @@
 import type { CardDoc } from "@/lib/store";
 import type { DayName } from "@/lib/verify";
-import { DAY_SHORT, emberLabel, fmtHour, hoursCheck, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
+import { DAY_SHORT, emberLabel, fmtHour, hoursCheck, isOutage, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
 import { CardActions, PMBox, type CardGate } from "./Gate";
 import s from "./rekindle.module.css";
 
@@ -55,6 +55,12 @@ function DayColumn({ d }: { d: DayView }) {
           name={d.recheck || d.gate?.busy ? (d.card?.name ?? "") : d.partial!.name}
           label={d.gate?.busy ? "swapping: same tool, same verifier" : d.recheck ? "re-checking against the new constraint" : `${d.rung ?? ""} · ${fmtHour(d.partial!.hour)} · verified`}
         />
+      ) : d.empty && isOutage(d.empty) ? (
+        <div className={`${s.empty} ${s.outage}`} data-testid="qloo-unavailable" role="note">
+          <div className={s.rung}>{d.rung ?? "slot"} · Qloo unavailable</div>
+          Left empty: no Qloo answer, so nothing was verified. The model never fills a slot on its own.
+          <div className={s.reason}>{d.empty}</div>
+        </div>
       ) : d.empty ? (
         <div className={s.empty} data-testid="empty-slot">
           <div className={s.rung}>{d.rung ?? "slot"} · left empty</div>

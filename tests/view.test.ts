@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { changedRatings, clampScore, emberLabel, emberThreads, ratedCount, stampLabel, swapNotice } from "../lib/view";
+import { changedRatings, clampScore, coverageRefusal, emberLabel, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -121,5 +121,36 @@ describe("gate + re-plan view helpers", () => {
     const before = { name: "Dun-Well", day_name: "friday" as const };
     expect(swapNotice(before, { cards: [card({ day_name: "friday", name: "Ceremonia" })] }, { found: true, ms: 1234, calls: 1 })).toBe("Swapped Dun-Well for Ceremonia, verified the same way (1 Qloo call · 1.2 s).");
     expect(swapNotice(before, { cards: [] }, { found: false, ms: 900, calls: 2 })).toBe("No other verified candidate for Fri; the slot is left empty (2 Qloo calls · 0.9 s).");
+  });
+});
+
+
+describe("edge states (D10)", () => {
+  const caseRow = { max_meters: 1500, need_quiet: true, need_wheelchair: false, in_recovery: false, price_max: 2 };
+  const outing = card({ rung: "solo" });
+  it("coverage refusal names the cause per empty outing slot and offers the next radius, never for an outage", () => {
+    const plan = {
+      cards: [outing],
+      empty_slots: [
+        { day_name: "sunday" as const, hour: 14, rung: "social" as const, reason: "Qloo returned no places for these filters" },
+        { day_name: "saturday" as const, hour: 11, rung: "solo" as const, reason: "no candidate passed all rules (25 checked)" },
+        { day_name: "monday" as const, hour: 19, rung: "home" as const, reason: "no verified artist for these loves" },
+      ],
+    };
+    const r = coverageRefusal(plan, caseRow)!;
+    expect(r.headline).toBe("Only 1 of 3 outings could be verified within 1.5 km (quiet, ≤$$), open at the slot.");
+    expect(r.slots.map((x) => x.line)).toEqual(["Sun 14:00 social: Qloo returned no places for these filters", "Sat 11:00 solo: no candidate passed all rules (25 checked)"]);
+    expect(r.widen).toBe(3000);
+    expect(widerRadius(5000)).toBeNull();
+    expect(coverageRefusal({ cards: [outing], empty_slots: [{ day_name: "sunday", hour: 14, rung: "social", reason: "Qloo unavailable (503) — slot left empty" }] }, caseRow)).toBeNull();
+    expect(coverageRefusal({ cards: [outing], empty_slots: [] }, caseRow)).toBeNull();
+  });
+  it("outage state counts outage-empty slots and says whether it was the labelled demo", () => {
+    expect(isOutage("Qloo unavailable (network) — slot left empty")).toBe(true);
+    expect(isOutage("no verified artist")).toBe(false);
+    const e = { day_name: "monday" as const, hour: 19, rung: "home" as const, reason: "Qloo unavailable (network) — slot left empty" };
+    expect(outageState({ empty_slots: [e, e], fault: "qloo_unreachable" })).toEqual({ slots: 2, injected: true });
+    expect(outageState({ empty_slots: [e], fault: null })).toEqual({ slots: 1, injected: false });
+    expect(outageState({ empty_slots: [], fault: null })).toBeNull();
   });
 });

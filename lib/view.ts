@@ -232,3 +232,43 @@ export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pic
   const t = `${swap.calls} Qloo call${swap.calls === 1 ? "" : "s"} · ${(swap.ms / 1000).toFixed(1)} s`;
   return swap.found && now ? `Swapped ${before.name} for ${now.name}, verified the same way (${t}).` : `No other verified candidate for ${DAY_SHORT[before.day_name]}; the slot is left empty (${t}).`;
 }
+
+/* ------------------------------------------------------------------ edge states (D10) */
+
+export const isOutage = (reason: string | null | undefined) => !!reason && reason.startsWith("Qloo unavailable");
+
+/** The radius the coverage refusal offers next (the case-strip distance steps), or null at the widest. */
+export function widerRadius(current: number, steps: readonly number[] = DISTANCE_OPTIONS): number | null {
+  return steps.find((m) => m > current) ?? null;
+}
+
+export interface CoverageRefusal {
+  /** "Only 1 of 3 outings could be verified within 1.5 km (quiet), open at the slot." */
+  headline: string;
+  slots: { day: DayName; line: string }[];
+  /** the radius the clinician may consent to, or null when already at the widest step */
+  widen: number | null;
+}
+
+/**
+ * Coverage refusal (architecture.md failure state 2): outing slots left empty because no candidate within the case's
+ * radius passed the verifier — never filled with an unverified suggestion. Outage-empty slots are not coverage.
+ */
+export function coverageRefusal(plan: Pick<PlanDoc, "cards" | "empty_slots">, c: Pick<CaseDoc, "max_meters" | "need_quiet" | "need_wheelchair" | "in_recovery" | "price_max">): CoverageRefusal | null {
+  const empties = plan.empty_slots.filter((e) => e.rung !== "home" && !isOutage(e.reason));
+  if (empties.length === 0) return null;
+  const outings = plan.cards.filter((x) => x.rung !== "home").length + plan.empty_slots.filter((e) => e.rung !== "home").length;
+  const verified = plan.cards.filter((x) => x.rung !== "home").length;
+  const flags = [c.need_quiet && "quiet", c.need_wheelchair && "wheelchair entrance", c.in_recovery && "alcohol-free", priceLabel(c.price_max)].filter(Boolean).join(", ");
+  return {
+    headline: `Only ${verified} of ${outings} outing${outings === 1 ? "" : "s"} could be verified within ${distanceLabel(c.max_meters).slice(1)} (${flags}), open at the slot.`,
+    slots: empties.map((e) => ({ day: e.day_name, line: `${DAY_SHORT[e.day_name]} ${fmtHour(e.hour)} ${e.rung}: ${e.reason}` })),
+    widen: widerRadius(c.max_meters),
+  };
+}
+
+/** Qloo-unavailable state: how many slots an outage left empty, and whether it was the labelled demo. */
+export function outageState(plan: Pick<PlanDoc, "empty_slots" | "fault">): { slots: number; injected: boolean } | null {
+  const n = plan.empty_slots.filter((e) => isOutage(e.reason)).length;
+  return n ? { slots: n, injected: plan.fault === "qloo_unreachable" } : null;
+}
