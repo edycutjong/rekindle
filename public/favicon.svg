@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-labelledby="rkf-title">
+  <title id="rkf-title">Rekindle — a schedule slot with a printed entry underlined in ember and a struck entry</title>
+  <rect x="1" y="1" width="30" height="30" rx="6.5" fill="var(--paper, #FBF8F1)" stroke="var(--ink, #26221D)" stroke-width="2"/>
+  <rect x="6" y="6" width="14" height="4" rx="1" fill="var(--ink, #26221D)"/><rect x="22" y="6" width="4" height="4" rx="1" fill="var(--ink, #26221D)"/>
+  <path d="M6 12.1 C 12 11.9, 18 12, 23.8 11.9 C 25 11.8, 25.8 11.04, 26.4 10.4 C 26.8 9.8, 28 9.9, 27.8 10.8 C 27.5 12.92, 25.7 14.1, 23.6 14.1 C 18 14.2, 12 14.2, 6.8 14.2 C 5.6 14.2, 5.2 12.2, 6 12.1 Z" fill="var(--accent, #C4501A)"/>
+  <path d="M5 23.6 L27 18.4" fill="none" stroke="var(--before-firm, #8C8880)" stroke-width="3.2" stroke-linecap="round"/>
+</svg>
