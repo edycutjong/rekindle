@@ -10,7 +10,7 @@ import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
 import { ALCOHOL_EXCLUDE_4, ALCOHOL_EXCLUDE_14 } from "./tags";
 import { alcoholScreen } from "./verify";
 import { diffWeeks } from "./replan";
-import { callsDoc, cardFromDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type Store } from "./store";
+import { callsDoc, cardFromDoc, CaseDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, planDocFromToggle, weekPlanFromDoc, type RunDoc, type Store } from "./store";
 
 export interface SeedProfile {
   slug: string;
@@ -85,10 +85,42 @@ export function unreachableQloo(onCall: (l: QlooCallLog) => void): QlooClient {
   });
 }
 
+/** A "running" marker older than this is treated as dead (the route's maxDuration is 60 s). */
+export const RUN_STALE_MS = 90_000;
+
+/**
+ * Week 1 already exists or is being made for this case? (QA round 1: a reload mid-stream, or reopening /cases/<id>,
+ * started a second full agent run.) `plan`: return it, no new run. `running`: a fresh run is in flight.
+ */
+export async function planRunState(store: Store, caseId: string, now = Date.now()): Promise<{ plan: PlanDoc } | { running: RunDoc } | null> {
+  const run = await store.getRun(caseId).catch(() => null);
+  if (!run) return null;
+  if (run.status === "done" && run.plan_id) {
+    const plan = await store.getPlan(run.plan_id).catch(() => null);
+    return plan ? { plan } : null;
+  }
+  if (run.status === "running" && now - Date.parse(run.started_at) < RUN_STALE_MS) return { running: run };
+  return null;
+}
+
 /** Run week 1 for a stored case, persist the plan and its Qloo call log, and return the stored plan. */
 export async function runPlanForCase(o: RunPlanOptions): Promise<PlanDoc> {
   const c = await o.store.getCase(o.caseId);
   if (!c) throw new NotFound(`case ${o.caseId} not found`);
+  const startedAt = new Date().toISOString();
+  const mark = (status: RunDoc["status"], planId: string | null = null) => o.store.putRun({ case_id: c.id, status, plan_id: planId, started_at: startedAt, updated_at: new Date().toISOString() });
+  await mark("running");
+  try {
+    const doc = await runWeekOne(o, c);
+    await mark("done", doc.id);
+    return doc;
+  } catch (e) {
+    await mark("failed").catch(() => {});
+    throw e;
+  }
+}
+
+async function runWeekOne(o: RunPlanOptions, c: CaseDoc): Promise<PlanDoc> {
   const calls: QlooCallLog[] = [];
   const onCall = (l: QlooCallLog) => {
     calls.push(l);

@@ -198,6 +198,19 @@ export const QlooCallsDoc = z.object({
 });
 export type QlooCallsDoc = z.infer<typeof QlooCallsDoc>;
 
+/**
+ * One week-1 agent run per case (QA round 1: a reload mid-stream started a second full run). Written before the run
+ * starts and updated when it ends; POST /api/cases/:id/plan reads it before the rate limiter.
+ */
+export const RunDoc = z.object({
+  case_id: z.string(),
+  status: z.enum(["running", "done", "failed"]),
+  plan_id: z.string().nullable().default(null),
+  started_at: z.string(),
+  updated_at: z.string(),
+});
+export type RunDoc = z.infer<typeof RunDoc>;
+
 /* ------------------------------------------------------------------ mapping */
 
 export const newId = () => crypto.randomUUID();
@@ -363,6 +376,8 @@ export interface Store {
   getPlan(id: string): Promise<PlanDoc | null>;
   putCalls(d: QlooCallsDoc): Promise<void>;
   getCalls(planId: string): Promise<QlooCallsDoc | null>;
+  putRun(d: RunDoc): Promise<void>;
+  getRun(caseId: string): Promise<RunDoc | null>;
   /** newest first */
   listPlanIds(limit?: number): Promise<string[]>;
 }
@@ -378,6 +393,7 @@ const pathsFor = (prefix: StorePrefix) => ({
   case: (id: string) => `${prefix}cases/${safeId(id)}.json`,
   plan: (id: string) => `${prefix}plans/${safeId(id)}.json`,
   calls: (id: string) => `${prefix}calls/${safeId(id)}.json`,
+  run: (id: string) => `${prefix}runs/${safeId(id)}.json`,
   plans: `${prefix}plans/`,
 });
 
@@ -411,6 +427,8 @@ export class MemoryStore implements Store {
   getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
   putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
   getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
+  putRun = (d: RunDoc) => this.put(this.paths.run(d.case_id), RunDoc.parse(d));
+  getRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.run(id)));
   async listPlanIds(limit = 50) {
     return [...this.docs.entries()]
       .filter(([k]) => k.startsWith(this.paths.plans))
@@ -451,6 +469,8 @@ export class BlobStore implements Store {
   getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
   putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
   getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
+  putRun = (d: RunDoc) => this.put(this.paths.run(d.case_id), RunDoc.parse(d));
+  getRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.run(id)));
   async listPlanIds(limit = 50) {
     const { list } = await import("@vercel/blob");
     const r = await list({ prefix: this.paths.plans, token: this.token, limit: 1000 });

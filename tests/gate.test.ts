@@ -15,6 +15,8 @@ import { POST as ratingsRoute } from "../app/api/plans/[id]/ratings/route";
 import { POST as replanRoute } from "../app/api/plans/[id]/replan/route";
 import { POST as casesRoute } from "../app/api/cases/route";
 import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
+import { POST as planRoute } from "../app/api/cases/[id]/plan/route";
+import { planRunState, RUN_STALE_MS } from "../lib/service";
 import { POST as constraintsRoute } from "../app/api/plans/[id]/constraints/route";
 
 /** deterministic route only (every LLM provider "down"), so these tests exercise the gate, not routing */
@@ -333,6 +335,31 @@ describe("gate routes", () => {
     const plain = await seedRoute(req("/api/cases/seed/maya", "POST"), slug("maya"));
     expect(((await plain.json()) as { case: { in_recovery: boolean } }).case.in_recovery).toBe(false);
     expect((await seedRoute(req("/api/cases/seed/maya?preset=party", "POST"), slug("maya"))).status).toBe(400);
+  });
+
+  it("one week-1 run per case: a repeat POST returns the stored week as JSON; a run in flight is a 409; both before the rate limiter (QA round 1)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const store = storeFromEnv();
+    // the route runs with env clients; make week 1 through the service (replay) and check the route reuses it
+    const { c, plan } = await mayaWeek(store);
+    expect(await store.getRun(c.id)).toMatchObject({ status: "done", plan_id: plan.id });
+    const again = await planRoute(req(`/api/cases/${c.id}/plan`, "POST"), ctx(c.id));
+    expect(again.status).toBe(200);
+    expect(again.headers.get("content-type")).toContain("application/json");
+    expect(await again.json()).toMatchObject({ reused: true, plan: { id: plan.id } });
+
+    const fresh = caseFromSeed("cal")!;
+    await store.putCase(fresh);
+    const t0 = new Date().toISOString();
+    await store.putRun({ case_id: fresh.id, status: "running", plan_id: null, started_at: t0, updated_at: t0 });
+    const busy = await planRoute(req(`/api/cases/${fresh.id}/plan`, "POST"), ctx(fresh.id));
+    expect(busy.status).toBe(409);
+    expect(await busy.json()).toMatchObject({ running: true });
+    // a dead run (older than the stale window) or a failed one does not block a new run
+    expect(await planRunState(store, fresh.id, Date.parse(t0) + RUN_STALE_MS + 1)).toBeNull();
+    await store.putRun({ case_id: fresh.id, status: "failed", plan_id: null, started_at: t0, updated_at: t0 });
+    expect(await planRunState(store, fresh.id)).toBeNull();
   });
 
   it("re-plan streams SSE ending in the stored week 2; a repeat returns it as JSON", async () => {

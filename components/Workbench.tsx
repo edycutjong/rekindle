@@ -82,11 +82,22 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       setPlan(null);
     }
     try {
-      const res = await fetch(
-        rated ? `/api/plans/${rated.id}/replan` : `/api/cases/${c.id}/plan`,
-        // the labelled outage demo (/judge) asks the server to run with an unreachable Qloo client; never on a re-plan
-        !rated && fault ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fault }) } : { method: "POST" },
-      );
+      const post = () =>
+        fetch(
+          rated ? `/api/plans/${rated.id}/replan` : `/api/cases/${c.id}/plan`,
+          // the labelled outage demo (/judge) asks the server to run with an unreachable Qloo client; never on a re-plan
+          !rated && fault ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fault }) } : { method: "POST" },
+        );
+      let res = await post();
+      // a reload during the run: the first run is still in flight server side (409 running) — wait for its stored week
+      // instead of starting another agent run; each check is answered before the rate limiter
+      for (let i = 0; !rated && res.status === 409 && i < 30; i++) {
+        const b = (await res.clone().json().catch(() => ({}))) as { running?: boolean };
+        if (!b.running) break;
+        if (i === 0) setLive(["this case is already being planned (a reload or another tab) — waiting for that run's saved week, no second run"]);
+        await new Promise((r) => setTimeout(r, 3000));
+        res = await post();
+      }
       if (!res.ok || !res.body) {
         const b = (await res.json().catch(() => ({}))) as { error?: string };
         throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status });

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { json, sseResponse } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
-import { runPlanForCase } from "@/lib/service";
+import { planRunState, runPlanForCase } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -21,6 +21,8 @@ const Body = z
  * The plan is persisted before the `plan` event is sent, so a reload of GET /api/plans/:id shows the same week.
  * Rate limited before anything runs (public / judge / bench namespaces, lib/ratelimit.ts); a refusal is a 429, never a fake plan.
  * The outage demo (`fault`) sends no Qloo request and calls no LLM, so it is limited like a toggle, not like a plan.
+ * One run per case: a case that already has its week 1 gets that stored plan back as JSON, and a case whose run is in
+ * flight gets a 409 — both before the rate limiter, so neither costs quota.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +31,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!parsed.success) return json({ error: "invalid body", issues: parsed.error.issues.map((i) => i.message) }, 400);
   const { bench, fault } = parsed.data;
   if (bench && fault) return json({ error: "bench and fault cannot be combined" }, 400);
+  // one week-1 run per case, checked before the rate limiter: a reload or a second tab never spends another run
+  const state = await planRunState(storeFor(req), id);
+  if (state && "plan" in state) return json({ plan: state.plan, reused: true });
+  if (state) return json({ error: "this case is already being planned (another tab or a reload); its week will be saved when the run ends", running: true, started_at: state.running.started_at }, 409);
   const g = await guard(req, fault ? "toggle" : "plan");
   if (g.deny) return g.deny;
   if (bench && g.ns !== "bench") return json({ error: "bench arms need the bench token" }, 403);

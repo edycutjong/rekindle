@@ -1,21 +1,27 @@
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { storeFor } from "@/lib/scope";
+import { planRunState } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
 
-/** A case without a plan yet: the Workbench runs week 1 live on arrival and moves to /plans/:id when it is saved. */
+/**
+ * A case without a plan yet: the Workbench runs week 1 live on arrival and moves to /plans/:id when it is saved. A case
+ * whose week 1 exists redirects there; one whose run is still in flight is waited on (the route answers 409).
+ */
 export default async function CasePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fault?: string }> }) {
   const { id } = await params;
   // `?fault=qloo_unreachable` = the labelled Qloo-outage demo linked from /judge (the server sends no Qloo request)
   const fault = (await searchParams).fault === "qloo_unreachable" ? "qloo_unreachable" : null;
-  const c = await storeFor({ headers: await headers() })
-    .getCase(id)
-    .catch(() => null);
+  const store = storeFor({ headers: await headers() });
+  const c = await store.getCase(id).catch(() => null);
   if (!c) notFound();
+  // week 1 already saved for this case (a reopened link, a reload after the run): show it, never run it again
+  const state = await planRunState(store, id);
+  if (state && "plan" in state) redirect(`/plans/${state.plan.id}`);
   return (
     <div className={r.wrap}>
       <SiteHeader />
