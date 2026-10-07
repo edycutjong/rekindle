@@ -21,7 +21,7 @@
     "docs:check": "python3 scripts/architecture.py --check && python3 scripts/bench_table.py --check",
     "docs": "python3 scripts/architecture.py && python3 scripts/bench_table.py",
     "dx": "tsx scripts/dx-repro.ts --out spike/dx-repro.json",
-    "kitchen:check": "python3 scripts/kitchen_check.py",
+    "kitchen:check": "python3 scripts/kitchen_check.py && python3 scripts/md_assets_check.py",
     "lint:fix": "eslint --fix",
     "test:coverage": "vitest run --coverage",
     "audit": "npm audit --omit=dev --audit-level=high",
