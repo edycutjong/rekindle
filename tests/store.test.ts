@@ -112,9 +112,19 @@ describe("API routes (in-memory store, no network)", () => {
   it("POST /api/cases validates intake and defaults the radius from energy", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     const body = { label: "Test", lon: -73.95, lat: 40.7, energy: 2, loves: [{ text: "Fleabag", qloo_id: "878680F2-2C8D-4D7A-8288-BEA75D38A843", qloo_kind: "entity" }, { text: "ramen", qloo_id: "urn:tag:genre:place:restaurant:ramen", qloo_kind: "tag" }, { text: "Phoebe Bridgers", qloo_id: "AFBC71A7-9439-4AB0-AB68-D14B11AAF836", qloo_kind: "entity" }] };
+    // intake re-resolves every love against Qloo (QA round 3): one /entities call, one /v2/tags lookup per tag
+    vi.stubEnv("QLOO_API_KEY", "test-key");
+    vi.stubGlobal("fetch", async (url: string) =>
+      new URL(url).pathname === "/entities"
+        ? Response.json({ results: [{ entity_id: "878680F2-2C8D-4D7A-8288-BEA75D38A843", name: "Fleabag", types: ["urn:entity:tv_show"] }, { entity_id: "AFBC71A7-9439-4AB0-AB68-D14B11AAF836", name: "Phoebe Bridgers", types: ["urn:entity:artist"] }] })
+        : Response.json({ results: { tags: [{ id: "urn:tag:genre:place:restaurant:ramen", name: "Ramen" }] } }),
+    );
     const ok = await intakeRoute(new Request("http://x/api/cases", { method: "POST", body: JSON.stringify(body) }));
+    vi.unstubAllGlobals();
     expect(ok.status).toBe(201);
-    expect((await ok.json()).case).toMatchObject({ max_meters: 3000, price_max: 2, in_recovery: false, is_seed: false });
+    const made = (await ok.json()).case;
+    expect(made).toMatchObject({ max_meters: 3000, price_max: 2, in_recovery: false, is_seed: false });
+    expect(made.loves.map((l: { name: string; entity_type?: string }) => [l.name, l.entity_type])).toEqual([["Fleabag", "urn:entity:tv_show"], ["Ramen", undefined], ["Phoebe Bridgers", "urn:entity:artist"]]);
     const bad = await intakeRoute(new Request("http://x/api/cases", { method: "POST", body: JSON.stringify({ ...body, energy: 9 }) }));
     expect(bad.status).toBe(400);
   });
