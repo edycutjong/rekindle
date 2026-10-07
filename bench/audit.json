@@ -1,7 +1,7 @@
 {
  "generated_by": "scripts/manual_audit.py summary",
  "finished_at": "2026-10-07T15:06:23+00:00",
- "source": "bench/manual_audit.csv + the arm key (kept outside the repo until the external blind audit returns)",
+ "source": "bench/manual_audit.csv + the arm key (kept beside the project, not in bench/). Not a blind key: it is readable in public history (1c20454) and the arms are recoverable by joining manual_audit.csv to results.json on venue_name, so an external audit is blind only if the auditor works from the handout without the repo",
  "auditor": "the build agent (Claude), not blind: it ran the bench, so arm labels could be inferred from address style; no external human auditor yet",
  "method": "each sampled venue looked up in public web sources (venue sites, city/tourism listings, review and delivery listings; links in bench/manual_audit.csv) for existence at the stated address, hours covering the slot, and alcohol service on in-recovery cases. Stale (pre-2024) or missing evidence = inconclusive, never guessed. Google Maps was not used.",
  "definition": "wrong = venue not found, or not open at the slot, or (in-recovery case) serves alcohol, per public sources; rate = wrong / checked; inconclusive rows are excluded from the denominator",

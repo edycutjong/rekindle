@@ -169,7 +169,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 - **A beer hall got through.** The bench placed "TeKu Tavern + Café" for a profile not in recovery, because its `cafe` category passed R-KIND. Drinking-establishment categories are now refused for every case (`tests/verify.test.ts`).
 - **REVIEW-only venues were being struck as refusals after a constraint toggle.** They now go to the clinician's REVIEW box.
 - **The coverage refusal said "within 1.5 km" while the model had narrowed one query to 600 m.** A narrowed query that verifies nothing is now retried once at the case radius, and the empty reason names the radius queried.
-- **The manual audit was done by the build agent, so it was not blind.** It is labelled as such everywhere. An external blind audit has been requested.
+- **The manual audit was done by the build agent, so it was not blind.** It is labelled as such everywhere. The repo cannot be used for a blind audit: the arm key is in public history and the arms are recoverable from `bench/results.json`. An external audit, when it happens, works from a standalone handout (`scripts/manual_audit.py handout`) without the repo; none has returned yet.
 
 ## 🚀 Getting Started
 
