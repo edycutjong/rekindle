@@ -89,12 +89,13 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
           !rated && fault ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fault }) } : { method: "POST" },
         );
       let res = await post();
-      // a reload during the run: the first run is still in flight server side (409 running) — wait for its stored week
+      // a reload or a second tab during the run (week 1 or a re-plan): the first run is still in flight server side
+      // (409 running) — wait for its stored week
       // instead of starting another agent run; each check is answered before the rate limiter
-      for (let i = 0; !rated && res.status === 409 && i < 30; i++) {
+      for (let i = 0; res.status === 409 && i < 30; i++) {
         const b = (await res.clone().json().catch(() => ({}))) as { running?: boolean };
         if (!b.running) break;
-        if (i === 0) setLive(["this case is already being planned (a reload or another tab) — waiting for that run's saved week, no second run"]);
+        if (i === 0) setLive([`this ${rated ? "week is already being re-planned" : "case is already being planned"} (a reload or another tab) — waiting for that run's saved week, no second run`]);
         await new Promise((r) => setTimeout(r, 3000));
         res = await post();
       }

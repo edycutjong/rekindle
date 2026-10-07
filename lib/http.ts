@@ -6,7 +6,7 @@ export const json = (body: unknown, status = 200, headers: Record<string, string
 
 export function errorResponse(e: unknown): Response {
   if (e instanceof NotFound) return json({ error: e.message }, 404);
-  if (e instanceof Conflict) return json({ error: e.message }, 409);
+  if (e instanceof Conflict) return json({ error: e.message, ...e.body }, 409);
   // a malformed body (req.json() throws SyntaxError) is the client's error, not the server's
   if (e instanceof SyntaxError) return json({ error: "invalid JSON" }, 400);
   if (e instanceof ZodError) return json({ error: "invalid input", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, 400);

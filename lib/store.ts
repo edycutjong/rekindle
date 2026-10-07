@@ -199,17 +199,21 @@ export const QlooCallsDoc = z.object({
 export type QlooCallsDoc = z.infer<typeof QlooCallsDoc>;
 
 /**
- * One week-1 agent run per case (QA round 1: a reload mid-stream started a second full run). Written before the run
- * starts and updated when it ends; POST /api/cases/:id/plan reads it before the rate limiter.
+ * One agent run per week: week 1 per case (QA round 1: a reload mid-stream started a second full run) and one re-plan
+ * per rated week (QA round 2: two tabs re-planned the same week twice). Claimed with a create-only write before the
+ * run starts (`Store.claimRun`) and updated when it ends; the routes read it before the rate limiter.
  */
 export const RunDoc = z.object({
   case_id: z.string(),
+  /** set on a re-plan marker: the rated week being re-planned (marker path runs/replan-<id>) */
+  parent_plan_id: z.string().nullable().default(null),
   status: z.enum(["running", "done", "failed"]),
   plan_id: z.string().nullable().default(null),
   started_at: z.string(),
   updated_at: z.string(),
 });
 export type RunDoc = z.infer<typeof RunDoc>;
+export type RunDocIn = z.input<typeof RunDoc>;
 
 /* ------------------------------------------------------------------ mapping */
 
@@ -376,8 +380,15 @@ export interface Store {
   getPlan(id: string): Promise<PlanDoc | null>;
   putCalls(d: QlooCallsDoc): Promise<void>;
   getCalls(planId: string): Promise<QlooCallsDoc | null>;
-  putRun(d: RunDoc): Promise<void>;
+  /** writes the marker at its path (week 1 → runs/<case>, re-plan → runs/replan-<parent plan>) */
+  putRun(d: RunDocIn): Promise<void>;
   getRun(caseId: string): Promise<RunDoc | null>;
+  getReplanRun(planId: string): Promise<RunDoc | null>;
+  /**
+   * Create-only claim of a run marker: writes `d` only if no marker exists or the existing one is `reclaimable`
+   * (failed / stale), atomically against a concurrent claim. Returns null when claimed, else the marker that blocks it.
+   */
+  claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null>;
   /** newest first */
   listPlanIds(limit?: number): Promise<string[]>;
 }
@@ -394,6 +405,7 @@ const pathsFor = (prefix: StorePrefix) => ({
   plan: (id: string) => `${prefix}plans/${safeId(id)}.json`,
   calls: (id: string) => `${prefix}calls/${safeId(id)}.json`,
   run: (id: string) => `${prefix}runs/${safeId(id)}.json`,
+  replanRun: (planId: string) => `${prefix}runs/replan-${safeId(planId)}.json`,
   plans: `${prefix}plans/`,
 });
 
@@ -427,8 +439,19 @@ export class MemoryStore implements Store {
   getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
   putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
   getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
-  putRun = (d: RunDoc) => this.put(this.paths.run(d.case_id), RunDoc.parse(d));
+  private runPath = (d: RunDocIn) => (d.parent_plan_id ? this.paths.replanRun(d.parent_plan_id) : this.paths.run(d.case_id));
+  putRun = (d: RunDocIn) => this.put(this.runPath(d), RunDoc.parse(d));
   getRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.run(id)));
+  getReplanRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.replanRun(id)));
+  /** synchronous read-then-write: no await between them, so two concurrent claims cannot both win */
+  async claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null> {
+    const path = this.runPath(d);
+    const raw = this.docs.get(path);
+    const cur = raw ? RunDoc.parse(JSON.parse(raw.body)) : null;
+    if (cur && !reclaimable(cur)) return cur;
+    this.docs.set(path, { at: ++this.tick.n, body: JSON.stringify(RunDoc.parse(d)) });
+    return null;
+  }
   async listPlanIds(limit = 50) {
     return [...this.docs.entries()]
       .filter(([k]) => k.startsWith(this.paths.plans))
@@ -469,8 +492,33 @@ export class BlobStore implements Store {
   getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
   putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
   getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
-  putRun = (d: RunDoc) => this.put(this.paths.run(d.case_id), RunDoc.parse(d));
+  private runPath = (d: RunDocIn) => (d.parent_plan_id ? this.paths.replanRun(d.parent_plan_id) : this.paths.run(d.case_id));
+  putRun = (d: RunDocIn) => this.put(this.runPath(d), RunDoc.parse(d));
   getRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.run(id)));
+  getReplanRun = async (id: string) => parseOrNull(RunDoc, await this.get(this.paths.replanRun(id)));
+  /** create-only put (allowOverwrite false) when no marker exists; an ETag-conditional put over a reclaimable one */
+  async claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null> {
+    const { get, put, BlobPreconditionFailedError } = await import("@vercel/blob");
+    const path = this.runPath(d);
+    const r = await get(path, { access: "private", token: this.token, useCache: false });
+    let etag: string | undefined;
+    if (r && r.stream) {
+      const cur = RunDoc.parse(JSON.parse(await new Response(r.stream).text()));
+      if (!reclaimable(cur)) return cur;
+      etag = r.blob.etag;
+    }
+    try {
+      await put(path, JSON.stringify(RunDoc.parse(d)), { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: !!etag, ...(etag ? { ifMatch: etag } : {}) });
+      return null;
+    } catch (e) {
+      // another request claimed it between our read and our write
+      if (e instanceof BlobPreconditionFailedError || (e instanceof Error && /already exists/i.test(e.message))) {
+        const now = await this.get(path).catch(() => null);
+        return now ? RunDoc.parse(now) : RunDoc.parse(d);
+      }
+      throw e;
+    }
+  }
   async listPlanIds(limit = 50) {
     const { list } = await import("@vercel/blob");
     const r = await list({ prefix: this.paths.plans, token: this.token, limit: 1000 });

@@ -17,7 +17,7 @@ import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
 import { findAtHome, findOutings, placeSocial, recheckKept, type Card, type HomeType, type SlotSpec, type ToolContext } from "./plan";
 import { diffWeeks, historyFromRatings, keptCandidate, type KeptNote, type Rating } from "./replan";
-import { Conflict, NotFound, refreshDiff, type RunPlanOptions } from "./service";
+import { Conflict, NotFound, reclaimableRun, refreshDiff, RUN_STALE_MS, runningConflict, type RunPlanOptions } from "./service";
 import { callsDoc, cardFromDoc, cardToDoc, caseRowFromDoc, newId, PlanDoc, planDocFromAgent, weekPlanFromDoc, type CardDoc, type RefusalDoc, type Store } from "./store";
 
 export type CardAction = "approve" | "unapprove" | "swap" | "remove";
@@ -151,31 +151,72 @@ export async function rateWeek(o: { store: Store; planId: string; ratings: Ratin
 export const ratingsOf = (plan: PlanDoc): Rating[] => plan.cards.filter((c) => c.pleasure !== null).map((c) => ({ entity_id: c.qloo_entity_id, pleasure: c.pleasure!, mastery: c.mastery ?? 0 }));
 
 /**
- * POST /api/plans/:id/replan — week N+1 from the ratings, live: rated ≥ 7 → signal.interests.entities (+ place tags),
- * rated ≤ 3 → filter.exclude.entities (+ distinctive tags). Same agent loop, tools and verifier as week 1. One re-plan
- * per week: a second call returns the week already made, so a double click never spends a second agent run.
- */
-/**
  * Everything a re-plan needs before it may spend an agent run: the week exists, and either it was already re-planned
- * (`existing`) or it is rated with ≥ 3 ratings. Routes call this before the rate limiter so a refused re-plan is a
- * plain 404 / 409 and never costs quota.
+ * (`existing`), is being re-planned right now (409 `running`, QA round 2: two tabs ran two re-plans), or it is rated
+ * with ≥ 3 ratings. Routes call this before the rate limiter so a refused re-plan is a plain 404 / 409 and never
+ * costs quota.
  */
-export async function replanPrecheck(store: Store, planId: string): Promise<{ parent: PlanDoc; existing: PlanDoc | null }> {
+export async function replanPrecheck(store: Store, planId: string, now = Date.now()): Promise<{ parent: PlanDoc; existing: PlanDoc | null }> {
   const parent = await store.getPlan(planId);
   if (!parent) throw new NotFound(`plan ${planId} not found`);
   if (parent.next_plan_id) {
     const existing = await store.getPlan(parent.next_plan_id);
     if (existing) return { parent, existing };
   }
+  const run = await store.getReplanRun(planId).catch(() => null);
+  if (run?.status === "done" && run.plan_id) {
+    const existing = await store.getPlan(run.plan_id);
+    if (existing) return { parent, existing };
+  }
+  if (run?.status === "running" && now - Date.parse(run.started_at) < RUN_STALE_MS) throw runningConflict("this week is already being re-planned", run);
   if (parent.status !== "rated") throw new Conflict(parent.status === "draft" ? "approve the week before re-planning it" : "rate the week before re-planning it");
   const n = ratingsOf(parent).length;
   if (n < MIN_RATED_FOR_REPLAN) throw new Conflict(`rate at least ${MIN_RATED_FOR_REPLAN} activities before re-planning (${n} rated)`);
   return { parent, existing: null };
 }
 
+/**
+ * Claim the one re-plan of a rated week (create-only marker runs/replan-<id>) after replanPrecheck passed. Returns the
+ * claim, the week another request already made, or throws a 409 `running` Conflict while that request is in flight.
+ */
+export async function claimReplan(store: Store, parent: PlanDoc, now = Date.now()): Promise<{ claimed: { started_at: string } } | { plan: PlanDoc }> {
+  const started_at = new Date(now).toISOString();
+  const cur = await store.claimRun({ case_id: parent.case_id, parent_plan_id: parent.id, status: "running", plan_id: null, started_at, updated_at: started_at }, reclaimableRun(now));
+  if (!cur) return { claimed: { started_at } };
+  if (cur.status === "done" && cur.plan_id) {
+    const plan = await store.getPlan(cur.plan_id);
+    if (plan) return { plan };
+  }
+  throw runningConflict("this week is already being re-planned", cur);
+}
+
+/**
+ * POST /api/plans/:id/replan — week N+1 from the ratings, live: rated ≥ 7 → signal.interests.entities (+ place tags),
+ * rated ≤ 3 → filter.exclude.entities (+ distinctive tags). Same agent loop, tools and verifier as week 1. One re-plan
+ * per week: a second call returns the week already made (or waits on a 409 while it is being made), so a double click
+ * or a second tab never spends a second agent run.
+ */
 export async function replanWeek(o: Omit<RunPlanOptions, "caseId"> & { planId: string }): Promise<{ plan: PlanDoc; reused: boolean }> {
   const { parent, existing } = await replanPrecheck(o.store, o.planId);
   if (existing) return { plan: existing, reused: true };
+  let startedAt = o.claimed?.started_at;
+  if (!startedAt) {
+    const r = await claimReplan(o.store, parent);
+    if ("plan" in r) return { plan: r.plan, reused: true };
+    startedAt = r.claimed.started_at;
+  }
+  const mark = (status: "done" | "failed", planId: string | null = null) => o.store.putRun({ case_id: parent.case_id, parent_plan_id: parent.id, status, plan_id: planId, started_at: startedAt, updated_at: new Date().toISOString() });
+  try {
+    const plan = await replanRun(o, parent);
+    await mark("done", plan.id);
+    return { plan, reused: false };
+  } catch (e) {
+    await mark("failed").catch(() => {});
+    throw e;
+  }
+}
+
+async function replanRun(o: Omit<RunPlanOptions, "caseId"> & { planId: string }, parent: PlanDoc): Promise<PlanDoc> {
   const ratings = ratingsOf(parent);
   const c = await o.store.getCase(parent.case_id);
   if (!c) throw new NotFound(`case ${parent.case_id} not found`);
@@ -206,5 +247,5 @@ export async function replanWeek(o: Omit<RunPlanOptions, "caseId"> & { planId: s
   await o.store.putPlan(doc);
   await o.store.putCalls(callsDoc(doc.id, calls));
   await o.store.putPlan(PlanDoc.parse({ ...parent, next_plan_id: doc.id }));
-  return { plan: doc, reused: false };
+  return doc;
 }

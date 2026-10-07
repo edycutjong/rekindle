@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { json, sseResponse } from "@/lib/http";
+import { errorResponse, json, sseResponse } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
-import { planRunState, runPlanForCase } from "@/lib/service";
+import { claimWeekOne, planRunState, runPlanForCase } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -38,8 +38,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const g = await guard(req, fault ? "toggle" : "plan");
   if (g.deny) return g.deny;
   if (bench && g.ns !== "bench") return json({ error: "bench arms need the bench token" }, 403);
+  // the precheck above is a read; this create-only marker write is what stops two concurrent POSTs both running
+  let claimed;
+  try {
+    const c = await claimWeekOne(storeFor(req), id);
+    if ("plan" in c) return json({ plan: c.plan, reused: true }, 200, g.headers);
+    claimed = c.claimed;
+  } catch (e) {
+    return errorResponse(e);
+  }
   return sseResponse(async (send) => {
-    const plan = await runPlanForCase({ store: storeFor(req), caseId: id, bench, fault, onEvent: (e) => send(e.type, e) });
+    const plan = await runPlanForCase({ store: storeFor(req), caseId: id, bench, fault, claimed, onEvent: (e) => send(e.type, e) });
     send("plan", { plan });
   }, g.headers);
 }

@@ -64,6 +64,8 @@ export interface RunPlanOptions {
   bench?: BenchArm;
   /** injected failure for the Qloo-unavailable demo: no request leaves the server */
   fault?: "qloo_unreachable";
+  /** the route already claimed the run marker (claimWeekOne / claimReplan) before opening the stream */
+  claimed?: { started_at: string };
 }
 
 export type BenchArm = "B" | "B-" | "B-4";
@@ -103,13 +105,39 @@ export async function planRunState(store: Store, caseId: string, now = Date.now(
   return null;
 }
 
+/** A marker that no longer blocks a new run: the run failed, or it has been "running" past the route's lifetime. */
+export const reclaimableRun = (now = Date.now()) => (r: RunDoc) => r.status === "failed" || (r.status === "running" && now - Date.parse(r.started_at) >= RUN_STALE_MS);
+
+/** 409 body the Workbench waits on (it polls the same POST until the first run's week is stored). */
+export const runningConflict = (what: string, r: RunDoc) => new Conflict(`${what} (another tab or a reload); its week will be saved when the run ends`, { running: true, started_at: r.started_at });
+
+/**
+ * Claim the week-1 run of a case with a create-only marker write, so two concurrent POSTs cannot both start an agent
+ * run. Returns the claim, or throws a 409 `running` Conflict / returns the stored week when another request won.
+ */
+export async function claimWeekOne(store: Store, caseId: string, now = Date.now()): Promise<{ claimed: { started_at: string } } | { plan: PlanDoc }> {
+  if (!(await store.getCase(caseId))) throw new NotFound(`case ${caseId} not found`);
+  const started_at = new Date(now).toISOString();
+  const cur = await store.claimRun({ case_id: caseId, status: "running", plan_id: null, started_at, updated_at: started_at }, reclaimableRun(now));
+  if (!cur) return { claimed: { started_at } };
+  if (cur.status === "done" && cur.plan_id) {
+    const plan = await store.getPlan(cur.plan_id);
+    if (plan) return { plan };
+  }
+  throw runningConflict("this case is already being planned", cur);
+}
+
 /** Run week 1 for a stored case, persist the plan and its Qloo call log, and return the stored plan. */
 export async function runPlanForCase(o: RunPlanOptions): Promise<PlanDoc> {
   const c = await o.store.getCase(o.caseId);
   if (!c) throw new NotFound(`case ${o.caseId} not found`);
-  const startedAt = new Date().toISOString();
+  let startedAt = o.claimed?.started_at;
+  if (!startedAt) {
+    const r = await claimWeekOne(o.store, c.id);
+    if ("plan" in r) return r.plan;
+    startedAt = r.claimed.started_at;
+  }
   const mark = (status: RunDoc["status"], planId: string | null = null) => o.store.putRun({ case_id: c.id, status, plan_id: planId, started_at: startedAt, updated_at: new Date().toISOString() });
-  await mark("running");
   try {
     const doc = await runWeekOne(o, c);
     await mark("done", doc.id);
@@ -169,7 +197,11 @@ export interface ConstraintPatch {
 }
 
 export class Conflict extends Error {
-  constructor(m: string) {
+  /** extra fields for the 409 body (e.g. `running: true` while another run of the same week is in flight) */
+  constructor(
+    m: string,
+    readonly body: Record<string, unknown> = {},
+  ) {
     super(m);
     this.name = "Conflict";
   }

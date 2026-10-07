@@ -374,6 +374,45 @@ describe("gate routes", () => {
     expect(await planRunState(store, fresh.id)).toBeNull();
   });
 
+  it("one re-plan per rated week: two concurrent re-plans run ONE agent run; the other is a 409 running, then gets that week (QA round 2)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const store = storeFromEnv();
+    const r = await ratedWeek(store);
+    const seen: QlooParams[] = [];
+    const go = () => replanWeek({ store, planId: r.plan.id, qloo: loggingReplay(seen), llms: [downLlm()] });
+    const [a, b] = await Promise.allSettled([go(), go()]);
+    const ok = [a, b].filter((x) => x.status === "fulfilled") as PromiseFulfilledResult<{ plan: PlanDoc; reused: boolean }>[];
+    const busy = [a, b].filter((x) => x.status === "rejected") as PromiseRejectedResult[];
+    expect(ok).toHaveLength(1);
+    expect(ok[0].value.reused).toBe(false);
+    expect(busy).toHaveLength(1);
+    expect(busy[0].reason).toMatchObject({ name: "Conflict", body: { running: true } });
+    const w2 = ok[0].value.plan;
+    expect((await store.getPlan(r.plan.id))!.next_plan_id).toBe(w2.id);
+    expect(await store.getReplanRun(r.plan.id)).toMatchObject({ status: "done", plan_id: w2.id, parent_plan_id: r.plan.id });
+    // while a re-plan is in flight the route answers 409 running before the rate limiter
+    const r2 = await ratedWeek(store);
+    const t0 = new Date().toISOString();
+    await store.putRun({ case_id: r2.plan.case_id, parent_plan_id: r2.plan.id, status: "running", plan_id: null, started_at: t0, updated_at: t0 });
+    const res = await replanRoute(req(`/api/plans/${r2.plan.id}/replan`, "POST"), ctx(r2.plan.id));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ running: true });
+    // a stale or failed marker never blocks
+    await expect(replanPrecheck(store, r2.plan.id, Date.parse(t0) + RUN_STALE_MS + 1)).resolves.toMatchObject({ existing: null });
+  });
+
+  it("week 1: two concurrent runs for one case run the agent once (create-only claim) (QA round 2)", async () => {
+    const store = new MemoryStore();
+    const c = caseFromSeed("maya")!;
+    await store.putCase(c);
+    const go = () => runPlanForCase({ store, caseId: c.id, qloo: loggingReplay(), llms: [downLlm()] });
+    const [a, b] = await Promise.allSettled([go(), go()]);
+    expect([a, b].filter((x) => x.status === "fulfilled")).toHaveLength(1);
+    expect([a, b].find((x) => x.status === "rejected")).toMatchObject({ reason: { body: { running: true } } });
+    expect((await store.listPlanIds()).length).toBe(1);
+  });
+
   it("re-plan streams SSE ending in the stored week 2; a repeat returns it as JSON", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("VERCEL", "");
