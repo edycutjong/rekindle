@@ -8,7 +8,7 @@
 It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.</p>
 
 <p align="center">
-  <img src="docs/assets/readme-hero-animated.svg" alt="Rekindle — re-plans a patient's week from her pleasure ratings: Maya rated the teashop 8. The distillery stays struck through. Week two leans toward what she actually enjoyed." width="100%">
+  <img src="docs/assets/readme-replan-live.png" alt="A live Rekindle re-plan, captured from the deployed app on 7 Oct 2026: week 2 for Maya, a fictional case, with In recovery on. Above it, week 1 as rated: Big Thief P 8 and Las Culturistas P 9 underlined, Juice Generation P 2 struck as excluded. Las Culturistas comes back on Tuesday marked kept from last week, rated 9, re-checked live; other cards name the rated shows as a tied input next to Qloo's explainability weights. The agent trace runs down the right." width="100%">
 </p>
 
 <p align="center">
