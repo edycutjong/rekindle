@@ -170,6 +170,22 @@ describe("R-KIND: behavioural-activation categories only", () => {
     expect(activityKind(place({ tags: withTags("urn:tag:category:place:restaurant") })).ok).toBe(false);
     expect(activityKind(place({ tags: withTags("urn:tag:category:place:local_history_museum") })).ok).toBe(true);
   });
+
+  it("refuses a drinking-establishment category even beside 'cafe' (B5 bench: TeKu Tavern + Café), for every case", () => {
+    const teku = place({ name: "TeKu Tavern + Café", tags: withTags("urn:tag:category:place:cafe", "urn:tag:category:place:bar", "urn:tag:category:place:beer_hall", "urn:tag:category:place:cider_bar") });
+    const k = activityKind(teku);
+    expect(k.ok).toBe(false);
+    expect(k.categories[0]).toBe("bar");
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:chicken_restaurant", "urn:tag:category:place:sports_bar") })).ok).toBe(false);
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:brunch_restaurant", "urn:tag:category:place:brewery") })).ok).toBe(false);
+    // not drinking: espresso/poke bars, and a `genre:` bar tag on its own is not a category
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:coffee_shop", "urn:tag:category:place:espresso_bar") })).ok).toBe(true);
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:japanese_restaurant", "urn:tag:category:place:poke_bar") })).ok).toBe(true);
+    expect(activityKind(place({ tags: withTags("urn:tag:category:place:cafe", "urn:tag:genre:place:restaurant:bar") })).ok).toBe(true);
+    // the refusal names the drinking category, not merely the first tag
+    const v = verifyCard(teku, { kind: "outing", constraints: MAYA, slot: thu(15) });
+    expect(v.reasons.find((r) => r.rule === "R-KIND")?.detail).toBe("not an activity: bar");
+  });
 });
 
 describe("verifyCard: the whole rule set against the case row", () => {

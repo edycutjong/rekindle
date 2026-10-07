@@ -339,15 +339,29 @@ const KIND_FOOD_DENY = new Set(["bar", "cocktail_bar", "wine_bar", "sports_bar",
  * (D1 capture: The Meat Hook and Marlow & Daughters are butchers tagged `restaurant`; P9 returned tattoo studios).
  */
 const KIND_HARD_DENY = new Set(["butcher_shop", "restaurant:butcher_shop", "meat_products_store", "liquor_store", "tattoo_shop", "body_piercing_shop", "smoke_shop", "hotel", "motel", "night_club", "gay_night_club"]);
-const KIND_DENY_HINT = /tattoo|clothing|boutique|jewel|hotel|motel|butcher|meat_products|liquor|smoke_shop|grocery|supermarket|department_store|shopping_mall|shoe_store|salon|spa$|personal_care|bank|pharmacy|gas_station|car_|motorcycle|night_club|bar$/;
+const KIND_DENY_HINT = /tattoo|clothing|boutique|jewel|hotel|motel|butcher|meat_products|liquor|smoke_shop|grocery|supermarket|department_store|shopping_mall|shoe_store|salon|spa$|personal_care|bank|pharmacy|gas_station|car_|motorcycle|night_club|bar$|pub$|brewery|distillery|winery|tavern|beer_|wine_store|taproom/;
+
+/**
+ * A `urn:tag:category:place:<slug>` that names a drinking establishment disqualifies the place for every case,
+ * not only in recovery (B5 bench: "TeKu Tavern + Café" carries `cafe` AND `bar`/`beer_hall`/`cider_bar` and was
+ * placed for a not-in-recovery profile). Only the `category:` namespace counts here; `genre:` tags are softer.
+ */
+const DRINK_CATEGORY = new Set(["pub", "brewpub", "brewery", "distillery", "winery", "beer_hall", "beer_garden", "taproom", "tavern", "beer_store", "wine_store", "saloon", "biergarten"]);
+export function isDrinkingCategory(slug: string): boolean {
+  if (DRINK_CATEGORY.has(slug)) return true;
+  return slug === "bar" || (slug.endsWith("_bar") && !BAR_ALLOW.has(slug));
+}
 
 export function activityKind(e: Pick<QlooEntity, "tags">): { ok: boolean; matched?: string; categories: string[] } {
   const cats: string[] = [];
+  const drink: string[] = [];
   for (const id of tagIds(e)) {
     const m = /^urn:tag:(?:category|genre):place:(.+)$/.exec(id);
     if (!m) continue;
     cats.push(m[1]);
+    if (id.startsWith("urn:tag:category:place:") && isDrinkingCategory(m[1])) drink.push(m[1]);
   }
+  if (drink.length) return { ok: false, categories: [drink[0], ...cats.filter((c) => c !== drink[0])] };
   const hard = cats.find((c) => KIND_HARD_DENY.has(c));
   if (hard) return { ok: false, categories: [hard, ...cats.filter((c) => c !== hard)] };
   // the generic `restaurant` category alone is not enough: Qloo puts it on butchers and grocers too
