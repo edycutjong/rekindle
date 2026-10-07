@@ -2,7 +2,8 @@ import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { wkt } from "@/lib/plan";
-import { CaseDoc, newId, storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
+import { CaseDoc, newId } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       is_seed: false,
       loves: b.loves.map((l) => ({ id: newId(), weight: 1, ...l })),
     });
-    await storeFromEnv().putCase(doc);
+    await storeFor(req).putCase(doc);
     return json({ case: doc }, 201);
   } catch (e) {
     return errorResponse(e);

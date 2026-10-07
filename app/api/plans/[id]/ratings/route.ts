@@ -2,7 +2,7 @@ import { z } from "zod";
 import { rateWeek } from "@/lib/gate";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const { ratings } = Body.parse(await req.json());
-    return json({ plan: await rateWeek({ store: storeFromEnv(), planId: id, ratings }) }, 200, g.headers);
+    return json({ plan: await rateWeek({ store: storeFor(req), planId: id, ratings }) }, 200, g.headers);
   } catch (e) {
     return errorResponse(e);
   }

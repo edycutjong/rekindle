@@ -154,6 +154,21 @@ export const PlanDoc = z.object({
   next_plan_id: z.string().nullable().default(null),
   /** re-plan diff against the rated week it came from (origin "replan", and toggles/swaps of that week) */
   diff: ReplanDiffDoc.nullable().default(null),
+  /** bench runs only (scripts/bench.py, bench namespace + bench/ prefix): the arm and the verifier-input pool audit */
+  bench: z
+    .object({
+      arm: z.enum(["B", "B-", "B-4"]),
+      alcohol_screen: z.boolean(),
+      exclude_set: z.enum(["14", "4"]),
+      pools: z.number().int(),
+      pool_entities: z.number().int(),
+      /** distinct candidates Qloo returned to outing queries that carry an R-ALC deny tag / keyword (REFUSE) or a REVIEW signal */
+      pool_alcohol: z.array(z.object({ entity_id: z.string(), name: z.string(), verdict: z.enum(["REFUSE", "REVIEW"]), hits: z.array(z.string()) })),
+    })
+    .nullable()
+    .default(null),
+  /** a deliberately injected failure (the Qloo-unavailable demo on /judge); never set on a normal run */
+  fault: z.enum(["qloo_unreachable"]).nullable().default(null),
   /** constraint toggle that produced this plan (origin "toggle") */
   toggle: z
     .object({ changed: z.record(z.string(), z.union([z.boolean(), z.number()])), struck: z.number().int(), refilled: z.number().int(), ms: z.number().int() })
@@ -352,35 +367,51 @@ const safeId = (id: string) => {
   if (!ID_RE.test(id)) throw new Error("invalid id");
   return id;
 };
-const paths = {
-  case: (id: string) => `cases/${safeId(id)}.json`,
-  plan: (id: string) => `plans/${safeId(id)}.json`,
-  calls: (id: string) => `calls/${safeId(id)}.json`,
-};
+/** Store prefixes: "" for the product, "bench/" for scripts/bench.py runs so they never mix into the public receipts. */
+export type StorePrefix = "" | "bench/";
+const pathsFor = (prefix: StorePrefix) => ({
+  case: (id: string) => `${prefix}cases/${safeId(id)}.json`,
+  plan: (id: string) => `${prefix}plans/${safeId(id)}.json`,
+  calls: (id: string) => `${prefix}calls/${safeId(id)}.json`,
+  plans: `${prefix}plans/`,
+});
 
 export class MemoryStore implements Store {
   readonly kind = "memory" as const;
-  private readonly docs = new Map<string, { at: number; body: string }>();
-  private tick = 0;
+  private readonly docs: Map<string, { at: number; body: string }>;
+  private readonly tick: { n: number };
+  private readonly paths: ReturnType<typeof pathsFor>;
+  constructor(
+    readonly prefix: StorePrefix = "",
+    shared?: { docs: Map<string, { at: number; body: string }>; tick: { n: number } },
+  ) {
+    this.paths = pathsFor(prefix);
+    this.docs = shared?.docs ?? new Map();
+    this.tick = shared?.tick ?? { n: 0 };
+  }
+  /** the same backing map under another prefix (tests: bench and product share one memory store) */
+  withPrefix(prefix: StorePrefix): MemoryStore {
+    return new MemoryStore(prefix, { docs: this.docs, tick: this.tick });
+  }
   private async put(path: string, v: unknown) {
-    this.docs.set(path, { at: ++this.tick, body: JSON.stringify(v) });
+    this.docs.set(path, { at: ++this.tick.n, body: JSON.stringify(v) });
   }
   private async get(path: string): Promise<unknown | null> {
     const d = this.docs.get(path);
     return d ? JSON.parse(d.body) : null;
   }
-  putCase = (d: CaseDoc) => this.put(paths.case(d.id), CaseDoc.parse(d));
-  getCase = async (id: string) => parseOrNull(CaseDoc, await this.get(paths.case(id)));
-  putPlan = (d: PlanDoc) => this.put(paths.plan(d.id), PlanDoc.parse(d));
-  getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(paths.plan(id)));
-  putCalls = (d: QlooCallsDoc) => this.put(paths.calls(d.plan_id), QlooCallsDoc.parse(d));
-  getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(paths.calls(id)));
+  putCase = (d: CaseDoc) => this.put(this.paths.case(d.id), CaseDoc.parse(d));
+  getCase = async (id: string) => parseOrNull(CaseDoc, await this.get(this.paths.case(id)));
+  putPlan = (d: PlanDoc) => this.put(this.paths.plan(d.id), PlanDoc.parse(d));
+  getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
+  putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
+  getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
   async listPlanIds(limit = 50) {
     return [...this.docs.entries()]
-      .filter(([k]) => k.startsWith("plans/"))
+      .filter(([k]) => k.startsWith(this.paths.plans))
       .sort((a, b) => b[1].at - a[1].at)
       .slice(0, limit)
-      .map(([k]) => k.slice(6, -5));
+      .map(([k]) => k.slice(this.paths.plans.length, -5));
   }
 }
 
@@ -391,7 +422,13 @@ function parseOrNull<T>(schema: z.ZodType<T>, v: unknown): T | null {
 /** Private Vercel Blob store. Reads bypass the CDN cache so a reload always shows the latest write. */
 export class BlobStore implements Store {
   readonly kind = "blob" as const;
-  constructor(private readonly token: string) {}
+  private readonly paths: ReturnType<typeof pathsFor>;
+  constructor(
+    private readonly token: string,
+    readonly prefix: StorePrefix = "",
+  ) {
+    this.paths = pathsFor(prefix);
+  }
 
   private async put(path: string, v: unknown) {
     const { put } = await import("@vercel/blob");
@@ -403,28 +440,29 @@ export class BlobStore implements Store {
     if (!r || !r.stream) return null;
     return JSON.parse(await new Response(r.stream).text());
   }
-  putCase = (d: CaseDoc) => this.put(paths.case(d.id), CaseDoc.parse(d));
-  getCase = async (id: string) => parseOrNull(CaseDoc, await this.get(paths.case(id)));
-  putPlan = (d: PlanDoc) => this.put(paths.plan(d.id), PlanDoc.parse(d));
-  getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(paths.plan(id)));
-  putCalls = (d: QlooCallsDoc) => this.put(paths.calls(d.plan_id), QlooCallsDoc.parse(d));
-  getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(paths.calls(id)));
+  putCase = (d: CaseDoc) => this.put(this.paths.case(d.id), CaseDoc.parse(d));
+  getCase = async (id: string) => parseOrNull(CaseDoc, await this.get(this.paths.case(id)));
+  putPlan = (d: PlanDoc) => this.put(this.paths.plan(d.id), PlanDoc.parse(d));
+  getPlan = async (id: string) => parseOrNull(PlanDoc, await this.get(this.paths.plan(id)));
+  putCalls = (d: QlooCallsDoc) => this.put(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
+  getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.get(this.paths.calls(id)));
   async listPlanIds(limit = 50) {
     const { list } = await import("@vercel/blob");
-    const r = await list({ prefix: "plans/", token: this.token, limit: 1000 });
+    const r = await list({ prefix: this.paths.plans, token: this.token, limit: 1000 });
     return r.blobs
       .sort((a, b) => +new Date(b.uploadedAt) - +new Date(a.uploadedAt))
       .slice(0, limit)
-      .map((b) => b.pathname.slice(6, -5));
+      .map((b) => b.pathname.slice(this.paths.plans.length, -5));
   }
 }
 
 let memory: MemoryStore | null = null;
 
 /** Blob when BLOB_READ_WRITE_TOKEN is set; in-memory only off Vercel (local dev / tests). */
-export function storeFromEnv(env: Record<string, string | undefined> = process.env): Store {
+export function storeFromEnv(env: Record<string, string | undefined> = process.env, prefix: StorePrefix = ""): Store {
   const token = env.BLOB_READ_WRITE_TOKEN;
-  if (token) return new BlobStore(token);
+  if (token) return new BlobStore(token, prefix);
   if (env.VERCEL) throw new Error("BLOB_READ_WRITE_TOKEN is not set on this deployment; refusing the in-memory store");
-  return (memory ??= new MemoryStore());
+  memory ??= new MemoryStore();
+  return prefix ? memory.withPrefix(prefix) : memory;
 }

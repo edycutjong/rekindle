@@ -1,5 +1,5 @@
 import { errorResponse, json } from "@/lib/http";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const store = storeFromEnv();
+    const store = storeFor(req);
     const plan = await store.getPlan(id);
     if (!plan) return json({ error: "plan not found" }, 404);
     const withCalls = new URL(req.url).searchParams.get("calls") === "1";

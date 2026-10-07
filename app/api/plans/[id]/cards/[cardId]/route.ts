@@ -2,7 +2,7 @@ import { z } from "zod";
 import { actOnCard } from "@/lib/gate";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { action } = Body.parse(await req.json());
     const g = await guard(req, action === "swap" ? "toggle" : "write");
     if (g.deny) return g.deny;
-    const r = await actOnCard({ store: storeFromEnv(), planId: id, cardId, action });
+    const r = await actOnCard({ store: storeFor(req), planId: id, cardId, action });
     return json(r, 200, g.headers);
   } catch (e) {
     return errorResponse(e);

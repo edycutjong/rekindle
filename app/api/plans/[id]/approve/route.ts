@@ -1,7 +1,7 @@
 import { approveWeek } from "@/lib/gate";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (g.deny) return g.deny;
   try {
     const { id } = await params;
-    return json({ plan: await approveWeek({ store: storeFromEnv(), planId: id }) }, 200, g.headers);
+    return json({ plan: await approveWeek({ store: storeFor(req), planId: id }) }, 200, g.headers);
   } catch (e) {
     return errorResponse(e);
   }

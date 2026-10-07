@@ -1,7 +1,7 @@
 import { replanPrecheck, replanWeek } from "@/lib/gate";
 import { errorResponse, json, sseResponse } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -14,7 +14,7 @@ export const maxDuration = 60;
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const store = storeFromEnv();
+  const store = storeFor(req);
   try {
     const { existing } = await replanPrecheck(store, id);
     if (existing) return json({ plan: existing, reused: true });

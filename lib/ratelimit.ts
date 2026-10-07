@@ -60,7 +60,10 @@ export function tokenMatches(given: string | null | undefined, expected: string 
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function cookie(req: Request, name: string): string | null {
+/** anything with request headers: a Request, or `{ headers: await headers() }` in a server component */
+export type HasHeaders = { headers: Pick<Headers, "get"> };
+
+function cookie(req: HasHeaders, name: string): string | null {
   const raw = req.headers.get("cookie");
   if (!raw) return null;
   for (const part of raw.split(";")) {
@@ -71,13 +74,13 @@ function cookie(req: Request, name: string): string | null {
 }
 
 /** Judge path is checked first after bench, so a judge is never counted against the public cap. */
-export function classify(req: Request, env: Record<string, string | undefined> = process.env): Namespace {
+export function classify(req: HasHeaders, env: Record<string, string | undefined> = process.env): Namespace {
   if (tokenMatches(req.headers.get("x-bench-token"), env.BENCH_TOKEN)) return "bench";
   if (tokenMatches(req.headers.get("x-judge-token"), env.JUDGE_TOKEN) || tokenMatches(cookie(req, JUDGE_COOKIE), env.JUDGE_TOKEN)) return "judge";
   return "public";
 }
 
-export function clientIp(req: Request): string {
+export function clientIp(req: HasHeaders): string {
   const xff = req.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0]!.trim();
   return req.headers.get("x-real-ip") ?? "unknown";

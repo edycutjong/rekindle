@@ -1,7 +1,7 @@
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { caseFromSeed, SEEDS } from "@/lib/service";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     const { slug } = await params;
     const doc = caseFromSeed(slug);
     if (!doc) return json({ error: `unknown seed "${slug}"`, seeds: SEEDS.map((s) => s.slug) }, 404);
-    await storeFromEnv().putCase(doc);
+    await storeFor(req).putCase(doc);
     return json({ case: doc }, 201);
   } catch (e) {
     return errorResponse(e);

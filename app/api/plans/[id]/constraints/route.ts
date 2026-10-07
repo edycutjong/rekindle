@@ -2,7 +2,7 @@ import { z } from "zod";
 import { errorResponse, json } from "@/lib/http";
 import { guard } from "@/lib/ratelimit";
 import { toggleConstraints } from "@/lib/service";
-import { storeFromEnv } from "@/lib/store";
+import { storeFor } from "@/lib/scope";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params;
     const patch = Patch.parse(await req.json());
-    const r = await toggleConstraints({ store: storeFromEnv(), planId: id, patch });
+    const r = await toggleConstraints({ store: storeFor(req), planId: id, patch });
     return json(r, 200, g.headers);
   } catch (e) {
     return errorResponse(e);
