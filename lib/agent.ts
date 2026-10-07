@@ -40,7 +40,7 @@ export interface AgentSlot {
 
 export interface Dropped {
   /** R-ID: an ID no tool returned; COACH-LENGTH / COACH-NAME: coaching line rejected */
-  rule: "R-ID" | "COACH-LENGTH" | "COACH-NAME" | "COACH-FACT" | "COACH-DUPLICATE" | "COACH-ALC";
+  rule: "R-ID" | "COACH-LENGTH" | "COACH-NAME" | "COACH-FACT" | "COACH-DUPLICATE" | "COACH-ALC" | "COACH-DOSE";
   entity_id: string;
   detail: string;
 }
@@ -121,6 +121,35 @@ export function coachingAlcohol(line: string, ownName = ""): string | null {
   return COACH_ALC.exec(text)?.[0] ?? null;
 }
 
+/**
+ * COACH-DOSE: the card owns the dose. An at-home card is a 10-minute dose (its header says "10 MIN"), so a line that
+ * names any other duration contradicts the card; an outing's template dose is twenty minutes, so a line may name a
+ * shorter visit but not a longer one (QA round 3: header "10 MIN", line "for 20 minutes").
+ */
+const NUM_WORDS: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, ten: 10, fifteen: 15, twenty: 20, thirty: 30, "forty-five": 45, "forty five": 45, sixty: 60, ninety: 90 };
+const DURATION = /\b(\d+(?:\.\d+)?|a|an|one|two|three|four|five|ten|fifteen|twenty|thirty|forty[- ]five|sixty|ninety)[\s-]*(min(?:ute)?s?|hours?|hrs?)\b/gi;
+export const DOSE_MINUTES = { home: 10, outingMax: 20 } as const;
+
+/** Every duration a line names, in minutes ("half an hour" → 30, "an hour" → 60, "20-minute" → 20). */
+export function namedMinutes(line: string): number[] {
+  const out: number[] = [];
+  for (const m of line.replace(/\bhalf an? hour\b/gi, "30 minutes").matchAll(DURATION)) {
+    const n = m[1]!.toLowerCase();
+    const v = /^\d/.test(n) ? Number(n) : NUM_WORDS[n.replace("-", " ")] ?? NUM_WORDS[n];
+    if (v === undefined) continue;
+    out.push(/^h/i.test(m[2]!) ? v * 60 : v);
+  }
+  return out;
+}
+
+/** The first named duration that contradicts the card's dose, or null. */
+export function doseConflict(line: string, rung: "home" | "solo" | "social"): number | null {
+  for (const m of namedMinutes(line)) {
+    if (rung === "home" ? m !== DOSE_MINUTES.home : m > DOSE_MINUTES.outingMax) return m;
+  }
+  return null;
+}
+
 export const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 /**
@@ -149,6 +178,11 @@ export function assembleCoaching(slots: AgentSlot[], submitted: { entity_id: str
     const fact = FACT_PATTERN.exec(text);
     if (fact) {
       dropped.push({ rule: "COACH-FACT", entity_id, detail: `coaching line states a fact the card owns ("${fact[0]}")` });
+      continue;
+    }
+    const dose = doseConflict(text, s.card!.rung);
+    if (dose !== null) {
+      dropped.push({ rule: "COACH-DOSE", entity_id, detail: `coaching line names ${dose} minutes; the card's dose is ${s.card!.rung === "home" ? `${DOSE_MINUTES.home} minutes` : `at most ${DOSE_MINUTES.outingMax} minutes`}` });
       continue;
     }
     const alc = coachingAlcohol(text, s.card!.name);
@@ -191,7 +225,7 @@ export function systemPrompt(): string {
     "- home slots → findAtHome: choose the domain (artist, podcast, book, tv_show) that best fits the patient's loves; vary domains across the week.",
     "- solo slots → findOutings: keep the suggested hour unless a different hour suits a low-energy day; narrowMeters may only tighten the walk.",
     "- the social slot → placeSocial.",
-    "Step 2: call submitPlan once with one coaching line per placed card: at most 25 words, second person, warm and concrete, a small dose (e.g. 'listen to one song you choose', 'twenty minutes is enough'). No clinical or efficacy claims. Do not mention any name other than that card's own name. Do not state distances, walking times, prices or opening hours: the card already shows Qloo's data.",
+    "Step 2: call submitPlan once with one coaching line per placed card: at most 25 words, second person, warm and concrete, a small dose: an at-home card is a ten-minute dose (never name another duration), an outing at most twenty minutes (e.g. 'listen to one song you choose', 'twenty minutes there is enough'). No clinical or efficacy claims. Do not mention any name other than that card's own name. Do not state distances, walking times, prices or opening hours: the card already shows Qloo's data.",
   ].join("\n");
 }
 

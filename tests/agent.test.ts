@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assembleCoaching, coachingAlcohol, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
+import { assembleCoaching, coachingAlcohol, doseConflict, namedMinutes, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
 import { llmChainFromEnv, makeLlm, type LlmHandle } from "../lib/llm";
 import type { QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14 } from "../lib/tags";
@@ -220,6 +220,29 @@ describe("coaching assembler + LLM config", () => {
     const dropped = assembleCoaching([ok, ...bad], [{ entity_id: "A", line: "Twenty minutes is enough." }, { entity_id: "B", line: "Only 563 m from you." }, { entity_id: "C", line: "Spend under $10." }, { entity_id: "D", line: "A five-minute walk away." }], []);
     expect(ok.coachingBy).toBe("llm");
     expect(dropped.map((d) => d.rule)).toEqual(["COACH-FACT", "COACH-FACT", "COACH-FACT"]);
+  });
+
+  it("drops a line whose named duration contradicts the card's dose (COACH-DOSE; QA round 3: '10 MIN' card, '20 minutes' line)", () => {
+    const lucy = slot(card("L", "Lucy Dacus", "home"));
+    lucy.slot = { ...lucy.slot, homeType: "artist" };
+    const home10 = slot(card("H", "Fleabag", "home"));
+    const out = slot(card("O", "Ceremonia"));
+    const long = slot(card("G", "Bakeri"));
+    const dropped = assembleCoaching(
+      [lucy, home10, out, long],
+      [
+        { entity_id: "L", line: "Listen to one Lucy Dacus song you love for 20 minutes." },
+        { entity_id: "H", line: "Watch ten minutes of Fleabag, nothing more." },
+        { entity_id: "O", line: "Fifteen minutes at Ceremonia is plenty." },
+        { entity_id: "G", line: "Spend an hour at Bakeri." },
+      ],
+      [],
+    );
+    expect(dropped.map((d) => [d.rule, d.entity_id])).toEqual([["COACH-DOSE", "L"], ["COACH-DOSE", "G"]]);
+    expect(lucy.coaching).toBe("Put on one Lucy Dacus song you choose and give it ten minutes.");
+    expect([home10.coachingBy, out.coachingBy]).toEqual(["llm", "llm"]);
+    expect(namedMinutes("half an hour, then 2 hours, a 20-minute visit, 10 min")).toEqual([30, 120, 20, 10]);
+    expect(doseConflict("Listen to one song you choose.", "home")).toBeNull();
   });
 
   it("drops drinking language on every case (COACH-ALC): the live QA line falls back to the template dose", () => {
