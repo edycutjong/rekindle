@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
+import { changedRatings, clampScore, emberLabel, emberThreads, ratedCount, stampLabel, swapNotice } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
@@ -80,5 +81,45 @@ describe("ledger view helpers (lib/view.ts)", () => {
     expect(traceLine({ type: "qloo" })).toBeNull();
     const plan = { cards: [card()], empty_slots: [{ day_name: "sunday", hour: 14, rung: "social", reason: "Qloo unavailable" }], refusals: [], origin: "agent", toggle: null } as unknown as PlanDoc;
     expect(traceFromPlan(plan)).toEqual(["findOutings day=thursday (llm) → Patisserie Tomoko", "slot → empty: Qloo unavailable"]);
+  });
+});
+
+
+describe("gate + re-plan view helpers", () => {
+  it("stamp label, rated count with pending edits, and only changed ratings are sent", () => {
+    expect(stampLabel("2026-10-07T14:02:33.000Z")).toBe("approved · Wed 7 Oct · 14:02 UTC");
+    const cards = [
+      { id: "a", pleasure: 7, mastery: 4 },
+      { id: "b", pleasure: null, mastery: null },
+      { id: "c", pleasure: null, mastery: null },
+    ];
+    expect(ratedCount(cards, {})).toBe(1);
+    expect(ratedCount(cards, { b: { pleasure: 2, mastery: null }, c: { pleasure: null, mastery: 5 } })).toBe(2);
+    expect(changedRatings(cards, { a: { pleasure: 7, mastery: 4 }, b: { pleasure: 2, mastery: null }, c: { pleasure: null, mastery: 5 } })).toEqual([{ card_id: "b", pleasure: 2, mastery: null }]);
+    expect([clampScore(-1), clampScore(11), clampScore(6.6)]).toEqual([0, 10, 7]);
+  });
+
+  it("ember threads: only top-weighted links, one per week-2 card, with the week-1 rating", () => {
+    const diff = {
+      from_plan_id: "w1",
+      kept: [],
+      added: [],
+      removed: [],
+      ember: [
+        { from: "Dun-Well", from_id: "D", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
+        { from: "Fleabag", from_id: "F", to: "Ceremonia", to_id: "C", day: "friday" as const, score: 0.41, top: true },
+        { from: "Fleabag", from_id: "F", to: "Bakeri", to_id: "B", day: "sunday" as const, score: 0.2, top: false },
+      ],
+    };
+    const t = emberThreads(diff, [{ qloo_entity_id: "D", pleasure: 8 }]);
+    expect(t).toEqual([{ from: "Dun-Well", from_id: "D", to: "Ceremonia", to_id: "C", score: 0.41, rated: 8 }]);
+    expect(emberLabel(t[0])).toBe("← because of Dun-Well, rated 8 · 0.41");
+    expect(emberThreads(null)).toEqual([]);
+  });
+
+  it("swap notice names both cards, or says the slot is left empty", () => {
+    const before = { name: "Dun-Well", day_name: "friday" as const };
+    expect(swapNotice(before, { cards: [card({ day_name: "friday", name: "Ceremonia" })] }, { found: true, ms: 1234, calls: 1 })).toBe("Swapped Dun-Well for Ceremonia, verified the same way (1 Qloo call · 1.2 s).");
+    expect(swapNotice(before, { cards: [] }, { found: false, ms: 900, calls: 2 })).toBe("No other verified candidate for Fri; the slot is left empty (2 Qloo calls · 0.9 s).");
   });
 });

@@ -65,7 +65,7 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory): ReplanDif
   }
   for (const s of w1.slots) {
     if (!s.card || ids2.has(s.card.entity_id)) continue;
-    out.removed.push({ day: s.slot.day, name: s.card.name, reason: h.lowRated.includes(s.card.entity_id) ? "rated ≤3 — excluded" : "replaced by a re-planned pick" });
+    out.removed.push({ day: s.slot.day, name: s.card.name, reason: h.lowRated.includes(s.card.entity_id) ? "rated ≤3 — excluded" : rek.has(s.card.entity_id) ? "rated ≥7 — now a Qloo signal for this week" : "replaced by a re-planned pick" });
   }
   return out;
 }

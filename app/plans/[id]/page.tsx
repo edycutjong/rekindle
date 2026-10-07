@@ -14,11 +14,13 @@ export default async function PlanPage({ params }: { params: Promise<{ id: strin
   if (!plan) notFound();
   const c = await store.getCase(plan.case_id).catch(() => null);
   if (!c) notFound();
+  // a re-planned week shows the rated week it came from, with the ember threads (ui.md 6)
+  const previous = plan.diff ? await store.getPlan(plan.diff.from_plan_id).catch(() => null) : null;
   return (
     <div className={r.wrap}>
       <SiteHeader />
       <main>
-        <Workbench initialCase={c} initialPlan={plan} />
+        <Workbench initialCase={c} initialPlan={plan} previousPlan={previous} />
       </main>
     </div>
   );

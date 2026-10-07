@@ -164,3 +164,71 @@ export const CONSTRAINT_FLAGS = [
 
 export const DISTANCE_OPTIONS = [800, 1500, 3000, 5000] as const;
 export const PRICE_OPTIONS = [1, 2, 3, 4] as const;
+
+/* ------------------------------------------------------------ clinician gate + re-plan (D7) */
+
+/** "approved · Wed 7 Oct · 14:02 UTC" — the stamp on the sheet header */
+export function stampLabel(iso: string): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).replace(",", "");
+  return `approved · ${day} · ${d.toISOString().slice(11, 16)} UTC`;
+}
+
+export interface PendingRating {
+  pleasure: number | null;
+  mastery: number | null;
+}
+
+/** Activities that will count as rated once pending edits are saved (the re-plan button needs ≥ 3). */
+export function ratedCount(cards: readonly Pick<CardDoc, "id" | "pleasure">[], pending: Readonly<Record<string, PendingRating>>): number {
+  return cards.filter((c) => (pending[c.id]?.pleasure ?? c.pleasure) !== null).length;
+}
+
+/** Pending edits that differ from what is stored and carry a pleasure score (what "save" sends). */
+export function changedRatings(cards: readonly Pick<CardDoc, "id" | "pleasure" | "mastery">[], pending: Readonly<Record<string, PendingRating>>): { card_id: string; pleasure: number; mastery: number | null }[] {
+  return cards.flatMap((c) => {
+    const p = pending[c.id];
+    if (!p || p.pleasure === null) return [];
+    if (p.pleasure === c.pleasure && p.mastery === c.mastery) return [];
+    return [{ card_id: c.id, pleasure: p.pleasure, mastery: p.mastery }];
+  });
+}
+
+export const clampScore = (n: number) => Math.max(0, Math.min(10, Math.round(n)));
+
+export interface EmberLink {
+  from: string;
+  from_id: string;
+  to: string;
+  to_id: string;
+  score: number;
+  /** the pleasure the patient gave the week-1 activity */
+  rated: number | null;
+}
+
+/**
+ * The ember threads to draw: only links where the rekindled entity is the week-2 card's TOP-weighted input (Qloo spreads
+ * explainability across every signal entity, so "names it at all" would thread nearly every card). One per week-2 card.
+ */
+export function emberThreads(diff: NonNullable<PlanDoc["diff"]> | null, prevCards: readonly Pick<CardDoc, "qloo_entity_id" | "pleasure">[] = []): EmberLink[] {
+  if (!diff) return [];
+  const rated = new Map(prevCards.map((c) => [c.qloo_entity_id, c.pleasure]));
+  const seen = new Set<string>();
+  const out: EmberLink[] = [];
+  for (const e of diff.ember) {
+    if (!e.top || seen.has(e.to_id)) continue;
+    seen.add(e.to_id);
+    out.push({ from: e.from, from_id: e.from_id, to: e.to, to_id: e.to_id, score: e.score, rated: rated.get(e.from_id) ?? null });
+  }
+  return out;
+}
+
+/** Inline ember label (and the mobile form of the thread): "← because she rated Dun-Well Doughnuts 8 · 0.41" */
+export const emberLabel = (l: EmberLink) => `← because of ${l.from}${l.rated !== null ? `, rated ${l.rated}` : ""} · ${l.score.toFixed(2)}`;
+
+/** The notice after a swap: what left the slot and what (if anything) replaced it. */
+export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pick<PlanDoc, "cards">, swap: { found: boolean; ms: number; calls: number }): string {
+  const now = plan.cards.find((c) => c.day_name === before.day_name);
+  const t = `${swap.calls} Qloo call${swap.calls === 1 ? "" : "s"} · ${(swap.ms / 1000).toFixed(1)} s`;
+  return swap.found && now ? `Swapped ${before.name} for ${now.name}, verified the same way (${t}).` : `No other verified candidate for ${DAY_SHORT[before.day_name]}; the slot is left empty (${t}).`;
+}
