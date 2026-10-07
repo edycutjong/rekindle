@@ -1,0 +1,4136 @@
+{
+  "at": "2026-10-07T00:41:24.912Z",
+  "fictional": true,
+  "loves": [
+    {
+      "text": "Phoebe Bridgers",
+      "qlooId": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+      "kind": "entity",
+      "entityType": "urn:entity:artist",
+      "name": "Phoebe Bridgers"
+    },
+    {
+      "text": "Fleabag",
+      "qlooId": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+      "kind": "entity",
+      "entityType": "urn:entity:tv_show",
+      "name": "Fleabag"
+    },
+    {
+      "text": "ramen",
+      "qlooId": "urn:tag:genre:place:restaurant:ramen",
+      "kind": "tag",
+      "name": "ramen"
+    }
+  ],
+  "timings_ms": {
+    "week1": 8143,
+    "toggle": 2773,
+    "week2": 8778
+  },
+  "week1": {
+    "week": 1,
+    "slots": [
+      {
+        "slot": {
+          "day": "monday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "artist"
+        },
+        "card": {
+          "slot": {
+            "day": "monday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "artist"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+          "name": "Lucy Dacus",
+          "entityType": "urn:entity:artist",
+          "affinity": 0.978350121167914,
+          "tags": [
+            "urn:tag:artist:qloo:thoughtful",
+            "urn:tag:artist:qloo:melodic",
+            "urn:tag:subgenre:qloo:singer_songwriter",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:artist:qloo:introspective",
+            "urn:tag:style:qloo:indie_folk",
+            "urn:tag:style:qloo:emotive_balladry",
+            "urn:tag:genre:qloo:indie_folk",
+            "urn:tag:style:qloo:confessional_singer_songwriter",
+            "urn:tag:style:qloo:expressive",
+            "urn:tag:audience:qloo:passionate",
+            "urn:tag:influence:qloo:indie_folk",
+            "urn:tag:instrument:qloo:guitar",
+            "urn:tag:audience:qloo:loyal",
+            "urn:tag:subgenre:qloo:folk_rock",
+            "urn:tag:artist:qloo:lyrical",
+            "urn:tag:style:qloo:raw",
+            "urn:tag:obscurity:qloo:3",
+            "urn:tag:genre:qloo:indie_rock",
+            "urn:tag:theme:qloo:growth",
+            "urn:tag:audience:qloo:introspective",
+            "urn:tag:genre:qloo:alternative_rock",
+            "urn:tag:style:qloo:intimate",
+            "urn:tag:influence:qloo:singer_songwriter",
+            "urn:tag:audience:qloo:thoughtful",
+            "urn:tag:theme:qloo:introspection",
+            "urn:tag:influenced_by:qloo:joni_mitchell",
+            "urn:tag:influenced_by:qloo:cat_power",
+            "urn:tag:instrument:qloo:piano",
+            "urn:tag:influence:qloo:indie_rock",
+            "urn:tag:theme:qloo:mental_health",
+            "urn:tag:influenced_by:qloo:neil_young",
+            "urn:tag:artist:qloo:emotive",
+            "urn:tag:music:qloo:atmospheric",
+            "urn:tag:genre:music:indie",
+            "urn:tag:style:qloo:indie_rock",
+            "urn:tag:music:qloo:melodic",
+            "urn:tag:influenced_by:qloo:elliott_smith",
+            "urn:tag:style:qloo:poetic_lyricism",
+            "urn:tag:genre:music:singer_songwriter",
+            "urn:tag:style:qloo:engaging",
+            "urn:tag:theme:qloo:relationships",
+            "urn:tag:audience:qloo:devoted",
+            "urn:tag:audience:qloo:curious",
+            "urn:tag:music:qloo:introspective",
+            "urn:tag:music:qloo:confessional",
+            "urn:tag:music:qloo:lyrical",
+            "urn:tag:music:qloo:cinematic",
+            "urn:tag:music:qloo:nuanced",
+            "urn:tag:style:qloo:earnest",
+            "urn:tag:style:qloo:storytelling",
+            "urn:tag:style:qloo:measured",
+            "urn:tag:style:qloo:dynamic",
+            "urn:tag:artist:qloo:earnest",
+            "urn:tag:artist:qloo:confessional",
+            "urn:tag:artist:qloo:warm",
+            "urn:tag:artist:qloo:resonant",
+            "urn:tag:artist:qloo:narrative",
+            "urn:tag:artist:qloo:nuanced",
+            "urn:tag:artist:qloo:cinematic",
+            "urn:tag:complexity_scale:qloo:6",
+            "urn:tag:style:qloo:introspective_indie_rock",
+            "urn:tag:style:qloo:melancholic_chamber_folk",
+            "urn:tag:style:qloo:narrative_folk_rock",
+            "urn:tag:style:qloo:cinematic_alt_indie",
+            "urn:tag:influence:qloo:modern_singer_songwriter",
+            "urn:tag:influenced_by:qloo:fiona_apple",
+            "urn:tag:influenced_by:qloo:sufjan_stevens",
+            "urn:tag:influenced_by:qloo:laura_marling",
+            "urn:tag:influenced_by:qloo:conor_oberst",
+            "urn:tag:instrument:qloo:vocals",
+            "urn:tag:theme:qloo:memory",
+            "urn:tag:theme:qloo:family",
+            "urn:tag:theme:qloo:coming_of_age",
+            "urn:tag:theme:qloo:grief",
+            "urn:tag:theme:qloo:longing",
+            "urn:tag:theme:qloo:trauma",
+            "urn:tag:obscurity:qloo:4",
+            "urn:tag:genre:qloo:folk",
+            "urn:tag:genre:qloo:singer_songwriter",
+            "urn:tag:genre:qloo:indie",
+            "urn:tag:subgenre:qloo:indie_pop",
+            "urn:tag:subgenre:qloo:alternative_rock",
+            "urn:tag:subgenre:qloo:chamber_pop",
+            "urn:tag:voice_type:qloo:alto"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.506151865914396
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.493848134085604
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "tuesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "podcast"
+        },
+        "card": {
+          "slot": {
+            "day": "tuesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "podcast"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "14EECB60-E987-47CA-8582-D8FEB225C945",
+          "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+          "entityType": "urn:entity:podcast",
+          "affinity": 0.9505247543347569,
+          "tags": [
+            "urn:tag:genre:media:society_culture",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:genre:media:podcasts"
+          ],
+          "why": [
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.5246834015551541
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.4753165984448458
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "14EECB60-E987-47CA-8582-D8FEB225C945"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "wednesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "book"
+        },
+        "card": {
+          "slot": {
+            "day": "wednesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "book"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "FA2A09DB-366C-4E9D-8B43-3704A6F2E119",
+          "name": "My Name Is Why",
+          "entityType": "urn:entity:book",
+          "affinity": 0.9068849909217994,
+          "tags": [
+            "urn:tag:genre:media:memoir",
+            "urn:tag:genre:media:autobiography",
+            "urn:tag:genre:media:british_literature",
+            "urn:tag:genre:media:audiobook",
+            "urn:tag:genre:media:nonfiction",
+            "urn:tag:genre:media:biography_memoir",
+            "urn:tag:genre:media:poetry",
+            "urn:tag:genre:media:biography",
+            "urn:tag:genre:media:adoption",
+            "urn:tag:genre:media:race",
+            "urn:tag:age_ranges:qloo:18_24",
+            "urn:tag:age_ranges:qloo:25_29",
+            "urn:tag:age_ranges:qloo:30_34",
+            "urn:tag:age_ranges:qloo:35_44",
+            "urn:tag:age_ranges:qloo:45_54",
+            "urn:tag:age_ranges:qloo:55_",
+            "urn:tag:book_format:qloo:hardcover",
+            "urn:tag:book_format:qloo:paperback",
+            "urn:tag:book_format:qloo:ebook",
+            "urn:tag:genre:qloo:memoir",
+            "urn:tag:keyword:qloo:adoption",
+            "urn:tag:keyword:qloo:identity",
+            "urn:tag:keyword:qloo:race",
+            "urn:tag:keyword:qloo:family",
+            "urn:tag:keyword:qloo:institutional_care",
+            "urn:tag:keyword:qloo:britishness",
+            "urn:tag:keyword:qloo:home",
+            "urn:tag:keyword:qloo:creativity",
+            "urn:tag:keyword:qloo:memoir",
+            "urn:tag:media_type:qloo:print",
+            "urn:tag:media_type:qloo:digital",
+            "urn:tag:narrative:qloo:first_person",
+            "urn:tag:character:qloo:reflective",
+            "urn:tag:character:qloo:emotional",
+            "urn:tag:character:qloo:insightful",
+            "urn:tag:character:qloo:lyrical",
+            "urn:tag:character:qloo:powerful",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:theme:qloo:resilience",
+            "urn:tag:theme:qloo:neglect",
+            "urn:tag:theme:qloo:family",
+            "urn:tag:theme:qloo:race",
+            "urn:tag:theme:qloo:home",
+            "urn:tag:setting:qloo:united_kingdom",
+            "urn:tag:motif:qloo:identity",
+            "urn:tag:motif:qloo:home",
+            "urn:tag:motif:qloo:belonging",
+            "urn:tag:subgenre:qloo:autobiography",
+            "urn:tag:subgenre:qloo:social_issues",
+            "urn:tag:time_period:qloo:1970s",
+            "urn:tag:time_period:qloo:1980s",
+            "urn:tag:time_period:qloo:1990s",
+            "urn:tag:style:qloo:lyrical",
+            "urn:tag:style:qloo:frank",
+            "urn:tag:style:qloo:emotional",
+            "urn:tag:style:qloo:insightful",
+            "urn:tag:style:qloo:powerful",
+            "urn:tag:viewer_characteristic:qloo:reflective",
+            "urn:tag:viewer_characteristic:qloo:empathetic",
+            "urn:tag:viewer_characteristic:qloo:curious",
+            "urn:tag:viewer_characteristic:qloo:socially_conscious"
+          ],
+          "why": [
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.5322509213813226
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.4677490786186774
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "FA2A09DB-366C-4E9D-8B43-3704A6F2E119"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "thursday",
+          "hour": 18,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "thursday",
+            "hour": 18,
+            "rung": "solo"
+          },
+          "hour": 15,
+          "movedFrom": 18,
+          "rung": "solo",
+          "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+          "name": "Patisserie Tomoko",
+          "entityType": "urn:entity:place",
+          "affinity": 0.9091789860957717,
+          "distance_m": 1161,
+          "priceLevel": 2,
+          "hoursText": "Thu 12:00–18:00",
+          "address": "568 Union Ave Brooklyn, NY 11211",
+          "tags": [
+            "urn:tag:ambience:qloo:modern",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:culinary_style:qloo:gourmet",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:interests:qloo:culinary_arts",
+            "urn:tag:decor:qloo:chic",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:interests:qloo:fine_dining",
+            "urn:tag:menu_highlight:qloo:pumpkin_pie",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:ambience:qloo:gastronomic",
+            "urn:tag:service_options:place:dine_in",
+            "urn:tag:service_type:qloo:bar_service",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:setting:qloo:patisserie",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:genre:place",
+            "urn:tag:interests:qloo:specialty_coffee",
+            "urn:tag:ambience:qloo:calm",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:cuisine:qloo:european",
+            "urn:tag:genre:place:restaurant:patisserie",
+            "urn:tag:setting:qloo:commercial",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:menu_highlight:qloo:sundaes",
+            "urn:tag:beverage_offering:qloo:wine",
+            "urn:tag:cuisine:qloo:french",
+            "urn:tag:culinary_style:qloo:traditional",
+            "urn:tag:ambience:qloo:refined",
+            "urn:tag:decor:qloo:japanese_inspired",
+            "urn:tag:noise_level:qloo:quiet",
+            "urn:tag:nearby_attraction:qloo:mccarren_park",
+            "urn:tag:planning:place:quick_visit",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:customer_identity:qloo:celebratory_diners",
+            "urn:tag:amenity:qloo:takeout_packaging",
+            "urn:tag:service_type:qloo:counter_service",
+            "urn:tag:menu_highlight:qloo:green_tea_tiramisu",
+            "urn:tag:menu_highlight:qloo:cream_puff",
+            "urn:tag:amenity:qloo:custom_cake_ordering",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:menu_highlight:qloo:matcha_mille_crepe_cake",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:genre:place:japanese_confectionery_shop",
+            "urn:tag:menu_highlight:qloo:earl_grey_mochi",
+            "urn:tag:cuisine:qloo:japanese",
+            "urn:tag:menu_highlight:qloo:basque_cheesecake",
+            "urn:tag:offerings:place:go_for_just_dessert",
+            "urn:tag:ambience:qloo:stylish",
+            "urn:tag:decor:qloo:sophisticated",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:customer_identity:qloo:solo_diners",
+            "urn:tag:menu_highlight:qloo:chestnut_tart",
+            "urn:tag:menu_highlight:qloo:black_sesame_mochi",
+            "urn:tag:culinary_style:qloo:contemporary",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:interests:qloo:patisserie",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:menu_highlight:qloo:strawberry_shortcake",
+            "urn:tag:amenity:qloo:wine_pairing",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:visit_intent:qloo:special_occasion",
+            "urn:tag:genre:place:restaurant:dessert",
+            "urn:tag:category:place:dessert_restaurant",
+            "urn:tag:service_type:qloo:reservations",
+            "urn:tag:menu_highlight:qloo:black_sesame_creme_brulee",
+            "urn:tag:service_type:qloo:pickup",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:ambience:qloo:quiet",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:culinary_style:qloo:artisanal",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:activity_type:qloo:dessert_tasting",
+            "urn:tag:setting:qloo:dessert_bar",
+            "urn:tag:amenity:qloo:dessert_bar",
+            "urn:tag:category:place:japanese_confectionery_shop",
+            "urn:tag:customer_identity:qloo:dessert_enthusiasts",
+            "urn:tag:customer_identity:qloo:couples",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:beverage_offering:qloo:sake",
+            "urn:tag:menu_highlight:qloo:yuzu_mousse",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:offerings:place:hot_tea",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:cuisine:qloo:asian",
+            "urn:tag:category:place:patisserie",
+            "urn:tag:view:qloo:open_kitchen",
+            "urn:tag:amenities:place:restroom",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:ambience:qloo:minimalist",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:visit_intent:qloo:destination",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:ambience:qloo:elegant",
+            "urn:tag:decor:qloo:minimalist",
+            "urn:tag:customer_identity:qloo:groups_of_friends",
+            "urn:tag:activity_type:qloo:culture_arts",
+            "urn:tag:interests:qloo:artisanal_baking",
+            "urn:tag:neighborhood_characteristic:qloo:culinary_destination",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:customer_identity:qloo:young_professionals",
+            "urn:tag:amenity:qloo:sake_pairing",
+            "urn:tag:view:qloo:pastry_prep_station",
+            "urn:tag:activity_type:qloo:bespoke_cake_ordering",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:genre:place:shopping",
+            "urn:tag:time_of_day_fit:qloo:evening",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:decor:qloo:clean_lined"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5420444856599232
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4579555143400768
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Thu 12:00–18:00 · slot 15:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1161 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 2"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "not in recovery"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "restaurant:patisserie"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "friday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "tv_show"
+        },
+        "card": {
+          "slot": {
+            "day": "friday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "tv_show"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "27F3C711-4DB5-40B8-AFC3-18CA1CF7517A",
+          "name": "High Fidelity",
+          "entityType": "urn:entity:tv_show",
+          "affinity": 0.9593029088208378,
+          "tags": [
+            "urn:tag:keyword:media:lgbt_series",
+            "urn:tag:keyword:media:club",
+            "urn:tag:archetype:qloo:the_heartbroken_heroine",
+            "urn:tag:keyword:media:heartbreak",
+            "urn:tag:keyword:qloo:music",
+            "urn:tag:keyword:media:romantic_comedy",
+            "urn:tag:keyword:media:record_store",
+            "urn:tag:keyword:media:black_protagonist",
+            "urn:tag:keyword:media:cancelled_series",
+            "urn:tag:keyword:media:brother_sister_relationship",
+            "urn:tag:keyword:media:based_on_novel",
+            "urn:tag:genre:media:romance",
+            "urn:tag:keyword:media:life",
+            "urn:tag:keyword:qloo:relationships",
+            "urn:tag:keyword:media:black_female_protagonist",
+            "urn:tag:keyword:media:gay_friend",
+            "urn:tag:genre:qloo:romantic_comedy",
+            "urn:tag:keyword:media:neighbor",
+            "urn:tag:keyword:media:two_word_title",
+            "urn:tag:theme:qloo:music_as_therapy",
+            "urn:tag:keyword:media:romantic_relationship",
+            "urn:tag:keyword:media:white_man_black_woman_relationship",
+            "urn:tag:keyword:media:hulu",
+            "urn:tag:subgenre:qloo:musical_drama",
+            "urn:tag:keyword:media:past_and_present",
+            "urn:tag:keyword:media:adaptation",
+            "urn:tag:keyword:media:lp",
+            "urn:tag:keyword:media:lgbt",
+            "urn:tag:keyword:media:female_protagonist",
+            "urn:tag:keyword:media:album",
+            "urn:tag:keyword:qloo:record_store",
+            "urn:tag:keyword:media:breaking_the_fourth_wall",
+            "urn:tag:keyword:media:reference_to_the_sopranos",
+            "urn:tag:theme:qloo:love",
+            "urn:tag:keyword:qloo:brooklyn",
+            "urn:tag:keyword:media:series_pilot",
+            "urn:tag:keyword:media:strong_female_lead",
+            "urn:tag:theme:qloo:heartbreak",
+            "urn:tag:keyword:media:male_wears_underwear",
+            "urn:tag:theme:qloo:self_discovery",
+            "urn:tag:keyword:qloo:self_discovery",
+            "urn:tag:keyword:media:friendship",
+            "urn:tag:keyword:media:black_woman",
+            "urn:tag:keyword:media:love",
+            "urn:tag:keyword:media:gay",
+            "urn:tag:keyword:qloo:heartbreak",
+            "urn:tag:keyword:media:reference_to_david_bowie",
+            "urn:tag:archetype:qloo:the_quest_for_love",
+            "urn:tag:keyword:media:based_on_film",
+            "urn:tag:keyword:qloo:pop_culture",
+            "urn:tag:keyword:media:remake",
+            "urn:tag:genre:media:music",
+            "urn:tag:theme:qloo:nostalgia",
+            "urn:tag:keyword:media:talking_about_music",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:keyword:media:end_of_a_relationship",
+            "urn:tag:keyword:media:music_fan",
+            "urn:tag:keyword:media:feel_good_romance",
+            "urn:tag:archetype:qloo:the_music_lover",
+            "urn:tag:genre:media:drama",
+            "urn:tag:keyword:media:friendship_between_man_and_woman"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5102613146930709
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.48973868530692916
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "27F3C711-4DB5-40B8-AFC3-18CA1CF7517A"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "saturday",
+          "hour": 11,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "saturday",
+            "hour": 11,
+            "rung": "solo"
+          },
+          "hour": 11,
+          "rung": "solo",
+          "entity_id": "5CB55122-9BB2-4A34-822C-2385F4DDF318",
+          "name": "Brooklyn Ball Factory",
+          "entityType": "urn:entity:place",
+          "affinity": 0.8920776972883028,
+          "distance_m": 951,
+          "priceLevel": 1,
+          "hoursText": "Sat 08:00–18:00",
+          "address": "95 Montrose Ave Brooklyn, NY 11206",
+          "tags": [
+            "urn:tag:visit_intent:qloo:routine_visit",
+            "urn:tag:menu_highlight:qloo:teriyaki_double_cheese_burger",
+            "urn:tag:offerings:place:healthy_options",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:ambience:qloo:slow_paced",
+            "urn:tag:category:place:asian_fusion_restaurant",
+            "urn:tag:cuisine:qloo:japanese",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:menu_highlight:qloo:yuzu_ginger_mint_tea",
+            "urn:tag:dining_options:place:order_ahead",
+            "urn:tag:interests:qloo:japanese_cuisine",
+            "urn:tag:menu_highlight:qloo:onigiri_set",
+            "urn:tag:dining_options:place:lunch",
+            "urn:tag:amenity:qloo:takeout_window",
+            "urn:tag:activity_type:qloo:coffee_tasting",
+            "urn:tag:menu_highlight:qloo:salmon_onigiri",
+            "urn:tag:ambience:qloo:relaxing",
+            "urn:tag:culinary_style:qloo:modern",
+            "urn:tag:setting:qloo:city_center",
+            "urn:tag:genre:place:restaurant:asian_fusion",
+            "urn:tag:accessibility:place:wheelchair_accessible_restroom",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:nearby_attraction:qloo:baby_blue_luncheonette",
+            "urn:tag:cuisine:qloo:asian",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:offerings:place:alcohol",
+            "urn:tag:category:place:japanese_restaurant",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:view:qloo:urban_streetscape",
+            "urn:tag:amenities:place:bar_onsite",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:amenity:qloo:rooftop_deck",
+            "urn:tag:dining_options:place:breakfast",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:ambience:qloo:charming",
+            "urn:tag:menu_highlight:qloo:tiramisu_latte",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:customer_identity:qloo:young_professionals",
+            "urn:tag:offerings:place:vegan_options",
+            "urn:tag:interests:qloo:artisanal_tea",
+            "urn:tag:genre:place:restaurant:coffee_shop",
+            "urn:tag:dietary_option:qloo:healthy_options",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:menu_highlight:qloo:bento_box",
+            "urn:tag:menu_highlight:qloo:matcha_latte",
+            "urn:tag:culinary_style:qloo:casual",
+            "urn:tag:genre:place",
+            "urn:tag:offerings:place:quick_bite",
+            "urn:tag:ambience:qloo:modern",
+            "urn:tag:interests:qloo:casual_dining",
+            "urn:tag:offerings:place:vegetarian_options",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:interests:qloo:urban_cafe_culture",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:ambience:qloo:humble",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:menu_highlight:qloo:dirty_iced_chai",
+            "urn:tag:decor:qloo:minimalist",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:parking:place:free_street_parking",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:interests:qloo:specialty_coffee_culture",
+            "urn:tag:cuisine:qloo:fusion",
+            "urn:tag:service_type:qloo:outdoor_seating",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:neighborhood_characteristic:qloo:vibrant",
+            "urn:tag:visit_intent:qloo:impulse_visit",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:amenities:place:restroom",
+            "urn:tag:menu_highlight:qloo:chashu_pork_onigiri",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:genre:place:restaurant:japanese",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:menu_highlight:qloo:banana_walnut_muffin",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:dining_options:place:seating",
+            "urn:tag:menu_highlight:qloo:osouzai_salad",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:service_options:place:outdoor_seating",
+            "urn:tag:menu_highlight:qloo:chickpea_tempeh_bento",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:setting:qloo:rooftop_deck",
+            "urn:tag:offerings:place:hot_tea",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:decor:qloo:japanese_minimalism",
+            "urn:tag:offerings:place:small_plates",
+            "urn:tag:culinary_style:qloo:cafe",
+            "urn:tag:cost_description:place:10_to_20",
+            "urn:tag:customer_identity:qloo:groups_of_friends",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:service_options:place:dine_in",
+            "urn:tag:category:place:coffee_shop",
+            "urn:tag:menu_highlight:qloo:vegetable_miso_soup",
+            "urn:tag:amenity:qloo:outdoor_seating",
+            "urn:tag:service_type:qloo:dine_in"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5367296533080735
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4632703466919264
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "5CB55122-9BB2-4A34-822C-2385F4DDF318"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sat 08:00–18:00 · slot 11:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "951 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "not in recovery"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "asian_fusion_restaurant"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "sunday",
+          "hour": 14,
+          "rung": "social"
+        },
+        "card": {
+          "slot": {
+            "day": "sunday",
+            "hour": 14,
+            "rung": "social"
+          },
+          "hour": 14,
+          "rung": "social",
+          "entity_id": "F3909570-419C-45F1-8AC5-8F4038A29C51",
+          "name": "Mozzarella Kosher",
+          "entityType": "urn:entity:place",
+          "affinity": 0.7536140823873753,
+          "distance_m": 961,
+          "priceLevel": 1,
+          "hoursText": "Sun 08:00–19:30",
+          "address": "264 Lee Ave Brooklyn, NY 11206",
+          "tags": [
+            "urn:tag:cuisine:qloo:pizza",
+            "urn:tag:beverage_offering:qloo:full_bar",
+            "urn:tag:beverage_offering:qloo:beer",
+            "urn:tag:visit_intent:qloo:routine_visit",
+            "urn:tag:customer_identity:qloo:groups_of_friends",
+            "urn:tag:dining_options:place:order_ahead",
+            "urn:tag:interests:qloo:vegetarian_cooking",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:activity_type:qloo:takeout_dining",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:beverage_offering:qloo:cocktails",
+            "urn:tag:menu_highlight:qloo:cream_of_spinach_soup",
+            "urn:tag:amenities:place:booster_seats",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:menu_highlight:qloo:tempura_salad",
+            "urn:tag:neighborhood_characteristic:qloo:high_density",
+            "urn:tag:menu_highlight:qloo:falafel",
+            "urn:tag:visit_intent:qloo:convenience_stop",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:accessibility:place:wheelchair_accessible_seating",
+            "urn:tag:cuisine:qloo:israeli",
+            "urn:tag:decor:qloo:simple",
+            "urn:tag:customer_identity:qloo:couples",
+            "urn:tag:ambience:qloo:social",
+            "urn:tag:customer_identity:qloo:families",
+            "urn:tag:accessibility:place:wheelchair_accessible_restroom",
+            "urn:tag:category:place:pizza_delivery",
+            "urn:tag:offerings:place:vegetarian_options",
+            "urn:tag:nearby_attraction:qloo:williamsburg_historic_district",
+            "urn:tag:dining_options:place:breakfast",
+            "urn:tag:service_type:qloo:drive_thru",
+            "urn:tag:dining_options:place:brunch",
+            "urn:tag:children:place:kids_menu",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:menu_highlight:qloo:hungarian_blintzes",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:menu_highlight:qloo:pizza",
+            "urn:tag:offerings:place:healthy_options",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:genre:place",
+            "urn:tag:menu_highlight:qloo:shakshuka",
+            "urn:tag:dietary_option:qloo:healthy_options",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:decor:qloo:cafeteria_style",
+            "urn:tag:ambience:qloo:family_friendly",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:ambience:qloo:informal",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:genre:place:restaurant:pizza",
+            "urn:tag:offerings:place:quick_bite",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:service_options:place:dine_in",
+            "urn:tag:age_range:qloo:35_44",
+            "urn:tag:activity_type:qloo:pizza_consumption",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:children:place:good_for_kids",
+            "urn:tag:offerings:place:spicy_food",
+            "urn:tag:dining_options:place:lunch",
+            "urn:tag:ambience:qloo:no_frills",
+            "urn:tag:ambience:place:large_group",
+            "urn:tag:amenity:qloo:wi_fi",
+            "urn:tag:not_for_display:place:mask_required",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:cuisine:qloo:seafood",
+            "urn:tag:service_type:qloo:private_events",
+            "urn:tag:customer_identity:qloo:students",
+            "urn:tag:neighborhood_characteristic:qloo:bustling",
+            "urn:tag:amenities:place:restroom",
+            "urn:tag:visit_intent:qloo:destination",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:offerings:place:kosher_options",
+            "urn:tag:amenity:qloo:takeout_service",
+            "urn:tag:category:place:kosher_restaurant",
+            "urn:tag:children:place:good_for_kids_birthday",
+            "urn:tag:interests:qloo:casual_dining",
+            "urn:tag:service_type:qloo:outdoor_seating",
+            "urn:tag:beverage_offering:qloo:spirits",
+            "urn:tag:cost_description:place:10_to_20",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:cuisine:qloo:kosher_dairy",
+            "urn:tag:amenity:qloo:salad_bar",
+            "urn:tag:culinary_style:qloo:traditional",
+            "urn:tag:interests:qloo:social_dining",
+            "urn:tag:genre:place:restaurant:fast_food",
+            "urn:tag:ambience:qloo:lively",
+            "urn:tag:children:place:high_chairs",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:dining_options:place:catering",
+            "urn:tag:genre:place:restaurant:kosher",
+            "urn:tag:genre:place:restaurant:pizza_takeout",
+            "urn:tag:beverage_offering:qloo:wine",
+            "urn:tag:parking:place:parking",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:category:place:fast_food_restaurant",
+            "urn:tag:setting:qloo:city_center",
+            "urn:tag:amenity:qloo:outdoor_seating",
+            "urn:tag:culinary_style:qloo:casual",
+            "urn:tag:genre:place:restaurant:pizza_delivery",
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:interests:qloo:urban_exploration",
+            "urn:tag:setting:qloo:street_level_storefront",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:menu_highlight:qloo:sushi",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:accessibility:place:wheelchair_accessible_elevator",
+            "urn:tag:ambience:qloo:bustling",
+            "urn:tag:category:place:pizza_restaurant",
+            "urn:tag:view:qloo:street_view",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:time_of_day_fit:qloo:evening",
+            "urn:tag:nearby_attraction:qloo:brooklyn_waterfront",
+            "urn:tag:service_options:place:no_contact_delivery",
+            "urn:tag:cuisine:qloo:american",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:amenity:qloo:delivery_service",
+            "urn:tag:dietary_option:qloo:kosher",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:offerings:place:small_plates",
+            "urn:tag:dining_options:place:dinner",
+            "urn:tag:offerings:place:comfort_food",
+            "urn:tag:dining_options:place:seating",
+            "urn:tag:interests:qloo:kosher_cuisine",
+            "urn:tag:activity_type:qloo:group_socializing",
+            "urn:tag:category:place:pizza_takeout",
+            "urn:tag:cuisine:qloo:hungarian",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:cuisine:qloo:mediterranean"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5202942440029688
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4797057559970312
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "F3909570-419C-45F1-8AC5-8F4038A29C51"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sun 08:00–19:30 · slot 14:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "961 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "not in recovery"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "restaurant:pizza"
+            }
+          ],
+          "geohash": "dr5rt1p"
+        }
+      }
+    ],
+    "refusals": [
+      {
+        "day": "thursday",
+        "hour": 18,
+        "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "name": "Patisserie Tomoko",
+        "rule": "R-OPEN",
+        "detail": "closes 18:00 · slot 18:00",
+        "verdict": "REFUSE",
+        "movedTo": 15
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      }
+    ],
+    "review": [],
+    "calls": []
+  },
+  "toggle": {
+    "struck": [
+      {
+        "day": "thursday",
+        "hour": 15,
+        "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "name": "Patisserie Tomoko",
+        "rule": "R-ALC",
+        "detail": "service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "saturday",
+        "hour": 11,
+        "entity_id": "5CB55122-9BB2-4A34-822C-2385F4DDF318",
+        "name": "Brooklyn Ball Factory",
+        "rule": "R-ALC",
+        "detail": "offerings:place:alcohol, amenities:place:bar_onsite",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "F3909570-419C-45F1-8AC5-8F4038A29C51",
+        "name": "Mozzarella Kosher",
+        "rule": "R-ALC",
+        "detail": "beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      }
+    ],
+    "refilled": 3
+  },
+  "week1AfterToggle": {
+    "week": 1,
+    "slots": [
+      {
+        "slot": {
+          "day": "monday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "artist"
+        },
+        "card": {
+          "slot": {
+            "day": "monday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "artist"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+          "name": "Lucy Dacus",
+          "entityType": "urn:entity:artist",
+          "affinity": 0.978350121167914,
+          "tags": [
+            "urn:tag:artist:qloo:thoughtful",
+            "urn:tag:artist:qloo:melodic",
+            "urn:tag:subgenre:qloo:singer_songwriter",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:artist:qloo:introspective",
+            "urn:tag:style:qloo:indie_folk",
+            "urn:tag:style:qloo:emotive_balladry",
+            "urn:tag:genre:qloo:indie_folk",
+            "urn:tag:style:qloo:confessional_singer_songwriter",
+            "urn:tag:style:qloo:expressive",
+            "urn:tag:audience:qloo:passionate",
+            "urn:tag:influence:qloo:indie_folk",
+            "urn:tag:instrument:qloo:guitar",
+            "urn:tag:audience:qloo:loyal",
+            "urn:tag:subgenre:qloo:folk_rock",
+            "urn:tag:artist:qloo:lyrical",
+            "urn:tag:style:qloo:raw",
+            "urn:tag:obscurity:qloo:3",
+            "urn:tag:genre:qloo:indie_rock",
+            "urn:tag:theme:qloo:growth",
+            "urn:tag:audience:qloo:introspective",
+            "urn:tag:genre:qloo:alternative_rock",
+            "urn:tag:style:qloo:intimate",
+            "urn:tag:influence:qloo:singer_songwriter",
+            "urn:tag:audience:qloo:thoughtful",
+            "urn:tag:theme:qloo:introspection",
+            "urn:tag:influenced_by:qloo:joni_mitchell",
+            "urn:tag:influenced_by:qloo:cat_power",
+            "urn:tag:instrument:qloo:piano",
+            "urn:tag:influence:qloo:indie_rock",
+            "urn:tag:theme:qloo:mental_health",
+            "urn:tag:influenced_by:qloo:neil_young",
+            "urn:tag:artist:qloo:emotive",
+            "urn:tag:music:qloo:atmospheric",
+            "urn:tag:genre:music:indie",
+            "urn:tag:style:qloo:indie_rock",
+            "urn:tag:music:qloo:melodic",
+            "urn:tag:influenced_by:qloo:elliott_smith",
+            "urn:tag:style:qloo:poetic_lyricism",
+            "urn:tag:genre:music:singer_songwriter",
+            "urn:tag:style:qloo:engaging",
+            "urn:tag:theme:qloo:relationships",
+            "urn:tag:audience:qloo:devoted",
+            "urn:tag:audience:qloo:curious",
+            "urn:tag:music:qloo:introspective",
+            "urn:tag:music:qloo:confessional",
+            "urn:tag:music:qloo:lyrical",
+            "urn:tag:music:qloo:cinematic",
+            "urn:tag:music:qloo:nuanced",
+            "urn:tag:style:qloo:earnest",
+            "urn:tag:style:qloo:storytelling",
+            "urn:tag:style:qloo:measured",
+            "urn:tag:style:qloo:dynamic",
+            "urn:tag:artist:qloo:earnest",
+            "urn:tag:artist:qloo:confessional",
+            "urn:tag:artist:qloo:warm",
+            "urn:tag:artist:qloo:resonant",
+            "urn:tag:artist:qloo:narrative",
+            "urn:tag:artist:qloo:nuanced",
+            "urn:tag:artist:qloo:cinematic",
+            "urn:tag:complexity_scale:qloo:6",
+            "urn:tag:style:qloo:introspective_indie_rock",
+            "urn:tag:style:qloo:melancholic_chamber_folk",
+            "urn:tag:style:qloo:narrative_folk_rock",
+            "urn:tag:style:qloo:cinematic_alt_indie",
+            "urn:tag:influence:qloo:modern_singer_songwriter",
+            "urn:tag:influenced_by:qloo:fiona_apple",
+            "urn:tag:influenced_by:qloo:sufjan_stevens",
+            "urn:tag:influenced_by:qloo:laura_marling",
+            "urn:tag:influenced_by:qloo:conor_oberst",
+            "urn:tag:instrument:qloo:vocals",
+            "urn:tag:theme:qloo:memory",
+            "urn:tag:theme:qloo:family",
+            "urn:tag:theme:qloo:coming_of_age",
+            "urn:tag:theme:qloo:grief",
+            "urn:tag:theme:qloo:longing",
+            "urn:tag:theme:qloo:trauma",
+            "urn:tag:obscurity:qloo:4",
+            "urn:tag:genre:qloo:folk",
+            "urn:tag:genre:qloo:singer_songwriter",
+            "urn:tag:genre:qloo:indie",
+            "urn:tag:subgenre:qloo:indie_pop",
+            "urn:tag:subgenre:qloo:alternative_rock",
+            "urn:tag:subgenre:qloo:chamber_pop",
+            "urn:tag:voice_type:qloo:alto"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.506151865914396
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.493848134085604
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "tuesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "podcast"
+        },
+        "card": {
+          "slot": {
+            "day": "tuesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "podcast"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "14EECB60-E987-47CA-8582-D8FEB225C945",
+          "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+          "entityType": "urn:entity:podcast",
+          "affinity": 0.9505247543347569,
+          "tags": [
+            "urn:tag:genre:media:society_culture",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:genre:media:podcasts"
+          ],
+          "why": [
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.5246834015551541
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.4753165984448458
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "14EECB60-E987-47CA-8582-D8FEB225C945"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "wednesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "book"
+        },
+        "card": {
+          "slot": {
+            "day": "wednesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "book"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "FA2A09DB-366C-4E9D-8B43-3704A6F2E119",
+          "name": "My Name Is Why",
+          "entityType": "urn:entity:book",
+          "affinity": 0.9068849909217994,
+          "tags": [
+            "urn:tag:genre:media:memoir",
+            "urn:tag:genre:media:autobiography",
+            "urn:tag:genre:media:british_literature",
+            "urn:tag:genre:media:audiobook",
+            "urn:tag:genre:media:nonfiction",
+            "urn:tag:genre:media:biography_memoir",
+            "urn:tag:genre:media:poetry",
+            "urn:tag:genre:media:biography",
+            "urn:tag:genre:media:adoption",
+            "urn:tag:genre:media:race",
+            "urn:tag:age_ranges:qloo:18_24",
+            "urn:tag:age_ranges:qloo:25_29",
+            "urn:tag:age_ranges:qloo:30_34",
+            "urn:tag:age_ranges:qloo:35_44",
+            "urn:tag:age_ranges:qloo:45_54",
+            "urn:tag:age_ranges:qloo:55_",
+            "urn:tag:book_format:qloo:hardcover",
+            "urn:tag:book_format:qloo:paperback",
+            "urn:tag:book_format:qloo:ebook",
+            "urn:tag:genre:qloo:memoir",
+            "urn:tag:keyword:qloo:adoption",
+            "urn:tag:keyword:qloo:identity",
+            "urn:tag:keyword:qloo:race",
+            "urn:tag:keyword:qloo:family",
+            "urn:tag:keyword:qloo:institutional_care",
+            "urn:tag:keyword:qloo:britishness",
+            "urn:tag:keyword:qloo:home",
+            "urn:tag:keyword:qloo:creativity",
+            "urn:tag:keyword:qloo:memoir",
+            "urn:tag:media_type:qloo:print",
+            "urn:tag:media_type:qloo:digital",
+            "urn:tag:narrative:qloo:first_person",
+            "urn:tag:character:qloo:reflective",
+            "urn:tag:character:qloo:emotional",
+            "urn:tag:character:qloo:insightful",
+            "urn:tag:character:qloo:lyrical",
+            "urn:tag:character:qloo:powerful",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:theme:qloo:resilience",
+            "urn:tag:theme:qloo:neglect",
+            "urn:tag:theme:qloo:family",
+            "urn:tag:theme:qloo:race",
+            "urn:tag:theme:qloo:home",
+            "urn:tag:setting:qloo:united_kingdom",
+            "urn:tag:motif:qloo:identity",
+            "urn:tag:motif:qloo:home",
+            "urn:tag:motif:qloo:belonging",
+            "urn:tag:subgenre:qloo:autobiography",
+            "urn:tag:subgenre:qloo:social_issues",
+            "urn:tag:time_period:qloo:1970s",
+            "urn:tag:time_period:qloo:1980s",
+            "urn:tag:time_period:qloo:1990s",
+            "urn:tag:style:qloo:lyrical",
+            "urn:tag:style:qloo:frank",
+            "urn:tag:style:qloo:emotional",
+            "urn:tag:style:qloo:insightful",
+            "urn:tag:style:qloo:powerful",
+            "urn:tag:viewer_characteristic:qloo:reflective",
+            "urn:tag:viewer_characteristic:qloo:empathetic",
+            "urn:tag:viewer_characteristic:qloo:curious",
+            "urn:tag:viewer_characteristic:qloo:socially_conscious"
+          ],
+          "why": [
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.5322509213813226
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.4677490786186774
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "FA2A09DB-366C-4E9D-8B43-3704A6F2E119"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "thursday",
+          "hour": 18,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "thursday",
+            "hour": 18,
+            "rung": "solo"
+          },
+          "hour": 15,
+          "movedFrom": 18,
+          "rung": "solo",
+          "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+          "name": "Dun-Well Doughnuts",
+          "entityType": "urn:entity:place",
+          "affinity": 0.8907572782911807,
+          "distance_m": 1421,
+          "priceLevel": 2,
+          "hoursText": "Thu 08:00–18:00",
+          "address": "222 Montrose Ave Brooklyn, NY 11206",
+          "tags": [
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:category:place:donut_shop",
+            "urn:tag:ambience:qloo:charming",
+            "urn:tag:ambience:qloo:lively",
+            "urn:tag:nearby_attraction:qloo:bushwick_collective_street_art",
+            "urn:tag:menu_highlight:qloo:pb_j",
+            "urn:tag:customer_identity:qloo:vegans",
+            "urn:tag:culinary_style:qloo:artisanal",
+            "urn:tag:activity_type:qloo:printing_services",
+            "urn:tag:menu_highlight:qloo:raspberry_filled",
+            "urn:tag:category:place:bakery",
+            "urn:tag:interests:qloo:sustainable_food",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:visit_intent:qloo:impulse_visit",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:service_type:qloo:drive_thru",
+            "urn:tag:view:qloo:street_view",
+            "urn:tag:menu_highlight:qloo:sweet_butter_rosemary",
+            "urn:tag:decor:qloo:antique_coffee_shop",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:menu_highlight:qloo:cinnamon_roll",
+            "urn:tag:genre:place:restaurant:bakery",
+            "urn:tag:age_range:qloo:35_44",
+            "urn:tag:setting:qloo:street_level_shop",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:decor:qloo:rustic",
+            "urn:tag:amenity:qloo:printer",
+            "urn:tag:decor:qloo:cozy",
+            "urn:tag:dietary_option:qloo:dairy_free",
+            "urn:tag:culinary_style:qloo:innovative",
+            "urn:tag:interests:qloo:urban_exploration",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:interests:qloo:plant_based_living",
+            "urn:tag:amenity:qloo:takeout",
+            "urn:tag:customer_identity:qloo:young_adults",
+            "urn:tag:menu_highlight:qloo:boston_cream",
+            "urn:tag:genre:place",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:offerings:place:vegan_options",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:ambience:qloo:homey",
+            "urn:tag:cuisine:qloo:desserts",
+            "urn:tag:category:place:vegan_restaurant",
+            "urn:tag:amenity:qloo:delivery",
+            "urn:tag:beverage_offering:qloo:specialty_non_alcoholic",
+            "urn:tag:genre:place:restaurant:vegan",
+            "urn:tag:decor:qloo:chic",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:customer_identity:qloo:dessert_enthusiasts",
+            "urn:tag:interests:qloo:artisanal_baking",
+            "urn:tag:cuisine:qloo:vegan",
+            "urn:tag:customer_identity:qloo:couples",
+            "urn:tag:neighborhood_characteristic:qloo:creative",
+            "urn:tag:service_type:qloo:pickup",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:activity_type:qloo:social_community",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:culinary_style:qloo:traditional",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:visit_intent:qloo:destination",
+            "urn:tag:dietary_option:qloo:plant_based",
+            "urn:tag:nearby_attraction:qloo:williamsburg_waterfront",
+            "urn:tag:ambience:qloo:vintage",
+            "urn:tag:interests:qloo:specialty_coffee",
+            "urn:tag:customer_identity:qloo:groups_of_friends",
+            "urn:tag:setting:qloo:commercial",
+            "urn:tag:amenity:qloo:outdoor_seating",
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:menu_highlight:qloo:maple",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:cost_description:place:moderately_expensive",
+            "urn:tag:neighborhood_characteristic:qloo:bustling",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:decor:qloo:vintage",
+            "urn:tag:genre:place:restaurant:donut_shop",
+            "urn:tag:menu_highlight:qloo:pistachio",
+            "urn:tag:cuisine:qloo:american"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5388358404660475
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4611641595339525
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Thu 08:00–18:00 · slot 15:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1421 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 2"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "donut_shop"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "friday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "tv_show"
+        },
+        "card": {
+          "slot": {
+            "day": "friday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "tv_show"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "27F3C711-4DB5-40B8-AFC3-18CA1CF7517A",
+          "name": "High Fidelity",
+          "entityType": "urn:entity:tv_show",
+          "affinity": 0.9593029088208378,
+          "tags": [
+            "urn:tag:keyword:media:lgbt_series",
+            "urn:tag:keyword:media:club",
+            "urn:tag:archetype:qloo:the_heartbroken_heroine",
+            "urn:tag:keyword:media:heartbreak",
+            "urn:tag:keyword:qloo:music",
+            "urn:tag:keyword:media:romantic_comedy",
+            "urn:tag:keyword:media:record_store",
+            "urn:tag:keyword:media:black_protagonist",
+            "urn:tag:keyword:media:cancelled_series",
+            "urn:tag:keyword:media:brother_sister_relationship",
+            "urn:tag:keyword:media:based_on_novel",
+            "urn:tag:genre:media:romance",
+            "urn:tag:keyword:media:life",
+            "urn:tag:keyword:qloo:relationships",
+            "urn:tag:keyword:media:black_female_protagonist",
+            "urn:tag:keyword:media:gay_friend",
+            "urn:tag:genre:qloo:romantic_comedy",
+            "urn:tag:keyword:media:neighbor",
+            "urn:tag:keyword:media:two_word_title",
+            "urn:tag:theme:qloo:music_as_therapy",
+            "urn:tag:keyword:media:romantic_relationship",
+            "urn:tag:keyword:media:white_man_black_woman_relationship",
+            "urn:tag:keyword:media:hulu",
+            "urn:tag:subgenre:qloo:musical_drama",
+            "urn:tag:keyword:media:past_and_present",
+            "urn:tag:keyword:media:adaptation",
+            "urn:tag:keyword:media:lp",
+            "urn:tag:keyword:media:lgbt",
+            "urn:tag:keyword:media:female_protagonist",
+            "urn:tag:keyword:media:album",
+            "urn:tag:keyword:qloo:record_store",
+            "urn:tag:keyword:media:breaking_the_fourth_wall",
+            "urn:tag:keyword:media:reference_to_the_sopranos",
+            "urn:tag:theme:qloo:love",
+            "urn:tag:keyword:qloo:brooklyn",
+            "urn:tag:keyword:media:series_pilot",
+            "urn:tag:keyword:media:strong_female_lead",
+            "urn:tag:theme:qloo:heartbreak",
+            "urn:tag:keyword:media:male_wears_underwear",
+            "urn:tag:theme:qloo:self_discovery",
+            "urn:tag:keyword:qloo:self_discovery",
+            "urn:tag:keyword:media:friendship",
+            "urn:tag:keyword:media:black_woman",
+            "urn:tag:keyword:media:love",
+            "urn:tag:keyword:media:gay",
+            "urn:tag:keyword:qloo:heartbreak",
+            "urn:tag:keyword:media:reference_to_david_bowie",
+            "urn:tag:archetype:qloo:the_quest_for_love",
+            "urn:tag:keyword:media:based_on_film",
+            "urn:tag:keyword:qloo:pop_culture",
+            "urn:tag:keyword:media:remake",
+            "urn:tag:genre:media:music",
+            "urn:tag:theme:qloo:nostalgia",
+            "urn:tag:keyword:media:talking_about_music",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:keyword:media:end_of_a_relationship",
+            "urn:tag:keyword:media:music_fan",
+            "urn:tag:keyword:media:feel_good_romance",
+            "urn:tag:archetype:qloo:the_music_lover",
+            "urn:tag:genre:media:drama",
+            "urn:tag:keyword:media:friendship_between_man_and_woman"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5102613146930709
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.48973868530692916
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "27F3C711-4DB5-40B8-AFC3-18CA1CF7517A"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "saturday",
+          "hour": 11,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "saturday",
+            "hour": 11,
+            "rung": "solo"
+          },
+          "hour": 18,
+          "movedFrom": 11,
+          "rung": "solo",
+          "entity_id": "684C73AD-07E2-4EDC-A874-9FC255987DDE",
+          "name": "Muz Muz Shop & Cafè",
+          "entityType": "urn:entity:place",
+          "affinity": 0.8888859901649316,
+          "distance_m": 1228,
+          "priceLevel": 1,
+          "hoursText": "Sat 12:00–21:00",
+          "address": "296 Graham Ave Brooklyn, NY 11211",
+          "tags": [
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:pets:place:dogs_allowed_outside",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:culinary_style:qloo:cafe",
+            "urn:tag:pets:place:dogs_allowed_inside",
+            "urn:tag:menu_highlight:qloo:vegan_soft_serve",
+            "urn:tag:inclusivity:place:lgbtq_friendly",
+            "urn:tag:visit_intent:qloo:routine_visit",
+            "urn:tag:setting:qloo:commercial",
+            "urn:tag:menu_highlight:qloo:mushroom_latte",
+            "urn:tag:activity_type:qloo:community_gathering",
+            "urn:tag:amenity:qloo:delivery",
+            "urn:tag:interests:qloo:plant_based_nutrition",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:offerings:place:vegetarian_options",
+            "urn:tag:parking:place:free_street_parking",
+            "urn:tag:cuisine:qloo:asian",
+            "urn:tag:customer_identity:qloo:vegans",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:interests:qloo:sustainable_living",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:visit_intent:qloo:convenience_stop",
+            "urn:tag:genre:place:restaurant:cafe",
+            "urn:tag:offerings:place:go_for_just_dessert",
+            "urn:tag:amenity:qloo:lgbtq_friendly",
+            "urn:tag:view:qloo:streetscape",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:service_options:place:dine_in",
+            "urn:tag:menu_highlight:qloo:cacao_latte",
+            "urn:tag:dietary_option:qloo:organic",
+            "urn:tag:category:place:coffee_shop",
+            "urn:tag:customer_identity:qloo:vegetarians",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:menu_highlight:qloo:espresso",
+            "urn:tag:ambience:qloo:community_focused",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:beverage_offering:qloo:cultural_beverages",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:setting:qloo:neighborhood_shop",
+            "urn:tag:dietary_option:qloo:plant_based",
+            "urn:tag:amenity:qloo:in_store_shopping",
+            "urn:tag:credit_card:place:discover",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:credit_card:place:visa",
+            "urn:tag:beverage_offering:qloo:specialty_non_alcoholic",
+            "urn:tag:interests:qloo:mindful_wellness",
+            "urn:tag:amenity:qloo:pet_friendly",
+            "urn:tag:offerings:place:quick_bite",
+            "urn:tag:offerings:place:healthy_options",
+            "urn:tag:culinary_style:qloo:artisanal",
+            "urn:tag:menu_highlight:qloo:turmeric_latte",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:service_type:qloo:pickup",
+            "urn:tag:amenity:qloo:curbside_pickup",
+            "urn:tag:activity_type:qloo:herbal_consultation",
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:activity_type:qloo:shopping",
+            "urn:tag:dietary_option:qloo:dairy_free",
+            "urn:tag:interests:qloo:specialty_coffee",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:menu_highlight:qloo:soul_latte",
+            "urn:tag:genre:place",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:cuisine:qloo:herbal_beverages",
+            "urn:tag:amenities:place:gender_neutral_restroom",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:dietary_option:qloo:lactose_free",
+            "urn:tag:decor:qloo:minimalist",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:cuisine:qloo:plant_based",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:neighborhood_characteristic:qloo:creative_community",
+            "urn:tag:ambience:qloo:mindful",
+            "urn:tag:offerings:place:organic_dishes",
+            "urn:tag:time_of_day_fit:qloo:evening",
+            "urn:tag:genre:place:restaurant:vegan",
+            "urn:tag:ambience:qloo:relaxing",
+            "urn:tag:parking:place:paid_street_parking",
+            "urn:tag:offerings:place:vegan_options",
+            "urn:tag:genre:place:restaurant:coffee_shop",
+            "urn:tag:cuisine:qloo:desserts",
+            "urn:tag:genre:place:restaurant:ice_cream_shop",
+            "urn:tag:cost_description:place:1_to_10",
+            "urn:tag:offerings:place:hot_tea",
+            "urn:tag:culinary_style:qloo:sustainable",
+            "urn:tag:menu_highlight:qloo:match_a_ffogato",
+            "urn:tag:decor:qloo:plant_centric",
+            "urn:tag:interests:qloo:herbal_medicine",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:nearby_attraction:qloo:graham_avenue_shopping_district",
+            "urn:tag:customer_identity:qloo:pet_owners",
+            "urn:tag:nearby_attraction:qloo:cooper_park",
+            "urn:tag:menu_highlight:qloo:matcha_latte",
+            "urn:tag:menu_highlight:qloo:chai_latte",
+            "urn:tag:customer_identity:qloo:health_conscious",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:category:place:cafe",
+            "urn:tag:category:place:ice_cream_shop",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:category:place:vegan_restaurant",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:credit_card:place:american_express",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:customer_identity:qloo:lgbtq_",
+            "urn:tag:ambience:qloo:social",
+            "urn:tag:ambience:qloo:bright"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5518254574096565
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4481745425903434
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "684C73AD-07E2-4EDC-A874-9FC255987DDE"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sat 12:00–21:00 · slot 18:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1228 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "restaurant:cafe"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "sunday",
+          "hour": 14,
+          "rung": "social"
+        },
+        "card": {
+          "slot": {
+            "day": "sunday",
+            "hour": 14,
+            "rung": "social"
+          },
+          "hour": 14,
+          "rung": "social",
+          "entity_id": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1",
+          "name": "Juice Generation",
+          "entityType": "urn:entity:place",
+          "affinity": 0.8815537838619008,
+          "distance_m": 1002,
+          "priceLevel": 1,
+          "hoursText": "Sun 08:00–21:00",
+          "address": "210 Bedford Ave Brooklyn, NY 11249",
+          "tags": [
+            "urn:tag:ambience:qloo:lively",
+            "urn:tag:customer_identity:qloo:young_professionals",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:culinary_style:qloo:farm_to_table",
+            "urn:tag:customer_identity:qloo:families",
+            "urn:tag:customer_identity:qloo:health_conscious",
+            "urn:tag:customer_identity:qloo:solo_diners",
+            "urn:tag:beverage_offering:qloo:fresh_juices",
+            "urn:tag:nearby_attraction:qloo:east_river_state_park",
+            "urn:tag:decor:qloo:botanical",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:setting:qloo:counter_serve",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:genre:place:restaurant:health_food",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:dietary_option:qloo:dairy_free",
+            "urn:tag:service_type:qloo:counter_service",
+            "urn:tag:category:place:juice_shop",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:interests:qloo:fitness_recovery",
+            "urn:tag:children:place:good_for_kids",
+            "urn:tag:category:place:vegan_restaurant",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:menu_highlight:qloo:mucho_mango",
+            "urn:tag:visit_intent:qloo:convenience_stop",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:amenity:qloo:wheelchair_accessible",
+            "urn:tag:menu_highlight:qloo:peanut_butter_acai_bowl",
+            "urn:tag:category:place:health_food_restaurant",
+            "urn:tag:cuisine:qloo:raw_foods",
+            "urn:tag:menu_highlight:qloo:dragon_fruit_and_watermelon_smoothie",
+            "urn:tag:interests:qloo:vegan_nutrition",
+            "urn:tag:neighborhood_characteristic:qloo:creative",
+            "urn:tag:genre:place",
+            "urn:tag:dietary_option:qloo:healthy_options",
+            "urn:tag:neighborhood_characteristic:qloo:youthful",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:offerings:place:vegan_options",
+            "urn:tag:genre:place:restaurant:juice_shop",
+            "urn:tag:beverage_offering:qloo:specialty_non_alcoholic",
+            "urn:tag:amenity:qloo:takeout",
+            "urn:tag:view:qloo:street_view",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:culinary_style:qloo:contemporary",
+            "urn:tag:ambience:qloo:fast_paced",
+            "urn:tag:ambience:qloo:clean",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:genre:place:restaurant:vegan",
+            "urn:tag:dining_options:place:order_ahead",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:nearby_attraction:qloo:bushwick_inlet_park",
+            "urn:tag:amenity:qloo:seating",
+            "urn:tag:amenities:place:restroom",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:menu_highlight:qloo:hi_fibe",
+            "urn:tag:decor:qloo:minimalist",
+            "urn:tag:nearby_attraction:qloo:bedford_avenue_shopping_district",
+            "urn:tag:cuisine:qloo:plant_based",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:amenity:qloo:delivery",
+            "urn:tag:interests:qloo:healthy_lifestyle",
+            "urn:tag:visit_intent:qloo:routine_visit",
+            "urn:tag:beverage_offering:qloo:smoothies",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:setting:qloo:city_center",
+            "urn:tag:interests:qloo:plant_based_living",
+            "urn:tag:neighborhood_characteristic:qloo:bustling",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:cuisine:qloo:vegan",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:activity_type:qloo:healthy_eating",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:cuisine:qloo:health_food",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:cost_description:place:10_to_20",
+            "urn:tag:culinary_style:qloo:casual",
+            "urn:tag:menu_highlight:qloo:get_your_green_on",
+            "urn:tag:interests:qloo:wellness",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:menu_highlight:qloo:refined_sugar_free_gelato",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:dietary_option:qloo:gluten_free",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:ambience:qloo:plant_filled",
+            "urn:tag:dietary_option:qloo:plant_based",
+            "urn:tag:ambience:qloo:aesthetically_pleasing",
+            "urn:tag:ambience:qloo:bright",
+            "urn:tag:cuisine:qloo:american",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:cuisine:qloo:juice_and_smoothie_bar",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:service_options:place:dine_in"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.5414524325328953
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.4585475674671047
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sun 08:00–21:00 · slot 14:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1002 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "restaurant:health_food"
+            }
+          ],
+          "geohash": "dr5rsuw"
+        }
+      }
+    ],
+    "refusals": [
+      {
+        "day": "thursday",
+        "hour": 18,
+        "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "name": "Patisserie Tomoko",
+        "rule": "R-OPEN",
+        "detail": "closes 18:00 · slot 18:00",
+        "verdict": "REFUSE",
+        "movedTo": 15
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "thursday",
+        "hour": 18,
+        "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "name": "Dun-Well Doughnuts",
+        "rule": "R-OPEN",
+        "detail": "closes 18:00 · slot 18:00",
+        "verdict": "REFUSE",
+        "movedTo": 15
+      },
+      {
+        "day": "saturday",
+        "hour": 11,
+        "entity_id": "684C73AD-07E2-4EDC-A874-9FC255987DDE",
+        "name": "Muz Muz Shop & Cafè",
+        "rule": "R-OPEN",
+        "detail": "opens 12:00 · slot 11:00",
+        "verdict": "REFUSE",
+        "movedTo": 18
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "F22DCC94-6BC4-47C9-BE4C-E65E0C4A10B9",
+        "name": "Marlow & Daughters",
+        "rule": "R-KIND",
+        "detail": "not an activity: butcher_shop",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "thursday",
+        "hour": 15,
+        "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "name": "Patisserie Tomoko",
+        "rule": "R-ALC",
+        "detail": "service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "saturday",
+        "hour": 11,
+        "entity_id": "5CB55122-9BB2-4A34-822C-2385F4DDF318",
+        "name": "Brooklyn Ball Factory",
+        "rule": "R-ALC",
+        "detail": "offerings:place:alcohol, amenities:place:bar_onsite",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "F3909570-419C-45F1-8AC5-8F4038A29C51",
+        "name": "Mozzarella Kosher",
+        "rule": "R-ALC",
+        "detail": "beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      }
+    ],
+    "review": [],
+    "calls": [],
+    "struck": [
+      {
+        "day": "thursday",
+        "hour": 15,
+        "entity_id": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "name": "Patisserie Tomoko",
+        "rule": "R-ALC",
+        "detail": "service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "saturday",
+        "hour": 11,
+        "entity_id": "5CB55122-9BB2-4A34-822C-2385F4DDF318",
+        "name": "Brooklyn Ball Factory",
+        "rule": "R-ALC",
+        "detail": "offerings:place:alcohol, amenities:place:bar_onsite",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "F3909570-419C-45F1-8AC5-8F4038A29C51",
+        "name": "Mozzarella Kosher",
+        "rule": "R-ALC",
+        "detail": "beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine",
+        "verdict": "REFUSE",
+        "struckByToggle": true
+      }
+    ],
+    "refilled": 3
+  },
+  "ratings": [
+    {
+      "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+      "pleasure": 7,
+      "mastery": 5
+    },
+    {
+      "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+      "pleasure": 8,
+      "mastery": 6
+    },
+    {
+      "entity_id": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1",
+      "pleasure": 2,
+      "mastery": 3
+    }
+  ],
+  "history": {
+    "rekindled": [
+      {
+        "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+        "name": "Lucy Dacus",
+        "tags": [
+          "urn:tag:artist:qloo:thoughtful",
+          "urn:tag:artist:qloo:melodic",
+          "urn:tag:subgenre:qloo:singer_songwriter",
+          "urn:tag:theme:qloo:identity",
+          "urn:tag:artist:qloo:introspective",
+          "urn:tag:style:qloo:indie_folk",
+          "urn:tag:style:qloo:emotive_balladry",
+          "urn:tag:genre:qloo:indie_folk",
+          "urn:tag:style:qloo:confessional_singer_songwriter",
+          "urn:tag:style:qloo:expressive",
+          "urn:tag:audience:qloo:passionate",
+          "urn:tag:influence:qloo:indie_folk",
+          "urn:tag:instrument:qloo:guitar",
+          "urn:tag:audience:qloo:loyal",
+          "urn:tag:subgenre:qloo:folk_rock",
+          "urn:tag:artist:qloo:lyrical",
+          "urn:tag:style:qloo:raw",
+          "urn:tag:obscurity:qloo:3",
+          "urn:tag:genre:qloo:indie_rock",
+          "urn:tag:theme:qloo:growth",
+          "urn:tag:audience:qloo:introspective",
+          "urn:tag:genre:qloo:alternative_rock",
+          "urn:tag:style:qloo:intimate",
+          "urn:tag:influence:qloo:singer_songwriter",
+          "urn:tag:audience:qloo:thoughtful",
+          "urn:tag:theme:qloo:introspection",
+          "urn:tag:influenced_by:qloo:joni_mitchell",
+          "urn:tag:influenced_by:qloo:cat_power",
+          "urn:tag:instrument:qloo:piano",
+          "urn:tag:influence:qloo:indie_rock",
+          "urn:tag:theme:qloo:mental_health",
+          "urn:tag:influenced_by:qloo:neil_young",
+          "urn:tag:artist:qloo:emotive",
+          "urn:tag:music:qloo:atmospheric",
+          "urn:tag:genre:music:indie",
+          "urn:tag:style:qloo:indie_rock",
+          "urn:tag:music:qloo:melodic",
+          "urn:tag:influenced_by:qloo:elliott_smith",
+          "urn:tag:style:qloo:poetic_lyricism",
+          "urn:tag:genre:music:singer_songwriter",
+          "urn:tag:style:qloo:engaging",
+          "urn:tag:theme:qloo:relationships",
+          "urn:tag:audience:qloo:devoted",
+          "urn:tag:audience:qloo:curious",
+          "urn:tag:music:qloo:introspective",
+          "urn:tag:music:qloo:confessional",
+          "urn:tag:music:qloo:lyrical",
+          "urn:tag:music:qloo:cinematic",
+          "urn:tag:music:qloo:nuanced",
+          "urn:tag:style:qloo:earnest",
+          "urn:tag:style:qloo:storytelling",
+          "urn:tag:style:qloo:measured",
+          "urn:tag:style:qloo:dynamic",
+          "urn:tag:artist:qloo:earnest",
+          "urn:tag:artist:qloo:confessional",
+          "urn:tag:artist:qloo:warm",
+          "urn:tag:artist:qloo:resonant",
+          "urn:tag:artist:qloo:narrative",
+          "urn:tag:artist:qloo:nuanced",
+          "urn:tag:artist:qloo:cinematic",
+          "urn:tag:complexity_scale:qloo:6",
+          "urn:tag:style:qloo:introspective_indie_rock",
+          "urn:tag:style:qloo:melancholic_chamber_folk",
+          "urn:tag:style:qloo:narrative_folk_rock",
+          "urn:tag:style:qloo:cinematic_alt_indie",
+          "urn:tag:influence:qloo:modern_singer_songwriter",
+          "urn:tag:influenced_by:qloo:fiona_apple",
+          "urn:tag:influenced_by:qloo:sufjan_stevens",
+          "urn:tag:influenced_by:qloo:laura_marling",
+          "urn:tag:influenced_by:qloo:conor_oberst",
+          "urn:tag:instrument:qloo:vocals",
+          "urn:tag:theme:qloo:memory",
+          "urn:tag:theme:qloo:family",
+          "urn:tag:theme:qloo:coming_of_age",
+          "urn:tag:theme:qloo:grief",
+          "urn:tag:theme:qloo:longing",
+          "urn:tag:theme:qloo:trauma",
+          "urn:tag:obscurity:qloo:4",
+          "urn:tag:genre:qloo:folk",
+          "urn:tag:genre:qloo:singer_songwriter",
+          "urn:tag:genre:qloo:indie",
+          "urn:tag:subgenre:qloo:indie_pop",
+          "urn:tag:subgenre:qloo:alternative_rock",
+          "urn:tag:subgenre:qloo:chamber_pop",
+          "urn:tag:voice_type:qloo:alto"
+        ],
+        "entityType": "urn:entity:artist"
+      },
+      {
+        "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "name": "Dun-Well Doughnuts",
+        "tags": [
+          "urn:tag:setting:qloo:urban",
+          "urn:tag:category:place:donut_shop",
+          "urn:tag:ambience:qloo:charming",
+          "urn:tag:ambience:qloo:lively",
+          "urn:tag:nearby_attraction:qloo:bushwick_collective_street_art",
+          "urn:tag:menu_highlight:qloo:pb_j",
+          "urn:tag:customer_identity:qloo:vegans",
+          "urn:tag:culinary_style:qloo:artisanal",
+          "urn:tag:activity_type:qloo:printing_services",
+          "urn:tag:menu_highlight:qloo:raspberry_filled",
+          "urn:tag:category:place:bakery",
+          "urn:tag:interests:qloo:sustainable_food",
+          "urn:tag:customer_identity:qloo:foodies",
+          "urn:tag:visit_intent:qloo:impulse_visit",
+          "urn:tag:service_type:qloo:takeout",
+          "urn:tag:noise_level:qloo:moderate",
+          "urn:tag:beverage_offering:qloo:coffee_and_tea",
+          "urn:tag:service_type:qloo:drive_thru",
+          "urn:tag:view:qloo:street_view",
+          "urn:tag:menu_highlight:qloo:sweet_butter_rosemary",
+          "urn:tag:decor:qloo:antique_coffee_shop",
+          "urn:tag:activity_type:qloo:dining_drinking",
+          "urn:tag:time_of_day_fit:qloo:morning",
+          "urn:tag:menu_highlight:qloo:cinnamon_roll",
+          "urn:tag:genre:place:restaurant:bakery",
+          "urn:tag:age_range:qloo:35_44",
+          "urn:tag:setting:qloo:street_level_shop",
+          "urn:tag:neighborhood_characteristic:qloo:central",
+          "urn:tag:decor:qloo:rustic",
+          "urn:tag:amenity:qloo:printer",
+          "urn:tag:decor:qloo:cozy",
+          "urn:tag:dietary_option:qloo:dairy_free",
+          "urn:tag:culinary_style:qloo:innovative",
+          "urn:tag:interests:qloo:urban_exploration",
+          "urn:tag:neighborhood_characteristic:qloo:trendy",
+          "urn:tag:interests:qloo:plant_based_living",
+          "urn:tag:amenity:qloo:takeout",
+          "urn:tag:customer_identity:qloo:young_adults",
+          "urn:tag:menu_highlight:qloo:boston_cream",
+          "urn:tag:genre:place",
+          "urn:tag:age_range:qloo:18_24",
+          "urn:tag:offerings:place:vegan_options",
+          "urn:tag:neighborhood_characteristic:qloo:walkable",
+          "urn:tag:ambience:qloo:homey",
+          "urn:tag:cuisine:qloo:desserts",
+          "urn:tag:category:place:vegan_restaurant",
+          "urn:tag:amenity:qloo:delivery",
+          "urn:tag:beverage_offering:qloo:specialty_non_alcoholic",
+          "urn:tag:genre:place:restaurant:vegan",
+          "urn:tag:decor:qloo:chic",
+          "urn:tag:service_type:qloo:delivery",
+          "urn:tag:ambience:qloo:welcoming",
+          "urn:tag:customer_identity:qloo:dessert_enthusiasts",
+          "urn:tag:interests:qloo:artisanal_baking",
+          "urn:tag:cuisine:qloo:vegan",
+          "urn:tag:customer_identity:qloo:couples",
+          "urn:tag:neighborhood_characteristic:qloo:creative",
+          "urn:tag:service_type:qloo:pickup",
+          "urn:tag:service_type:qloo:dine_in",
+          "urn:tag:activity_type:qloo:social_community",
+          "urn:tag:dietary_option:qloo:vegan",
+          "urn:tag:culinary_style:qloo:traditional",
+          "urn:tag:genre:place:restaurant",
+          "urn:tag:visit_intent:qloo:destination",
+          "urn:tag:dietary_option:qloo:plant_based",
+          "urn:tag:nearby_attraction:qloo:williamsburg_waterfront",
+          "urn:tag:ambience:qloo:vintage",
+          "urn:tag:interests:qloo:specialty_coffee",
+          "urn:tag:customer_identity:qloo:groups_of_friends",
+          "urn:tag:setting:qloo:commercial",
+          "urn:tag:amenity:qloo:outdoor_seating",
+          "urn:tag:neighborhood_characteristic:qloo:authentic",
+          "urn:tag:customer_identity:qloo:locals",
+          "urn:tag:menu_highlight:qloo:maple",
+          "urn:tag:time_of_day_fit:qloo:afternoon",
+          "urn:tag:age_range:qloo:25_29",
+          "urn:tag:cost_description:place:moderately_expensive",
+          "urn:tag:neighborhood_characteristic:qloo:bustling",
+          "urn:tag:ambience:qloo:casual",
+          "urn:tag:decor:qloo:vintage",
+          "urn:tag:genre:place:restaurant:donut_shop",
+          "urn:tag:menu_highlight:qloo:pistachio",
+          "urn:tag:cuisine:qloo:american"
+        ],
+        "entityType": "urn:entity:place"
+      }
+    ],
+    "lowRated": [
+      "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1"
+    ],
+    "excludeTags": [
+      "urn:tag:genre:place:restaurant:health_food",
+      "urn:tag:genre:place:restaurant:juice_shop"
+    ],
+    "signalTags": [
+      "urn:tag:genre:place:restaurant:bakery",
+      "urn:tag:genre:place:restaurant:vegan"
+    ]
+  },
+  "week2": {
+    "week": 2,
+    "slots": [
+      {
+        "slot": {
+          "day": "monday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "artist"
+        },
+        "card": {
+          "slot": {
+            "day": "monday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "artist"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "AD420A3F-5F09-4C1C-BB1E-A3DEB937F184",
+          "name": "Big Thief",
+          "entityType": "urn:entity:artist",
+          "affinity": 0.9760615753421261,
+          "tags": [
+            "urn:tag:theme:qloo:loss",
+            "urn:tag:audience:qloo:loyal",
+            "urn:tag:style:qloo:expressive",
+            "urn:tag:audience:qloo:introspective",
+            "urn:tag:style:qloo:poetic_indie_rock",
+            "urn:tag:influenced_by:qloo:joni_mitchell",
+            "urn:tag:artist:qloo:poetic",
+            "urn:tag:subgenre:qloo:singer_songwriter",
+            "urn:tag:theme:qloo:relationships",
+            "urn:tag:artist:qloo:intimate",
+            "urn:tag:genre:music:indie",
+            "urn:tag:influence:qloo:singer_songwriter",
+            "urn:tag:subgenre:qloo:indie_folk",
+            "urn:tag:instrument:qloo:guitar",
+            "urn:tag:obscurity:qloo:3",
+            "urn:tag:theme:qloo:love",
+            "urn:tag:genre:qloo:indie_rock",
+            "urn:tag:influence:qloo:folk_rock",
+            "urn:tag:style:qloo:intimate",
+            "urn:tag:influenced_by:qloo:patti_smith",
+            "urn:tag:artist:qloo:raw",
+            "urn:tag:influence:qloo:indie_rock",
+            "urn:tag:audience:qloo:passionate",
+            "urn:tag:style:qloo:raw",
+            "urn:tag:audience:qloo:devoted",
+            "urn:tag:instrument:qloo:drums",
+            "urn:tag:artist:qloo:melancholic",
+            "urn:tag:style:qloo:emotional_singer_songwriter",
+            "urn:tag:style:qloo:melancholic_folk_rock",
+            "urn:tag:genre:music:indie_folk",
+            "urn:tag:influenced_by:qloo:neil_young",
+            "urn:tag:theme:qloo:human_vulnerability",
+            "urn:tag:style:qloo:lo_fi_indie_rock",
+            "urn:tag:style:qloo:dynamic",
+            "urn:tag:genre:music:folk_rock",
+            "urn:tag:music:qloo:organic",
+            "urn:tag:instrument:qloo:vocals",
+            "urn:tag:influenced_by:qloo:bob_dylan",
+            "urn:tag:genre:qloo:folk_rock",
+            "urn:tag:artist:qloo:emotive",
+            "urn:tag:instrument:qloo:bass",
+            "urn:tag:music:qloo:melancholic",
+            "urn:tag:theme:qloo:nature",
+            "urn:tag:genre:qloo:alternative_rock",
+            "urn:tag:style:qloo:indie_folk",
+            "urn:tag:audience:qloo:attentive",
+            "urn:tag:audience:qloo:reflective",
+            "urn:tag:audience:qloo:indie",
+            "urn:tag:music:qloo:intimate",
+            "urn:tag:music:qloo:emotive",
+            "urn:tag:music:qloo:lyrical",
+            "urn:tag:music:qloo:atmospheric",
+            "urn:tag:music:qloo:raw",
+            "urn:tag:music:qloo:pastoral",
+            "urn:tag:music:qloo:dynamic",
+            "urn:tag:music:qloo:confessional",
+            "urn:tag:style:qloo:cathartic",
+            "urn:tag:style:qloo:spare",
+            "urn:tag:artist:qloo:lyrical",
+            "urn:tag:artist:qloo:atmospheric",
+            "urn:tag:artist:qloo:dynamic",
+            "urn:tag:artist:qloo:pastoral",
+            "urn:tag:artist:qloo:confessional",
+            "urn:tag:complexity_scale:qloo:6",
+            "urn:tag:style:qloo:lo_fi_indie_folk",
+            "urn:tag:style:qloo:atmospheric_art_folk",
+            "urn:tag:style:qloo:psychedelic_folk_rock",
+            "urn:tag:style:qloo:intimate_singer_songwriter",
+            "urn:tag:style:qloo:dynamic_indie_rock",
+            "urn:tag:influence:qloo:indie_folk",
+            "urn:tag:influence:qloo:contemporary_folk",
+            "urn:tag:influenced_by:qloo:nick_drake",
+            "urn:tag:influenced_by:qloo:elliott_smith",
+            "urn:tag:influenced_by:qloo:cat_power",
+            "urn:tag:instrument:qloo:voice",
+            "urn:tag:instrument:qloo:acoustic_guitar",
+            "urn:tag:instrument:qloo:electric_guitar",
+            "urn:tag:instrument:qloo:piano",
+            "urn:tag:instrument:qloo:percussion",
+            "urn:tag:theme:qloo:intimacy",
+            "urn:tag:theme:qloo:memory",
+            "urn:tag:theme:qloo:grief",
+            "urn:tag:theme:qloo:domestic_life",
+            "urn:tag:theme:qloo:spirituality",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:genre:qloo:folk",
+            "urn:tag:genre:qloo:indie_folk",
+            "urn:tag:genre:qloo:singer_songwriter",
+            "urn:tag:subgenre:qloo:art_folk",
+            "urn:tag:subgenre:qloo:psychedelic_folk",
+            "urn:tag:subgenre:qloo:alternative_rock",
+            "urn:tag:subgenre:qloo:acoustic",
+            "urn:tag:subgenre:qloo:lo_fi",
+            "urn:tag:voice_type:qloo:mezzo_soprano"
+          ],
+          "why": [
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.26576236412302573
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.26366120689820277
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.26356892862053943
+            },
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.20700750035823212
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "AD420A3F-5F09-4C1C-BB1E-A3DEB937F184"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "tuesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "podcast"
+        },
+        "card": {
+          "slot": {
+            "day": "tuesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "podcast"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "14EECB60-E987-47CA-8582-D8FEB225C945",
+          "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+          "entityType": "urn:entity:podcast",
+          "affinity": 0.9696960868285961,
+          "tags": [
+            "urn:tag:genre:media:society_culture",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:genre:media:podcasts"
+          ],
+          "why": [
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.25987102562004
+            },
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.25899190199646005
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.2524446357524631
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.22869243663103672
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "14EECB60-E987-47CA-8582-D8FEB225C945"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "wednesday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "book"
+        },
+        "card": {
+          "slot": {
+            "day": "wednesday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "book"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "CEA70E01-7BF7-4BBE-9FE9-C7DBBCDC8D3D",
+          "name": "A Little Devil in America: Notes in Praise of Black Performance",
+          "entityType": "urn:entity:book",
+          "affinity": 0.8993118961093916,
+          "tags": [
+            "urn:tag:genre:media:african_american",
+            "urn:tag:genre:media:art",
+            "urn:tag:genre:media:memoir",
+            "urn:tag:genre:media:nonfiction",
+            "urn:tag:genre:media:music",
+            "urn:tag:genre:media:race",
+            "urn:tag:genre:media:essays",
+            "urn:tag:genre:media:audiobook",
+            "urn:tag:genre:media:poetry",
+            "urn:tag:genre:media:history",
+            "urn:tag:age_ranges:qloo:18_24",
+            "urn:tag:age_ranges:qloo:25_29",
+            "urn:tag:age_ranges:qloo:30_34",
+            "urn:tag:age_ranges:qloo:35_44",
+            "urn:tag:age_ranges:qloo:45_54",
+            "urn:tag:age_ranges:qloo:55_",
+            "urn:tag:critical_descriptor:qloo:stirring",
+            "urn:tag:critical_descriptor:qloo:profound",
+            "urn:tag:critical_descriptor:qloo:insightful",
+            "urn:tag:critical_descriptor:qloo:lyrical",
+            "urn:tag:critical_descriptor:qloo:emotional",
+            "urn:tag:book_format:qloo:hardcover",
+            "urn:tag:book_format:qloo:paperback",
+            "urn:tag:book_format:qloo:ebook",
+            "urn:tag:genre:qloo:non_fiction",
+            "urn:tag:keyword:qloo:black_performance",
+            "urn:tag:keyword:qloo:american_culture",
+            "urn:tag:keyword:qloo:josephine_baker",
+            "urn:tag:keyword:qloo:music",
+            "urn:tag:keyword:qloo:dance",
+            "urn:tag:keyword:qloo:politics",
+            "urn:tag:keyword:qloo:personal_history",
+            "urn:tag:keyword:qloo:love",
+            "urn:tag:keyword:qloo:grief",
+            "urn:tag:keyword:qloo:prose",
+            "urn:tag:media_type:qloo:print",
+            "urn:tag:media_type:qloo:digital",
+            "urn:tag:narrative:qloo:first_person",
+            "urn:tag:character:qloo:reflective",
+            "urn:tag:character:qloo:insightful",
+            "urn:tag:character:qloo:emotional",
+            "urn:tag:character:qloo:cultural",
+            "urn:tag:character:qloo:historical",
+            "urn:tag:theme:qloo:cultural_identity",
+            "urn:tag:theme:qloo:performance",
+            "urn:tag:theme:qloo:race",
+            "urn:tag:theme:qloo:history",
+            "urn:tag:theme:qloo:art",
+            "urn:tag:setting:qloo:columbus_ohio",
+            "urn:tag:setting:qloo:paris_france",
+            "urn:tag:setting:qloo:united_states",
+            "urn:tag:motif:qloo:performance",
+            "urn:tag:motif:qloo:cultural_identity",
+            "urn:tag:motif:qloo:black_experience",
+            "urn:tag:subgenre:qloo:cultural_criticism",
+            "urn:tag:subgenre:qloo:essays",
+            "urn:tag:time_period:qloo:1960s",
+            "urn:tag:time_period:qloo:20th_century",
+            "urn:tag:time_period:qloo:21st_century",
+            "urn:tag:style:qloo:lyrical",
+            "urn:tag:style:qloo:insightful",
+            "urn:tag:style:qloo:poignant",
+            "urn:tag:style:qloo:rhythmic",
+            "urn:tag:style:qloo:thought_provoking",
+            "urn:tag:viewer_characteristic:qloo:reflective",
+            "urn:tag:viewer_characteristic:qloo:culturally_aware",
+            "urn:tag:viewer_characteristic:qloo:intellectual",
+            "urn:tag:viewer_characteristic:qloo:curious",
+            "urn:tag:viewer_characteristic:qloo:empathetic"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.2808432503052556
+            },
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.27876948107992416
+            },
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.25307138217510305
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.18731588643971717
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "CEA70E01-7BF7-4BBE-9FE9-C7DBBCDC8D3D"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "thursday",
+          "hour": 18,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "thursday",
+            "hour": 18,
+            "rung": "solo"
+          },
+          "hour": 13,
+          "movedFrom": 18,
+          "rung": "solo",
+          "entity_id": "61C5767C-9F70-4886-836E-A7FD9620DF63",
+          "name": "Ceremonia Bakeshop",
+          "entityType": "urn:entity:place",
+          "affinity": 0.91608486075072,
+          "distance_m": 563,
+          "priceLevel": 1,
+          "hoursText": "Thu 08:00–15:00",
+          "address": "743 Driggs Ave Brooklyn, NY 11211",
+          "tags": [
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:genre:place:restaurant:coffee_shop",
+            "urn:tag:interests:qloo:food_photography",
+            "urn:tag:credit_card:place:visa",
+            "urn:tag:decor:qloo:minimalist",
+            "urn:tag:credit_card:place:american_express",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:ambience:qloo:comfortable",
+            "urn:tag:credit_card:place:discover",
+            "urn:tag:amenity:qloo:outdoor_seating",
+            "urn:tag:category:place:coffee_shop",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:dining_options:place:breakfast",
+            "urn:tag:interests:qloo:specialty_coffee",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:category:place:bakery",
+            "urn:tag:genre:place:restaurant:bakery",
+            "urn:tag:planning:place:quick_visit",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:interests:qloo:brunch_culture",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:interests:qloo:street_food_culture",
+            "urn:tag:service_options:place:in_store_shopping",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:visit_intent:qloo:destination",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:ambience:qloo:bright",
+            "urn:tag:service_options:place:in_store_pickup",
+            "urn:tag:ambience:qloo:friendly",
+            "urn:tag:activity_type:qloo:baking",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:parking:place:free_street_parking",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:visit_intent:qloo:convenience_stop",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:decor:qloo:cozy",
+            "urn:tag:ambience:qloo:lively",
+            "urn:tag:amenity:qloo:limited_indoor_seating",
+            "urn:tag:setting:qloo:bakery",
+            "urn:tag:genre:place",
+            "urn:tag:not_for_display:place:staff_wear_masks",
+            "urn:tag:decor:qloo:boutique",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:neighborhood_characteristic:qloo:local_owned",
+            "urn:tag:neighborhood_characteristic:qloo:bustling",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:setting:qloo:city_center",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:setting:qloo:coffee_shop",
+            "urn:tag:ambience:qloo:cozy",
+            "urn:tag:cost_description:place:10_to_20",
+            "urn:tag:decor:qloo:modern",
+            "urn:tag:interests:qloo:artisanal_baking",
+            "urn:tag:view:qloo:street_view"
+          ],
+          "why": [
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.2960061549573592
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.251919882986588
+            },
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.24052703970832184
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.2115469223477309
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "61C5767C-9F70-4886-836E-A7FD9620DF63"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Thu 08:00–15:00 · slot 13:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "563 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "restaurant:coffee_shop"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "friday",
+          "hour": 19,
+          "rung": "home",
+          "homeType": "tv_show"
+        },
+        "card": {
+          "slot": {
+            "day": "friday",
+            "hour": 19,
+            "rung": "home",
+            "homeType": "tv_show"
+          },
+          "hour": 19,
+          "rung": "home",
+          "entity_id": "B453E2CB-7933-444F-8CD9-5DF4154ED1A8",
+          "name": "Shrill",
+          "entityType": "urn:entity:tv_show",
+          "affinity": 0.9656849077749607,
+          "tags": [
+            "urn:tag:style:qloo:intimate",
+            "urn:tag:character:qloo:self_conscious",
+            "urn:tag:archetype:qloo:mirror",
+            "urn:tag:interests:qloo:body_positivity",
+            "urn:tag:interests:qloo:female_friendship",
+            "urn:tag:theme:qloo:body_image",
+            "urn:tag:genre:media:drama",
+            "urn:tag:theme:qloo:fatphobia",
+            "urn:tag:keyword:media:2010s",
+            "urn:tag:audience:qloo:drama_loving",
+            "urn:tag:theme:qloo:identity",
+            "urn:tag:style:qloo:low_key_visuals",
+            "urn:tag:audience:qloo:body_positive",
+            "urn:tag:plot:qloo:intimate",
+            "urn:tag:theme:qloo:self_acceptance",
+            "urn:tag:character:qloo:flawed",
+            "urn:tag:audience:qloo:emotionally_engaged",
+            "urn:tag:keyword:qloo:dating",
+            "urn:tag:interests:qloo:stand_up_comedy",
+            "urn:tag:keyword:media:21st_century",
+            "urn:tag:character:qloo:resilient",
+            "urn:tag:keyword:qloo:career",
+            "urn:tag:theme:qloo:career",
+            "urn:tag:plot:qloo:realistic",
+            "urn:tag:interests:qloo:feminist_issues",
+            "urn:tag:keyword:qloo:self_discovery",
+            "urn:tag:archetype:qloo:transformation",
+            "urn:tag:audience:qloo:empathetic",
+            "urn:tag:keyword:media:quirky_comedy",
+            "urn:tag:genre:media:comedy",
+            "urn:tag:style:qloo:performance_led_intimacy",
+            "urn:tag:archetype:qloo:the_outsider",
+            "urn:tag:plot:qloo:heartfelt",
+            "urn:tag:character:qloo:relatable",
+            "urn:tag:subgenre:qloo:character_study",
+            "urn:tag:character:qloo:witty",
+            "urn:tag:keyword:qloo:friendship",
+            "urn:tag:subgenre:qloo:coming_of_age",
+            "urn:tag:genre:qloo:comedy",
+            "urn:tag:keyword:qloo:humor",
+            "urn:tag:plot:qloo:reflective",
+            "urn:tag:archetype:qloo:the_everyman",
+            "urn:tag:style:qloo:observational",
+            "urn:tag:genre:qloo:drama",
+            "urn:tag:plot:qloo:emotional",
+            "urn:tag:character:qloo:vulnerable",
+            "urn:tag:style:qloo:naturalistic",
+            "urn:tag:audience:qloo:socially_conscious",
+            "urn:tag:style:qloo:body_forward_framing",
+            "urn:tag:audience:qloo:reflective",
+            "urn:tag:style:qloo:warm",
+            "urn:tag:keyword:qloo:identity",
+            "urn:tag:keyword:qloo:body_image",
+            "urn:tag:archetype:qloo:the_mentor",
+            "urn:tag:character:qloo:conflicted",
+            "urn:tag:keyword:qloo:fatphobia",
+            "urn:tag:keyword:qloo:acceptance",
+            "urn:tag:keyword:qloo:portland",
+            "urn:tag:plot:qloo:character_driven",
+            "urn:tag:theme:qloo:dating",
+            "urn:tag:keyword:media:female_protagonist",
+            "urn:tag:character:qloo:compassionate",
+            "urn:tag:style:qloo:deadpan_physical_humor",
+            "urn:tag:interests:qloo:personal_development",
+            "urn:tag:theme:qloo:friendship",
+            "urn:tag:keyword:media:satire_comedy"
+          ],
+          "why": [
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.25733932663101033
+            },
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.2558783746964606
+            },
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.2506164052661452
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.23616589340638386
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "B453E2CB-7933-444F-8CD9-5DF4154ED1A8"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "saturday",
+          "hour": 11,
+          "rung": "solo"
+        },
+        "card": {
+          "slot": {
+            "day": "saturday",
+            "hour": 11,
+            "rung": "solo"
+          },
+          "hour": 11,
+          "rung": "solo",
+          "entity_id": "9B68AA9D-BDA3-479D-95AF-C057CA0F2BEA",
+          "name": "Bakeri",
+          "entityType": "urn:entity:place",
+          "affinity": 0.9111843691563638,
+          "distance_m": 1350,
+          "priceLevel": 1,
+          "hoursText": "Sat 07:00–18:00",
+          "address": "150 Wythe Ave Brooklyn, NY 11211",
+          "tags": [
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:visit_intent:qloo:impulse_visit",
+            "urn:tag:interests:qloo:specialty_coffee",
+            "urn:tag:service_type:qloo:pickup",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:nearby_attraction:qloo:bushwick_inlet_park",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:menu_highlight:qloo:ham_and_cheese_croissant",
+            "urn:tag:neighborhood_characteristic:qloo:authentic",
+            "urn:tag:ambience:qloo:charming",
+            "urn:tag:neighborhood_characteristic:qloo:creative",
+            "urn:tag:view:qloo:street_view",
+            "urn:tag:amenity:qloo:wi_fi",
+            "urn:tag:amenity:qloo:counter_service",
+            "urn:tag:menu_highlight:qloo:chocolate_chip_cookies",
+            "urn:tag:customer_identity:qloo:couples",
+            "urn:tag:setting:qloo:city_center",
+            "urn:tag:nearby_attraction:qloo:brooklyn_bowl",
+            "urn:tag:culinary_style:qloo:casual",
+            "urn:tag:ambience:qloo:artisanal",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:credit_card:place:american_express",
+            "urn:tag:credit_card:place:discover",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:menu_highlight:qloo:grapefruit_lemon_loaf",
+            "urn:tag:inclusivity:place:lgbtq_friendly",
+            "urn:tag:nearby_attraction:qloo:domino_park",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:category:place:bakery",
+            "urn:tag:cost_description:place:1_to_20",
+            "urn:tag:cuisine:qloo:scandinavian",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:decor:qloo:artistic",
+            "urn:tag:menu_highlight:qloo:rotisserie_chicken_sandwich",
+            "urn:tag:interests:qloo:culinary_arts",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:decor:qloo:chic",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:menu_highlight:qloo:apple_cider_cake",
+            "urn:tag:decor:qloo:rustic",
+            "urn:tag:menu_highlight:qloo:pistachio_raspberry_muffin",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:amenity:qloo:patio",
+            "urn:tag:ambience:qloo:welcoming",
+            "urn:tag:amenity:qloo:outdoor_seating",
+            "urn:tag:ambience:qloo:artistic",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:time_of_day_fit:qloo:afternoon",
+            "urn:tag:cuisine:qloo:cafe",
+            "urn:tag:menu_highlight:qloo:green_smoothie",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:customer_identity:qloo:groups_of_friends",
+            "urn:tag:customer_identity:qloo:young_professionals",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:cuisine:qloo:european",
+            "urn:tag:menu_highlight:qloo:kale_grapefruit_salad",
+            "urn:tag:setting:qloo:boutique",
+            "urn:tag:beverage_offering:qloo:smoothies",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:inclusivity:place:identifies_as_women_owned",
+            "urn:tag:ambience:qloo:comfortable",
+            "urn:tag:decor:qloo:old_world",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:ambience:qloo:cozy",
+            "urn:tag:planning:place:quick_visit",
+            "urn:tag:genre:place",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:ambience:qloo:stylish",
+            "urn:tag:activity_type:qloo:bakery",
+            "urn:tag:interests:qloo:artisanal_baking",
+            "urn:tag:genre:place:restaurant:bakery",
+            "urn:tag:interests:qloo:neighborhood_exploration",
+            "urn:tag:service_type:qloo:outdoor_seating",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:cuisine:qloo:bakery",
+            "urn:tag:ambience:qloo:old_world",
+            "urn:tag:menu_highlight:qloo:cinnamon_bun",
+            "urn:tag:dining_options:place:breakfast",
+            "urn:tag:culinary_style:qloo:artisanal",
+            "urn:tag:interests:qloo:scandinavian_design",
+            "urn:tag:decor:qloo:scandinavian",
+            "urn:tag:decor:qloo:cozy",
+            "urn:tag:visit_intent:qloo:routine_visit",
+            "urn:tag:culinary_style:qloo:traditional",
+            "urn:tag:credit_card:place:visa",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:customer_identity:qloo:foodies",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:dietary_option:qloo:vegetarian"
+          ],
+          "why": [
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.30403389703917594
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.24543744032940393
+            },
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.23452616281350247
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.21600249981791778
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "9B68AA9D-BDA3-479D-95AF-C057CA0F2BEA"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sat 07:00–18:00 · slot 11:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1350 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "bakery"
+            }
+          ]
+        }
+      },
+      {
+        "slot": {
+          "day": "sunday",
+          "hour": 14,
+          "rung": "social"
+        },
+        "card": {
+          "slot": {
+            "day": "sunday",
+            "hour": 14,
+            "rung": "social"
+          },
+          "hour": 14,
+          "rung": "social",
+          "entity_id": "C5B37556-F35D-462C-BECC-3CB5A5D3F779",
+          "name": "Bushwick Pita Palace",
+          "entityType": "urn:entity:place",
+          "affinity": 0.8906885891942187,
+          "distance_m": 1473,
+          "priceLevel": 1,
+          "hoursText": "Sun 11:00–01:00",
+          "address": "243 Bushwick Ave Brooklyn, NY 11206",
+          "tags": [
+            "urn:tag:offerings:place:quick_bite",
+            "urn:tag:dining_options:place:catering",
+            "urn:tag:time_of_day_fit:qloo:morning",
+            "urn:tag:view:qloo:street_view",
+            "urn:tag:offerings:place:late_night_food",
+            "urn:tag:time_of_day_fit:qloo:late_night",
+            "urn:tag:neighborhood_characteristic:qloo:central",
+            "urn:tag:neighborhood_characteristic:qloo:bustling",
+            "urn:tag:menu_highlight:qloo:burritos",
+            "urn:tag:dining_options:place:dessert",
+            "urn:tag:accessibility:place:wheelchair_accessible_seating",
+            "urn:tag:interests:qloo:plant_based_eating",
+            "urn:tag:interests:qloo:casual_socializing",
+            "urn:tag:age_range:qloo:30_34",
+            "urn:tag:offerings:place:vegetarian_options",
+            "urn:tag:service_type:qloo:takeout",
+            "urn:tag:service_options:place:dine_in",
+            "urn:tag:neighborhood_characteristic:qloo:trendy",
+            "urn:tag:category:place:middle_eastern_restaurant",
+            "urn:tag:offerings:place:coffee",
+            "urn:tag:decor:qloo:eclectic",
+            "urn:tag:offerings:place:small_plates",
+            "urn:tag:service_options:place:onsite_services",
+            "urn:tag:dining_options:place:breakfast",
+            "urn:tag:service_type:qloo:pickup",
+            "urn:tag:time_of_day_fit:qloo:midday",
+            "urn:tag:service_options:place:no_contact_delivery",
+            "urn:tag:service_type:qloo:dine_in",
+            "urn:tag:menu_highlight:qloo:shish_kabob_sandwich",
+            "urn:tag:amenity:qloo:no_contact_delivery",
+            "urn:tag:customer_identity:qloo:locals",
+            "urn:tag:dietary_option:qloo:halal",
+            "urn:tag:activity_type:qloo:dining_drinking",
+            "urn:tag:accessibility:place:wheelchair_accessible_entrance",
+            "urn:tag:dining_options:place:dinner",
+            "urn:tag:culinary_style:qloo:casual",
+            "urn:tag:beverage_offering:qloo:soft_drinks",
+            "urn:tag:ambience:qloo:unpretentious",
+            "urn:tag:service_options:place:curbside_pickup",
+            "urn:tag:accessibility:place:wheelchair_accessible_restroom",
+            "urn:tag:payments:place:credit_cards",
+            "urn:tag:interests:qloo:urban_exploration",
+            "urn:tag:ambience:place:large_group",
+            "urn:tag:age_range:qloo:18_24",
+            "urn:tag:dining_options:place:lunch",
+            "urn:tag:cuisine:qloo:middle_eastern",
+            "urn:tag:time_of_day_fit:qloo:evening",
+            "urn:tag:nearby_attraction:qloo:bushwick_collective_street_art",
+            "urn:tag:genre:place:restaurant",
+            "urn:tag:offerings:place:healthy_options",
+            "urn:tag:visit_intent:qloo:convenience_stop",
+            "urn:tag:neighborhood_characteristic:qloo:walkable",
+            "urn:tag:amenity:qloo:curbside_pickup",
+            "urn:tag:amenity:qloo:takeout_counter",
+            "urn:tag:service_options:place:delivery",
+            "urn:tag:dietary_option:qloo:healthy_options",
+            "urn:tag:ambience:qloo:casual",
+            "urn:tag:genre:place:restaurant:middle_eastern",
+            "urn:tag:genre:place:restaurant:halal",
+            "urn:tag:dining_options:place:counter_service",
+            "urn:tag:noise_level:qloo:moderate",
+            "urn:tag:activity_type:qloo:takeout_dining",
+            "urn:tag:offerings:place:vegan_options",
+            "urn:tag:not_for_display:place:mask_required",
+            "urn:tag:offerings:place:halal_options",
+            "urn:tag:age_range:qloo:25_29",
+            "urn:tag:cost_description:place:10_to_20",
+            "urn:tag:dietary_option:qloo:vegetarian",
+            "urn:tag:neighborhood_characteristic:qloo:vibrant",
+            "urn:tag:offerings:place:comfort_food",
+            "urn:tag:children:place:good_for_kids",
+            "urn:tag:decor:qloo:casual",
+            "urn:tag:ambience:qloo:quirky",
+            "urn:tag:amenities:place:restroom",
+            "urn:tag:amenity:qloo:delivery_service",
+            "urn:tag:payments:place:price_level",
+            "urn:tag:culinary_style:qloo:street_food",
+            "urn:tag:cuisine:qloo:fusion",
+            "urn:tag:payments:place:nfc_mobile_payments",
+            "urn:tag:menu_highlight:qloo:falafel",
+            "urn:tag:customer_identity:qloo:regulars",
+            "urn:tag:interests:qloo:street_food_culture",
+            "urn:tag:genre:place",
+            "urn:tag:credit_card:place:mastercard",
+            "urn:tag:customer_identity:qloo:young_adults",
+            "urn:tag:beverage_offering:qloo:coffee_and_tea",
+            "urn:tag:category:place:halal_restaurant",
+            "urn:tag:setting:qloo:urban",
+            "urn:tag:service_options:place:takeout",
+            "urn:tag:dining_options:place:order_ahead",
+            "urn:tag:dietary_option:qloo:vegan",
+            "urn:tag:interests:qloo:late_night_dining",
+            "urn:tag:nearby_attraction:qloo:maria_hernandez_park",
+            "urn:tag:decor:qloo:urban",
+            "urn:tag:payments:place:debit_cards",
+            "urn:tag:visit_intent:qloo:impulse_visit",
+            "urn:tag:setting:qloo:corner_location",
+            "urn:tag:service_type:qloo:delivery",
+            "urn:tag:ambience:qloo:lively",
+            "urn:tag:offerings:place:spicy_food",
+            "urn:tag:time_of_day_fit:qloo:afternoon"
+          ],
+          "why": [
+            {
+              "entity_id": "F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+              "name": "Dun-Well Doughnuts",
+              "score": 0.3066466350272131
+            },
+            {
+              "entity_id": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+              "name": "Lucy Dacus",
+              "score": 0.2386199619456472
+            },
+            {
+              "entity_id": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836",
+              "name": "Phoebe Bridgers",
+              "score": 0.23424643188330097
+            },
+            {
+              "entity_id": "878680F2-2C8D-4D7A-8288-BEA75D38A843",
+              "name": "Fleabag",
+              "score": 0.2204869711438387
+            }
+          ],
+          "verdict": "PASS",
+          "checks": [
+            {
+              "rule": "R-ID",
+              "verdict": "PASS",
+              "detail": "C5B37556-F35D-462C-BECC-3CB5A5D3F779"
+            },
+            {
+              "rule": "R-HIST",
+              "verdict": "PASS",
+              "detail": "not rated low"
+            },
+            {
+              "rule": "R-OPEN",
+              "verdict": "PASS",
+              "detail": "Sun 11:00–01:00 · slot 14:00"
+            },
+            {
+              "rule": "R-NEAR",
+              "verdict": "PASS",
+              "detail": "1473 m"
+            },
+            {
+              "rule": "R-PRICE",
+              "verdict": "PASS",
+              "detail": "price level 1"
+            },
+            {
+              "rule": "R-ALC",
+              "verdict": "PASS",
+              "detail": "no alcohol signal"
+            },
+            {
+              "rule": "R-KIND",
+              "verdict": "PASS",
+              "detail": "middle_eastern_restaurant"
+            }
+          ],
+          "geohash": "dr5rt6v"
+        }
+      }
+    ],
+    "refusals": [
+      {
+        "day": "thursday",
+        "hour": 18,
+        "entity_id": "61C5767C-9F70-4886-836E-A7FD9620DF63",
+        "name": "Ceremonia Bakeshop",
+        "rule": "R-OPEN",
+        "detail": "closes 15:00 · slot 18:00",
+        "verdict": "REFUSE",
+        "movedTo": 13
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      },
+      {
+        "day": "sunday",
+        "hour": 14,
+        "entity_id": "A6B772FC-8318-4EBA-92F8-19ACA0D569BD",
+        "name": "CookUnity",
+        "rule": "R-KIND",
+        "detail": "not an activity: personal_care",
+        "verdict": "REFUSE"
+      }
+    ],
+    "review": [],
+    "calls": []
+  },
+  "diff": {
+    "kept": [
+      {
+        "day": "tuesday",
+        "name": "Las Culturistas with Matt Rogers and Bowen Yang"
+      }
+    ],
+    "added": [
+      {
+        "day": "monday",
+        "name": "Big Thief",
+        "because": [
+          {
+            "name": "Lucy Dacus",
+            "score": 0.26576236412302573
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.26366120689820277
+          },
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.26356892862053943
+          },
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.20700750035823212
+          }
+        ]
+      },
+      {
+        "day": "wednesday",
+        "name": "A Little Devil in America: Notes in Praise of Black Performance",
+        "because": [
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.2808432503052556
+          },
+          {
+            "name": "Lucy Dacus",
+            "score": 0.27876948107992416
+          },
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.25307138217510305
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.18731588643971717
+          }
+        ]
+      },
+      {
+        "day": "thursday",
+        "name": "Ceremonia Bakeshop",
+        "because": [
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.2960061549573592
+          },
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.251919882986588
+          },
+          {
+            "name": "Lucy Dacus",
+            "score": 0.24052703970832184
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.2115469223477309
+          }
+        ]
+      },
+      {
+        "day": "friday",
+        "name": "Shrill",
+        "because": [
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.25733932663101033
+          },
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.2558783746964606
+          },
+          {
+            "name": "Lucy Dacus",
+            "score": 0.2506164052661452
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.23616589340638386
+          }
+        ]
+      },
+      {
+        "day": "saturday",
+        "name": "Bakeri",
+        "because": [
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.30403389703917594
+          },
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.24543744032940393
+          },
+          {
+            "name": "Lucy Dacus",
+            "score": 0.23452616281350247
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.21600249981791778
+          }
+        ]
+      },
+      {
+        "day": "sunday",
+        "name": "Bushwick Pita Palace",
+        "because": [
+          {
+            "name": "Dun-Well Doughnuts",
+            "score": 0.3066466350272131
+          },
+          {
+            "name": "Lucy Dacus",
+            "score": 0.2386199619456472
+          },
+          {
+            "name": "Phoebe Bridgers",
+            "score": 0.23424643188330097
+          },
+          {
+            "name": "Fleabag",
+            "score": 0.2204869711438387
+          }
+        ]
+      }
+    ],
+    "removed": [
+      {
+        "day": "monday",
+        "name": "Lucy Dacus",
+        "reason": "replaced by a re-planned pick"
+      },
+      {
+        "day": "wednesday",
+        "name": "My Name Is Why",
+        "reason": "replaced by a re-planned pick"
+      },
+      {
+        "day": "thursday",
+        "name": "Dun-Well Doughnuts",
+        "reason": "replaced by a re-planned pick"
+      },
+      {
+        "day": "friday",
+        "name": "High Fidelity",
+        "reason": "replaced by a re-planned pick"
+      },
+      {
+        "day": "saturday",
+        "name": "Muz Muz Shop & Cafè",
+        "reason": "replaced by a re-planned pick"
+      },
+      {
+        "day": "sunday",
+        "name": "Juice Generation",
+        "reason": "rated ≤3 — excluded"
+      }
+    ],
+    "ember": [
+      {
+        "from": "Lucy Dacus",
+        "to": "Big Thief",
+        "day": "monday",
+        "score": 0.26576236412302573
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Big Thief",
+        "day": "monday",
+        "score": 0.20700750035823212
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "Las Culturistas with Matt Rogers and Bowen Yang",
+        "day": "tuesday",
+        "score": 0.25987102562004
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Las Culturistas with Matt Rogers and Bowen Yang",
+        "day": "tuesday",
+        "score": 0.25899190199646005
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "A Little Devil in America: Notes in Praise of Black Performance",
+        "day": "wednesday",
+        "score": 0.27876948107992416
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "A Little Devil in America: Notes in Praise of Black Performance",
+        "day": "wednesday",
+        "score": 0.25307138217510305
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Ceremonia Bakeshop",
+        "day": "thursday",
+        "score": 0.2960061549573592
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "Ceremonia Bakeshop",
+        "day": "thursday",
+        "score": 0.24052703970832184
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Shrill",
+        "day": "friday",
+        "score": 0.2558783746964606
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "Shrill",
+        "day": "friday",
+        "score": 0.2506164052661452
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Bakeri",
+        "day": "saturday",
+        "score": 0.30403389703917594
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "Bakeri",
+        "day": "saturday",
+        "score": 0.23452616281350247
+      },
+      {
+        "from": "Dun-Well Doughnuts",
+        "to": "Bushwick Pita Palace",
+        "day": "sunday",
+        "score": 0.3066466350272131
+      },
+      {
+        "from": "Lucy Dacus",
+        "to": "Bushwick Pita Palace",
+        "day": "sunday",
+        "score": 0.2386199619456472
+      }
+    ]
+  },
+  "calls": [
+    {
+      "path": "/search",
+      "params": {
+        "query": "Phoebe Bridgers",
+        "types": "urn:entity:artist",
+        "take": "3"
+      },
+      "status": 200,
+      "ms": 1298,
+      "n_results": 3
+    },
+    {
+      "path": "/search",
+      "params": {
+        "query": "Fleabag",
+        "types": "urn:entity:tv_show",
+        "take": "3"
+      },
+      "status": 200,
+      "ms": 275,
+      "n_results": 2
+    },
+    {
+      "path": "/v2/tags",
+      "params": {
+        "filter.query": "ramen",
+        "take": "20"
+      },
+      "status": 200,
+      "ms": 371,
+      "n_results": 20
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:artist",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 3447,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:podcast",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.exclude.entities": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 608,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:book",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.exclude.entities": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,14EECB60-E987-47CA-8582-D8FEB225C945",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 781,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 892,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:tv_show",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.exclude.entities": "99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,14EECB60-E987-47CA-8582-D8FEB225C945,FA2A09DB-366C-4E9D-8B43-3704A6F2E119,B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 713,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "saturday",
+        "filter.price_level.max": "2",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 421,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:geohash"
+      },
+      "status": 200,
+      "ms": 480,
+      "n_results": 215
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location.geohash": "dr5rt1p"
+      },
+      "status": 200,
+      "ms": 393,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.94966 40.69954)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 399,
+      "n_results": 2
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 422,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "saturday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 419,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:geohash"
+      },
+      "status": 200,
+      "ms": 456,
+      "n_results": 215
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7,684C73AD-07E2-4EDC-A874-9FC255987DDE",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location.geohash": "dr5rt1p"
+      },
+      "status": 200,
+      "ms": 355,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7,684C73AD-07E2-4EDC-A874-9FC255987DDE",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.94966 40.69954)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 366,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7,684C73AD-07E2-4EDC-A874-9FC255987DDE",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.96889 40.7119)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 360,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+        "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7,684C73AD-07E2-4EDC-A874-9FC255987DDE",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.96202 40.718765)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 389,
+      "n_results": 13
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:artist",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 3382,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:podcast",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,AD420A3F-5F09-4C1C-BB1E-A3DEB937F184",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 639,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:book",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,AD420A3F-5F09-4C1C-BB1E-A3DEB937F184,14EECB60-E987-47CA-8582-D8FEB225C945",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 770,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen,urn:tag:genre:place:restaurant:bakery,urn:tag:genre:place:restaurant:vegan",
+        "filter.hours": "thursday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar,urn:tag:genre:place:restaurant:health_food,urn:tag:genre:place:restaurant:juice_shop",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 616,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:tv_show",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,AD420A3F-5F09-4C1C-BB1E-A3DEB937F184,14EECB60-E987-47CA-8582-D8FEB225C945,CEA70E01-7BF7-4BBE-9FE9-C7DBBCDC8D3D,61C5767C-9F70-4886-836E-A7FD9620DF63",
+        "feature.explainability": "true",
+        "take": "5"
+      },
+      "status": 200,
+      "ms": 760,
+      "n_results": 5
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen,urn:tag:genre:place:restaurant:bakery,urn:tag:genre:place:restaurant:vegan",
+        "filter.hours": "saturday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar,urn:tag:genre:place:restaurant:health_food,urn:tag:genre:place:restaurant:juice_shop",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,61C5767C-9F70-4886-836E-A7FD9620DF63",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500"
+      },
+      "status": 200,
+      "ms": 474,
+      "n_results": 25
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:heatmap",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "filter.location": "POINT(-73.9571 40.7081)",
+        "filter.location.radius": "1500",
+        "output.heatmap.boundary": "urn:geohash"
+      },
+      "status": 200,
+      "ms": 963,
+      "n_results": 215
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen,urn:tag:genre:place:restaurant:bakery,urn:tag:genre:place:restaurant:vegan",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar,urn:tag:genre:place:restaurant:health_food,urn:tag:genre:place:restaurant:juice_shop",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,61C5767C-9F70-4886-836E-A7FD9620DF63,9B68AA9D-BDA3-479D-95AF-C057CA0F2BEA",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location.geohash": "dr5rt1p"
+      },
+      "status": 200,
+      "ms": 378,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen,urn:tag:genre:place:restaurant:bakery,urn:tag:genre:place:restaurant:vegan",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar,urn:tag:genre:place:restaurant:health_food,urn:tag:genre:place:restaurant:juice_shop",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,61C5767C-9F70-4886-836E-A7FD9620DF63,9B68AA9D-BDA3-479D-95AF-C057CA0F2BEA",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.94966 40.69954)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 396,
+      "n_results": 1
+    },
+    {
+      "path": "/v2/insights",
+      "params": {
+        "filter.type": "urn:entity:place",
+        "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843,99FBEE0C-2A8A-4EE2-9B20-8CEBD854CD46,F18148C2-51E8-4BE6-B64D-FFA4E3FCF8B7",
+        "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen,urn:tag:genre:place:restaurant:bakery,urn:tag:genre:place:restaurant:vegan",
+        "filter.hours": "sunday",
+        "filter.price_level.max": "2",
+        "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar,urn:tag:genre:place:restaurant:health_food,urn:tag:genre:place:restaurant:juice_shop",
+        "filter.exclude.entities": "FC4CE9DC-BC18-418F-9C1D-3D5CA10650B1,61C5767C-9F70-4886-836E-A7FD9620DF63,9B68AA9D-BDA3-479D-95AF-C057CA0F2BEA",
+        "feature.explainability": "true",
+        "take": "25",
+        "filter.location": "POINT(-73.94142 40.709152)",
+        "filter.location.radius": "400"
+      },
+      "status": 200,
+      "ms": 395,
+      "n_results": 9
+    }
+  ]
+}
