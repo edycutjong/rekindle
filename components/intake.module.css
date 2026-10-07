@@ -78,10 +78,15 @@
   outline: 2px solid var(--ink);
   outline-offset: 1px;
 }
+/* a confirmed love: solid ink rule + a ✓ in ink (--stamp is reserved for approved cards and the approve action) */
 .chipOn {
-  border: 1px solid var(--stamp);
-  color: var(--stamp);
+  border: 1px solid var(--ink);
+  color: var(--ink);
   background: var(--paper);
+}
+.chipOn::before {
+  content: "✓ ";
+  font-family: var(--font-data);
 }
 .chipKind {
   font: 12px var(--font-data);
