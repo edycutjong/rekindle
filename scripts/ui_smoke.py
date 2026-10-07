@@ -8,6 +8,8 @@ Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `p
 Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
 import re, sys, time, json
 from playwright.sync_api import sync_playwright
+
+ALC = re.compile(r"\b(drinks?|beers?|wines?|cocktails?|bars?)\b", re.I)
 base = sys.argv[1]; out = sys.argv[2]; tag = sys.argv[3] if len(sys.argv) > 3 else "local"
 res = {}
 with sync_playwright() as p:
@@ -41,6 +43,9 @@ with sync_playwright() as p:
     res["toggle_url"] = pg.url
     res["struck_after_toggle"] = pg.locator("[data-testid=struck]").count()
     res["alc_struck"] = pg.locator("[data-testid=struck][data-rule=R-ALC]").count()
+    # COACH-ALC (QA round 1): no coaching line on the in-recovery week mentions drinking
+    res["coach_lines_after_recovery"] = pg.locator("[data-testid=coach]").all_inner_texts()
+    res["coach_alcohol_after_recovery"] = [t for t in res["coach_lines_after_recovery"] if ALC.search(t)]
     pg.screenshot(path=f"{out}/{tag}-recovery-1440.png", full_page=True)
     # reload shows the same week
     names = pg.locator("[data-testid=slot-card] h3").all_inner_texts()
@@ -57,6 +62,7 @@ with sync_playwright() as p:
     res["swap_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
     res["swap_changed"] = before_swap not in [x for x in pg.locator("[data-testid=slot-card] h3").all_inner_texts()]
     res["clinician_strikes"] = pg.locator("[data-testid=struck][data-rule=CLINICIAN]").count()
+    res["swapped_out"] = before_swap
     pg.locator("[data-testid=slot-card]").nth(1).locator("[data-testid=card-approve]").click()
     pg.wait_for_selector("[data-testid=slot-card][data-approved=true]", timeout=20000)
     pg.screenshot(path=f"{out}/{tag}-gate-1440.png", full_page=True)
@@ -92,7 +98,11 @@ with sync_playwright() as p:
     res["ember_labels"] = pg.locator("[data-testid=ember-label]").all_inner_texts()
     res["ember_thread_paths"] = pg.locator("[data-testid=ember-threads] path").count()
     res["diff_summary"] = pg.locator("[data-testid=replan-summary] p").first.inner_text()
-    res["leaving_out"] = pg.locator("[data-testid=replan-summary] li").all_inner_texts()
+    res["leaving_out"] = pg.locator("[data-testid=replan-summary] .leaving-out li, [data-testid=replan-summary] li").all_inner_texts()
+    res["kept_notes"] = pg.locator("[data-testid=kept-note]").all_inner_texts()
+    res["kept_labels"] = pg.locator("[data-testid=kept-label]").all_inner_texts()
+    res["signal_list"] = pg.locator("[data-testid=signal-list] li").all_inner_texts()
+    res["week2_names"] = pg.locator("[data-testid=slot-card] h3").all_inner_texts()
     pg.screenshot(path=f"{out}/{tag}-replan-1440.png", full_page=True)
     w2names = pg.locator("[data-testid=slot-card] h3").all_inner_texts()
     pg.reload(wait_until="networkidle")
@@ -106,6 +116,7 @@ with sync_playwright() as p:
     pg.wait_for_selector("[data-testid=print-sheet]", timeout=20000)
     res["print_rows"] = pg.locator("[data-testid=print-row]").count()
     print_text = pg.locator("[data-testid=print-sheet]").inner_text()
+    res["print_alcohol"] = bool(ALC.search(print_text))
     res["print_has_weights_or_rules"] = bool(re.search(r"\b0\.\d\d\b|R-[A-Z]{2,}|because ", print_text))
     pg.emulate_media(media="print")
     res["print_button_hidden_in_print"] = not pg.locator("[data-testid=print-button]").is_visible()
@@ -153,6 +164,9 @@ gates = {
     "no horizontal scroll at 375 px": max(res["mobile_scroll_width"], res["mobile_replan_scroll_width"], res["mobile_home_scroll_width"], res["mobile_print_scroll_width"]) <= 375,
     "header is at most two rows at 375 px": res["mobile_header_height"] <= 112,
     "no console errors": not res["console_errors"],
+    "in recovery: no coaching line mentions drinking (COACH-ALC)": not res["coach_alcohol_after_recovery"],
+    "the card the clinician swapped out is not in week 2": res["swapped_out"] not in res["week2_names"],
+    "rated >=7 is kept or listed as a signal, never under 'Leaving out'": not any("≥7" in x for x in res["leaving_out"] if x not in res["signal_list"]) and (len(res["kept_labels"]) + len(res["signal_list"])) >= 1,
 }
 for k, v in gates.items():
     print(("PASS " if v else "FAIL ") + k)
