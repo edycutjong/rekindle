@@ -6,7 +6,7 @@ home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows
 375 px has no horizontal scroll -> /integrations/qloo lists the calls.
 Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `pip install playwright`).
 Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
-import sys, time, json
+import re, sys, time, json
 from playwright.sync_api import sync_playwright
 base = sys.argv[1]; out = sys.argv[2]; tag = sys.argv[3] if len(sys.argv) > 3 else "local"
 res = {}
@@ -100,6 +100,18 @@ with sync_playwright() as p:
     week2_url = pg.url
     pg.goto(week1_url, wait_until="networkidle")
     res["week1_links_week2"] = pg.locator("[data-testid=next-week]").count() == 1 and pg.locator("[data-testid=pm-locked]").count() > 0
+    # ---- patient print view (D12, ui.md 7): approved cards only, no weights / rule IDs / strikes
+    week1_cards = pg.locator("[data-testid=slot-card]").count()
+    pg.click("[data-testid=print-link]")
+    pg.wait_for_selector("[data-testid=print-sheet]", timeout=20000)
+    res["print_rows"] = pg.locator("[data-testid=print-row]").count()
+    print_text = pg.locator("[data-testid=print-sheet]").inner_text()
+    res["print_has_weights_or_rules"] = bool(re.search(r"\b0\.\d\d\b|R-[A-Z]{2,}|because ", print_text))
+    pg.emulate_media(media="print")
+    res["print_button_hidden_in_print"] = not pg.locator("[data-testid=print-button]").is_visible()
+    pg.screenshot(path=f"{out}/{tag}-print-1440.png", full_page=True)
+    pg.emulate_media(media="screen")
+    print_url = pg.url
     # 375 px
     m = b.new_context(viewport={"width": 375, "height": 812}, device_scale_factor=2, is_mobile=True, has_touch=True)
     mp = m.new_page()
@@ -110,8 +122,12 @@ with sync_playwright() as p:
     res["mobile_replan_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
     res["mobile_ember_labels"] = mp.locator("[data-testid=ember-label]").count()
     mp.screenshot(path=f"{out}/{tag}-replan-375.png", full_page=True)
+    mp.goto(print_url, wait_until="networkidle")
+    res["mobile_print_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
+    mp.screenshot(path=f"{out}/{tag}-print-375.png", full_page=True)
     mp.goto(base + "/", wait_until="networkidle")
     res["mobile_home_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
+    res["mobile_header_height"] = mp.evaluate("document.querySelector('header').getBoundingClientRect().height")
     mp.screenshot(path=f"{out}/{tag}-home-375.png", full_page=True)
     mp.goto(base + "/integrations/qloo?plan=" + url.rsplit("/",1)[1], wait_until="networkidle")
     res["receipts_rows"] = mp.locator("tbody tr").count()
@@ -133,7 +149,9 @@ gates = {
     "ember threads only for top-weighted links (one per card)": res["ember_thread_paths"] == len(res["ember_labels"]),
     "week 2 survives a reload": res["week2_reload_same"],
     "week 1 locked and links to week 2": res["week1_links_week2"],
-    "no horizontal scroll at 375 px": max(res["mobile_scroll_width"], res["mobile_replan_scroll_width"], res["mobile_home_scroll_width"]) <= 375,
+    "patient sheet prints the approved week only, without weights or rule IDs": res["print_rows"] == week1_cards and not res["print_has_weights_or_rules"] and res["print_button_hidden_in_print"],
+    "no horizontal scroll at 375 px": max(res["mobile_scroll_width"], res["mobile_replan_scroll_width"], res["mobile_home_scroll_width"], res["mobile_print_scroll_width"]) <= 375,
+    "header is at most two rows at 375 px": res["mobile_header_height"] <= 112,
     "no console errors": not res["console_errors"],
 }
 for k, v in gates.items():

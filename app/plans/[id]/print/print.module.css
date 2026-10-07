@@ -1,0 +1,210 @@
+/* Patient print view (ui.md 7). Tokens from app/globals.css only; prints in ink on paper. */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 16px 56px;
+}
+.screenOnly {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.screenOnly a {
+  color: var(--ink);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  text-underline-offset: 4px;
+}
+.printBtn {
+  min-height: 44px;
+  padding: 0 18px;
+  font: 700 16px var(--font-body);
+  color: var(--paper);
+  background: var(--ink);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.printBtn:hover {
+  background: var(--stamp);
+}
+.printBtn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.sheet {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 32px 28px 24px;
+}
+.head h1 {
+  font-size: 36px;
+  line-height: 1.1;
+  margin: 0;
+}
+.sub {
+  margin: 6px 0 22px;
+  font: 14px var(--font-data);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.notice {
+  font-size: 18px;
+  max-width: 60ch;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table thead th {
+  text-align: left;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-size: 18px;
+  font-weight: 700;
+  border-bottom: 2px solid var(--ink);
+  padding: 4px 8px 4px 0;
+}
+.table td,
+.table tbody th {
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 10px 14px 0;
+  text-align: left;
+}
+.when {
+  font-weight: 700;
+  white-space: nowrap;
+  width: 1%;
+}
+.when span {
+  display: block;
+  font: 400 14px var(--font-data);
+  color: var(--muted);
+}
+.act {
+  display: block;
+  font-size: 20px;
+  line-height: 1.25;
+}
+.kind {
+  display: block;
+  font-size: 15px;
+  color: var(--muted);
+}
+.how {
+  display: block;
+  margin-top: 4px;
+}
+.where {
+  font-size: 16px;
+  width: 26%;
+}
+.pmHead {
+  width: 64px;
+  text-align: center !important;
+}
+.pmHead abbr {
+  text-decoration: none;
+}
+.box {
+  width: 64px;
+  padding: 10px 6px !important;
+}
+.box::after {
+  content: "";
+  display: block;
+  height: 48px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+}
+.foot {
+  margin: 18px 0 8px;
+  max-width: 70ch;
+}
+.fine {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 16px 0 0;
+}
+
+@media (max-width: 719px) {
+  .sheet {
+    padding: 20px 14px;
+  }
+  .table thead {
+    display: none;
+  }
+  .table,
+  .table tbody,
+  .table tr {
+    display: block;
+  }
+  .table tr {
+    display: grid;
+    grid-template-columns: 1fr 56px 56px;
+    gap: 0 8px;
+    border-bottom: 1px solid var(--rule);
+    padding: 12px 0;
+  }
+  .table td,
+  .table tbody th {
+    border: 0;
+    padding: 0;
+  }
+  .when,
+  .table td:nth-child(2),
+  .where {
+    grid-column: 1;
+    width: auto;
+  }
+  .box {
+    grid-row: 1 / span 3;
+    width: auto;
+    padding: 0 !important;
+  }
+  .box:nth-child(4) {
+    grid-column: 2;
+  }
+  .box:nth-child(5) {
+    grid-column: 3;
+  }
+  .box::before {
+    display: block;
+    text-align: center;
+    font-weight: 700;
+  }
+  .box:nth-child(4)::before {
+    content: "P";
+  }
+  .box:nth-child(5)::before {
+    content: "M";
+  }
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 14mm;
+  }
+  .screenOnly {
+    display: none;
+  }
+  .page {
+    padding: 0;
+    max-width: none;
+  }
+  .sheet {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+  .table tr {
+    break-inside: avoid;
+  }
+}
