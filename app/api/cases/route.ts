@@ -21,7 +21,7 @@ const Intake = z.object({
   /** loves the clinician confirmed from /api/resolve */
   loves: z
     .array(z.object({ text: z.string().trim().min(1).max(120), qloo_id: z.string().min(1).max(200), qloo_kind: z.enum(["entity", "tag"]), entity_type: z.string().max(40).optional(), name: z.string().max(200).optional() }))
-    .min(1)
+    .min(3, "confirm at least 3 loves")
     .max(6),
 });
 

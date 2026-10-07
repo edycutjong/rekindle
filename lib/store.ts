@@ -481,13 +481,14 @@ export class BlobStore implements Store {
   }
 }
 
-let memory: MemoryStore | null = null;
+/** one in-memory store per process (dev compiles each route separately; module state alone would split it) */
+const g = globalThis as typeof globalThis & { __rekindleMemory?: MemoryStore };
 
 /** Blob when BLOB_READ_WRITE_TOKEN is set; in-memory only off Vercel (local dev / tests). */
 export function storeFromEnv(env: Record<string, string | undefined> = process.env, prefix: StorePrefix = ""): Store {
   const token = env.BLOB_READ_WRITE_TOKEN;
   if (token) return new BlobStore(token, prefix);
   if (env.VERCEL) throw new Error("BLOB_READ_WRITE_TOKEN is not set on this deployment; refusing the in-memory store");
-  memory ??= new MemoryStore();
-  return prefix ? memory.withPrefix(prefix) : memory;
+  g.__rekindleMemory ??= new MemoryStore();
+  return prefix ? g.__rekindleMemory.withPrefix(prefix) : g.__rekindleMemory;
 }

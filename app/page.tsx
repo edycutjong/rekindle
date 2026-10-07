@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartCase } from "@/components/StartCase";
 import { SEEDS } from "@/lib/service";
@@ -58,6 +59,13 @@ export default function Home() {
             <span className={s.ctaNote}>Calls Qloo and the routing model live and streams the week as it is built. Then switch on “In recovery”.</span>
           </div>
         </section>
+
+        <p className={s.newCase}>
+          <Link className={`${r.btn} ${r.btnQuiet}`} href="/cases/new" data-testid="new-case">
+            New fictional case
+          </Link>{" "}
+          <span className={s.ctaNote}>Intake: type what she loved, confirm each against Qloo, then plan the week live.</span>
+        </p>
 
         <section aria-labelledby="others">
           <h2 id="others" className={s.h2}>

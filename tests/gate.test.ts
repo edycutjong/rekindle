@@ -325,6 +325,18 @@ describe("gate routes", () => {
     }
   });
 
+  it("intake POST /api/cases needs 3–6 confirmed loves (spec Core Feature 1)", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const love = (n: number) => ({ text: `love ${n}`, qloo_id: `urn:tag:genre:place:restaurant:x${n}`, qloo_kind: "tag" });
+    const body = (k: number) => ({ label: "Rosa", locality: "Williamsburg, Brooklyn", lon: -73.9571, lat: 40.7081, energy: 1, loves: Array.from({ length: k }, (_, n) => love(n)) });
+    expect((await casesRoute(req("/api/cases", "POST", body(2)))).status).toBe(400);
+    expect((await casesRoute(req("/api/cases", "POST", body(7)))).status).toBe(400);
+    const ok = await casesRoute(req("/api/cases", "POST", body(3)));
+    expect(ok.status).toBe(201);
+    expect(((await ok.json()) as { case: { max_meters: number; loves: unknown[] } }).case).toMatchObject({ max_meters: 1500, loves: expect.any(Array) });
+  });
+
   it("seed preset=recovery clones a profile with 'in recovery' on (the /judge REVIEW button); an unknown preset is a 400", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("VERCEL", "");
