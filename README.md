@@ -125,8 +125,8 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 |---|---|---|
 | Unit + property tests | **177** (Vitest, 14 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
-| Tests named for the defect they pin | 31 (probes P8–P23, bench B5 / D9, QA rounds 1–3, COACH-* rules) | `tests/*.test.ts` |
-| Coverage (`lib/`, API routes) | 92.7% lines · 79.9% branches | `npm run test:coverage` |
+| Tests named for the defect they pin | 36 (probes P8–P23, bench B5 / D9, QA rounds 1–3, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
+| Coverage (`lib/`, API routes) | 92.7% lines · 79.9% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 100 performance · 100 accessibility · 100 best practices · 100 SEO (local run, 2026-10-07) | `lighthouserc.json` |
 | Plan latency, hosted | p50 17.43 s · p95 20.61 s | `bench/results.json` |
@@ -186,7 +186,7 @@ npm run dev                    # http://localhost:3000
 ## 🧪 Testing & CI
 
 - **177 tests** (Vitest, 14 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
-- `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md` and the bench numbers in this README, DEMO.md and JUDGE.md still match the code and `bench/*.json`.
+- `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.
   - `scripts/ui_smoke.py` drives the whole flow against the live deploy, including the patient sheet and 375 px layouts.
@@ -214,7 +214,7 @@ python3 scripts/edge_states.py https://rekindle-one.vercel.app /tmp/shots live
 |---|---|---|
 | Code quality | ESLint + `tsc --noEmit` | Stage 1, Node 22 and 24 |
 | Unit + property tests | Vitest + fast-check, v8 coverage | Stage 1 |
-| Generated-doc drift | `architecture.py`, `bench_table.py`, `kitchen_check.py` | Stage 1 |
+| Generated-doc drift | `architecture.py`, `bench_table.py`, `rigor.py` (test, property-case and coverage numbers), `kitchen_check.py` | Stage 1 |
 | Secret scanning | gitleaks over the full history, GitHub secret scanning + push protection | Stage 2, weekly |
 | Dependencies | `npm audit` (production blocks), license check, Dependabot alerts + grouped monthly updates | Stage 2 |
 | SAST | CodeQL (TypeScript + Python) | `codeql.yml` |
