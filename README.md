@@ -221,7 +221,7 @@ python3 scripts/edge_states.py https://rekindle-one.vercel.app /tmp/shots live
 | Generated-doc drift | `architecture.py`, `bench_table.py`, `rigor.py` (test, property-case and coverage numbers), `kitchen_check.py` | Stage 1 |
 | Secret scanning | gitleaks over the full history, GitHub secret scanning + push protection | Stage 2, weekly |
 | Dependencies | `npm audit` (production blocks), license check, Dependabot alerts + grouped monthly updates | Stage 2 |
-| SAST | CodeQL (TypeScript + Python) | `codeql.yml` |
+| SAST | CodeQL (TypeScript + Python + the GitHub Actions workflows) | `codeql.yml` |
 | Build | `next build` + bundle budget (fail > 2000 KB) | Stage 3 |
 | E2E | Playwright, desktop + Pixel 7 | Stage 4 |
 | Performance | Lighthouse CI | Stage 5 |

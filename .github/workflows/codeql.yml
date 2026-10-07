@@ -19,8 +19,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the app is TypeScript; the bench, seed and doc generators in scripts/ are Python
-        language: [javascript-typescript, python]
+        # the app is TypeScript; the bench, seed and doc generators in scripts/ are Python;
+        # actions = workflow-injection / untrusted-checkout queries over .github/workflows (release.yml has a write token)
+        language: [actions, javascript-typescript, python]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
