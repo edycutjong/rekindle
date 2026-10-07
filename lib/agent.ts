@@ -297,7 +297,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   let llmSteps = 0;
   let llmMs = 0;
   const llmErrors: { provider: string; error: string }[] = [];
-  const deadline = t0 + (opts.llmBudgetMs ?? 25_000);
+  // 20 s for the model leaves room for the deterministic fallback inside the 30 s plan gate (Groq TPM limits seen live)
+  const deadline = t0 + (opts.llmBudgetMs ?? 20_000);
 
   // Walk the provider chain. A provider that makes progress but stops early (e.g. one tool per step until the step cap)
   // gets another round for what is still open — the slots, then the coaching hand-off; a provider that errors or calls

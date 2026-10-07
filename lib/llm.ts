@@ -48,6 +48,13 @@ export function makeLlm(provider: LlmProviderId, env: Record<string, string | un
     baseURL: GROQ_BASE,
     apiKey,
     headers: { "User-Agent": "rekindle/0.1 (+https://github.com/edycutjong/rekindle)" },
+    // gpt-oss returns reasoning that the SDK echoes back as `reasoning_content` on the next step, which Groq rejects
+    // ("property 'reasoning_content' is unsupported", live run 2026-10-07); strip it and allow parallel tool calls
+    transformRequestBody: (body) => ({
+      ...body,
+      ...(Array.isArray(body.messages) ? { messages: body.messages.map((m: Record<string, unknown>) => (m && "reasoning_content" in m ? Object.fromEntries(Object.entries(m).filter(([k]) => k !== "reasoning_content")) : m)) } : {}),
+      ...(body.tools ? { parallel_tool_calls: true } : {}),
+    }),
     ...(fetchImpl ? { fetch: fetchImpl } : {}),
   });
   return { provider, modelId, model: p.chatModel(modelId) };
