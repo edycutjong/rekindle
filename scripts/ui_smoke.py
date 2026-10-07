@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Logged-out UI smoke run (build-plan D5/D6 gate): home -> Plan Maya (live) -> week renders -> "In recovery" toggle ->
-reload shows the same week -> 375 px has no horizontal scroll -> /integrations/qloo lists the calls.
+"""Logged-out end-to-end run of the ONE flow (build-plan D5-D8 gates), Playwright against a real deployment:
+home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows the same week -> clinician gate
+(swap one card live, approve one card, approve the week -> stamp) -> rate 3 activities (P/M) -> re-plan week 2 (live)
+-> diff + ember underline + top-weighted ember threads -> reload keeps week 2 -> week 1 links to week 2 ->
+375 px has no horizontal scroll -> /integrations/qloo lists the calls.
 Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `pip install playwright`).
-It drives the real deployment; nothing is mocked."""
+Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
 import sys, time, json
 from playwright.sync_api import sync_playwright
 base = sys.argv[1]; out = sys.argv[2]; tag = sys.argv[3] if len(sys.argv) > 3 else "local"
@@ -44,12 +47,69 @@ with sync_playwright() as p:
     pg.reload(wait_until="networkidle")
     res["reload_same"] = names == pg.locator("[data-testid=slot-card] h3").all_inner_texts()
     url = pg.url
+    # ---- clinician gate (D7): swap one card live, approve one card, approve the week
+    cards = pg.locator("[data-testid=slot-card]")
+    before_swap = cards.nth(0).locator("h3").inner_text()
+    t = time.time()
+    cards.nth(0).locator("[data-testid=card-swap]").click()
+    pg.wait_for_function("() => { const n = document.querySelector('[data-testid=toggle-notice]'); return n && /Swapped|No other verified/.test(n.textContent) }", timeout=60000)
+    res["swap_seconds"] = round(time.time() - t, 1)
+    res["swap_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
+    res["swap_changed"] = before_swap not in [x for x in pg.locator("[data-testid=slot-card] h3").all_inner_texts()]
+    res["clinician_strikes"] = pg.locator("[data-testid=struck][data-rule=CLINICIAN]").count()
+    pg.locator("[data-testid=slot-card]").nth(1).locator("[data-testid=card-approve]").click()
+    pg.wait_for_selector("[data-testid=slot-card][data-approved=true]", timeout=20000)
+    pg.screenshot(path=f"{out}/{tag}-gate-1440.png", full_page=True)
+    pg.click("[data-testid=approve-week]")
+    pg.wait_for_selector("[data-testid=stamp]", timeout=20000)
+    res["stamp"] = pg.locator("[data-testid=stamp]").inner_text()
+    res["approved_cards"] = pg.locator("[data-testid=slot-card][data-approved=true]").count()
+    res["cards_after_gate"] = pg.locator("[data-testid=slot-card]").count()
+    # ---- ratings (D7): P/M on three activities; re-plan enabled at >= 3
+    rated = pg.locator("[data-testid=slot-card]")
+    n = rated.count()
+    plan_ratings = [(0, 8, 5), (1, 9, 6), (n - 1, 2, 3)]
+    res["replan_enabled_before"] = pg.locator("[data-testid=replan]").is_enabled()
+    for i, p_, m_ in plan_ratings:
+        rated.nth(i).locator("[data-testid=rate-p]").fill(str(p_))
+        rated.nth(i).locator("[data-testid=rate-m]").fill(str(m_))
+    res["rated_count"] = pg.locator("[data-testid=rated-count]").inner_text().strip()
+    res["replan_enabled_after"] = pg.locator("[data-testid=replan]").is_enabled()
+    res["rated_names"] = {rated.nth(i).locator("h3").inner_text(): p_ for i, p_, m_ in plan_ratings}
+    pg.screenshot(path=f"{out}/{tag}-ratings-1440.png", full_page=True)
+    week1_url = pg.url
+    # ---- re-plan week 2 (live) + diff + ember
+    t = time.time()
+    pg.click("[data-testid=replan]")
+    pg.wait_for_selector("[data-testid=replan-diff]", timeout=90000)
+    pg.wait_for_function("() => !document.querySelector('[aria-busy=true]') && document.querySelectorAll('[data-testid=slot-card]').length > 0", timeout=90000)
+    res["replan_seconds_from_click"] = round(time.time() - t, 1)
+    time.sleep(1)
+    res["week2_url"] = pg.url
+    res["week2_heading"] = pg.locator("h1").first.inner_text()
+    res["week2_cards"] = pg.locator("[data-testid=slot-card]").count()
+    res["rekindled_underlined"] = pg.locator("[data-testid=rekindled]").count()
+    res["ember_labels"] = pg.locator("[data-testid=ember-label]").all_inner_texts()
+    res["ember_thread_paths"] = pg.locator("[data-testid=ember-threads] path").count()
+    res["diff_summary"] = pg.locator("[data-testid=replan-summary] p").first.inner_text()
+    res["leaving_out"] = pg.locator("[data-testid=replan-summary] li").all_inner_texts()
+    pg.screenshot(path=f"{out}/{tag}-replan-1440.png", full_page=True)
+    w2names = pg.locator("[data-testid=slot-card] h3").all_inner_texts()
+    pg.reload(wait_until="networkidle")
+    res["week2_reload_same"] = w2names == pg.locator("[data-testid=slot-card] h3").all_inner_texts() and pg.locator("[data-testid=replan-diff]").count() == 1
+    week2_url = pg.url
+    pg.goto(week1_url, wait_until="networkidle")
+    res["week1_links_week2"] = pg.locator("[data-testid=next-week]").count() == 1 and pg.locator("[data-testid=pm-locked]").count() > 0
     # 375 px
     m = b.new_context(viewport={"width": 375, "height": 812}, device_scale_factor=2, is_mobile=True, has_touch=True)
     mp = m.new_page()
     mp.goto(url, wait_until="networkidle")
     res["mobile_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
     mp.screenshot(path=f"{out}/{tag}-recovery-375.png", full_page=True)
+    mp.goto(week2_url, wait_until="networkidle")
+    res["mobile_replan_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
+    res["mobile_ember_labels"] = mp.locator("[data-testid=ember-label]").count()
+    mp.screenshot(path=f"{out}/{tag}-replan-375.png", full_page=True)
     mp.goto(base + "/", wait_until="networkidle")
     res["mobile_home_scroll_width"] = mp.evaluate("document.documentElement.scrollWidth")
     mp.screenshot(path=f"{out}/{tag}-home-375.png", full_page=True)
@@ -62,3 +122,20 @@ with sync_playwright() as p:
     res["console_errors"] = errs
     b.close()
 print(json.dumps(res, indent=1))
+gates = {
+    "week 1: 7 cards, every card has a why line": res["cards"] == 7 and res["why"] == 7,
+    "reload shows the same week": res["reload_same"],
+    "swap re-ran one slot": res["swap_changed"] or "No other verified" in res["swap_notice"],
+    "approve week stamps every card": res["approved_cards"] == res["cards_after_gate"] and res["stamp"].lower().startswith("approved"),
+    "re-plan disabled < 3 rated, enabled at 3": (not res["replan_enabled_before"]) and res["replan_enabled_after"],
+    "week 2 re-planned with a diff": res["week2_heading"].startswith("Week 2") and res["week2_cards"] > 0,
+    "ember underline on the >= 7 activities": res["rekindled_underlined"] == 2,
+    "ember threads only for top-weighted links (one per card)": res["ember_thread_paths"] == len(res["ember_labels"]),
+    "week 2 survives a reload": res["week2_reload_same"],
+    "week 1 locked and links to week 2": res["week1_links_week2"],
+    "no horizontal scroll at 375 px": max(res["mobile_scroll_width"], res["mobile_replan_scroll_width"], res["mobile_home_scroll_width"]) <= 375,
+    "no console errors": not res["console_errors"],
+}
+for k, v in gates.items():
+    print(("PASS " if v else "FAIL ") + k)
+sys.exit(0 if all(gates.values()) else 1)
