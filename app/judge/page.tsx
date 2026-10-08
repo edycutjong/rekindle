@@ -53,7 +53,7 @@ export default async function Judge() {
 
         <h2 className={s.h2}>The claim</h2>
         <p className={j.claim} data-testid="claim">
-          <b>Rekindle is a behavioural-activation planning agent for clinicians.</b> It turns what a depressed patient used to love into a week of real, open, nearby
+          <b>Rekindle is a behavioral-activation planning agent for clinicians.</b> It turns what a depressed patient used to love into a week of real, open, nearby
           activities, verified with Qloo, approved by the clinician, and re-planned from the patient&apos;s own pleasure ratings.
         </p>
 

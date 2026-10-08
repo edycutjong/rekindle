@@ -4,7 +4,7 @@ This file mirrors the top of [`/judge`](https://rekindle.edycu.dev/judge) on the
 
 ## The claim
 
-**Rekindle is a behavioural-activation planning agent for clinicians.** It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.
+**Rekindle is a behavioral-activation planning agent for clinicians.** It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.
 
 ## The 30-second path
 

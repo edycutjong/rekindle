@@ -1,7 +1,7 @@
 <div align="center">
   <img src="docs/assets/icon-animated.svg" alt="Rekindle icon" width="144" height="144">
   <h1>Rekindle 🕯️</h1>
-  <p><b>A behavioural-activation planning agent for clinicians.</b><br>
+  <p><b>A behavioral-activation planning agent for clinicians.</b><br>
   It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.</p>
   <img src="docs/assets/readme-replan-live.png" alt="A live Rekindle re-plan, captured from the deployed app on 7 Oct 2026: week 2 for Maya, a fictional case, with In recovery on. Above it, week 1 as rated: Big Thief P 8 and Las Culturistas P 9 underlined, Juice Generation P 2 struck as excluded. Las Culturistas comes back on Tuesday marked kept from last week, rated 9, re-checked live; other cards name the rated shows as a tied input next to Qloo's explainability weights. The agent trace runs down the right." width="100%">
 
@@ -13,14 +13,10 @@
 
   <br/>
 
-  ![Next.js 15](https://img.shields.io/badge/Next.js_15-black?style=flat&logo=next.js)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK-tool_loop-000000?style=flat&logo=vercel)
   ![tests](https://img.shields.io/badge/tests-193_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
-  [![CodeQL](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
 
   <p>
@@ -57,7 +53,7 @@ The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, 
 
 ### The Problem
 
-Behavioural activation (BA) is a first-line, low-cost treatment for depression. Its core step is **activity scheduling**: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most:
+Behavioral activation (BA) is a first-line, low-cost treatment for depression. Its core step is **activity scheduling**: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most:
 
 - **Anhedonic patients cannot name anything they would enjoy**, so the session goes to brainstorming.
 - **Generic suggestions** ("go for a walk") do not stick.
@@ -99,7 +95,7 @@ flowchart LR
 - **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call in a 6 s window after the 20 s routing budget, and the first valid answer wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
   Constraints never come from the model: radius, price, recovery, quiet and wheelchair are applied from the stored case on every request.
 - **Store:** a private Vercel Blob store (one zod-validated JSON document per case, plan, and plan call log); in memory for local development.
-- **Rate limits:** public / judge / bench namespaces, so judges are never locked out and the bench never touches the public quota.
+- **Rate limits:** public / judge / bench namespaces, so judges have their own quota and the bench never touches the public one.
 
 Full detail, with route, module and rule tables generated from the code: [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -132,11 +128,13 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 ## 📊 Engineering Rigor
 
+![Next.js 15](https://img.shields.io/badge/Next.js_15-black?style=flat&logo=next.js) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) ![Vercel AI SDK](https://img.shields.io/badge/Vercel_AI_SDK-tool_loop-000000?style=flat&logo=vercel) [![CodeQL](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml)
+
 | Metric | Value | Source |
 |---|---|---|
 | Unit + property tests | **193** (Vitest, 15 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
-| Tests named for the defect they pin | 51 (probes P8–P23, bench B5 / D9, QA rounds 1–3, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
+| Tests named for the defect they pin | 51 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 92.9% lines · 80.3% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO in the CI runs for 6672043, cdb9070 and 73be59e (100 on all three pages except performance 97 on / at 6672043) | CI Stage 5: [run 37660324552](https://github.com/edycutjong/rekindle/actions/runs/37660324552) (73be59e); later runs write the scores to the job summary and keep the LHR JSON as a 90-day `lighthouse` artifact. Thresholds in `lighthouserc.json`; accessibility < 0.9 fails |
@@ -256,4 +254,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## 🙏 Acknowledgments
 
-Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/) on Devpost. Thanks to Qloo for the Taste AI Insights API and the hackathon key; Alibaba Cloud Model Studio (Qwen) and Groq for the models; Vercel for hosting, Blob and the AI SDK. Behavioural activation's evidence base: Richards et al., *Lancet* 2016 (COBRA).
+Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/) on Devpost. Thanks to Qloo for the Taste AI Insights API and the hackathon key; Alibaba Cloud Model Studio (Qwen) and Groq for the models; Vercel for hosting, Blob and the AI SDK. Behavioral activation's evidence base: Richards et al., *Lancet* 2016 (COBRA).
