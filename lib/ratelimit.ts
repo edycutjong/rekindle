@@ -18,7 +18,7 @@ import { timingSafeEqual } from "node:crypto";
 
 export type Namespace = "public" | "judge" | "bench";
 /** what the request costs: `plan` runs the agent (Qloo + LLM); the others are cheap reads or single Qloo calls */
-export type Action = "plan" | "toggle" | "resolve" | "write" | "health";
+export type Action = "plan" | "toggle" | "resolve" | "write" | "health" | "read";
 
 export const JUDGE_COOKIE = "rk_judge";
 
@@ -37,16 +37,16 @@ const num = (v: string | undefined, d: number) => {
 export function limitsFromEnv(env: Record<string, string | undefined> = process.env): Record<Namespace, Limits> {
   return {
     public: {
-      perIpPerHour: { plan: num(env.RL_PUBLIC_PLANS_PER_IP_HOUR, 20), toggle: 40, resolve: 120, write: 40, health: 30 },
+      perIpPerHour: { plan: num(env.RL_PUBLIC_PLANS_PER_IP_HOUR, 20), toggle: 40, resolve: 120, write: 40, health: 30, read: 120 },
       // 600/day ≈ 4× the expected judging-period traffic; re-size from the counter
       dailyPlans: num(env.RL_PUBLIC_DAILY_PLANS, 600),
     },
     judge: {
-      perIpPerHour: { plan: num(env.RL_JUDGE_PLANS_PER_IP_HOUR, 60), toggle: 120, resolve: 240, write: 120, health: 60 },
+      perIpPerHour: { plan: num(env.RL_JUDGE_PLANS_PER_IP_HOUR, 60), toggle: 120, resolve: 240, write: 120, health: 60, read: 240 },
       dailyPlans: num(env.RL_JUDGE_DAILY_PLANS, 400),
     },
     bench: {
-      perIpPerHour: { plan: Infinity, toggle: Infinity, resolve: Infinity, write: Infinity, health: Infinity },
+      perIpPerHour: { plan: Infinity, toggle: Infinity, resolve: Infinity, write: Infinity, health: Infinity, read: Infinity },
       dailyPlans: num(env.RL_BENCH_DAILY_PLANS, 400),
     },
   };

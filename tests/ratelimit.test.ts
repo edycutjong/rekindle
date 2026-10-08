@@ -84,4 +84,21 @@ describe("rate limiting (lib/ratelimit.ts)", () => {
     expect(d.ok).toBe(true);
     expect(incr).not.toHaveBeenCalled();
   });
+
+  it("QA round 4 (a2a r02): the public plan/case GETs are metered before any Blob read (120/h public, 240 judge, bench unlimited)", async () => {
+    const l = limitsFromEnv({});
+    expect([l.public.perIpPerHour.read, l.judge.perIpPerHour.read, l.bench.perIpPerHour.read]).toEqual([120, 240, Infinity]);
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    const { GET: planGet } = await import("../app/api/plans/[id]/route");
+    const { GET: caseGet } = await import("../app/api/cases/[id]/route");
+    const id = crypto.randomUUID();
+    const get = (ip: string) => planGet(new Request(`http://x/api/plans/${id}`, { headers: { "x-forwarded-for": ip } }), { params: Promise.resolve({ id }) });
+    const codes: number[] = [];
+    for (let i = 0; i < 121; i++) codes.push((await get("6.6.6.6")).status);
+    expect(codes.slice(0, 120).every((c) => c === 404)).toBe(true); // read, not found
+    expect(codes[120]).toBe(429); // refused before the store is touched
+    expect((await caseGet(new Request(`http://x/api/cases/${id}`, { headers: { "x-forwarded-for": "6.6.6.7" } }), { params: Promise.resolve({ id }) })).status).toBe(404);
+    vi.unstubAllEnvs();
+  });
 });
