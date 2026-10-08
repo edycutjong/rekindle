@@ -142,14 +142,12 @@ export class BlobDailyCounter implements DailyCounter {
   }
   async get(ns: Namespace, day: string) {
     const { get } = await import("@vercel/blob");
-    try {
-      const r = await get(this.path(ns, day), { access: "private", token: this.token, useCache: false });
-      if (!r || !r.stream) return 0;
-      const v = JSON.parse(await new Response(r.stream).text()) as { n?: unknown };
-      return typeof v.n === "number" ? v.n : 0;
-    } catch {
-      return 0;
-    }
+    // @vercel/blob get(): null on 404, throws on every other failure; only "no counter yet" is 0 (a failed read used to
+    // return 0 here, and incr() then wrote n = 1: one transient Blob error reset the day's cap)
+    const r = await get(this.path(ns, day), { access: "private", token: this.token, useCache: false });
+    if (!r || !r.stream) return 0;
+    const v = JSON.parse(await new Response(r.stream).text()) as { n?: unknown };
+    return typeof v.n === "number" ? v.n : 0;
   }
   async incr(ns: Namespace, day: string) {
     const { put } = await import("@vercel/blob");
@@ -195,7 +193,13 @@ export class RateLimiter {
     }
     if (action !== "plan") return { ok: true, ns, status: 200, headers };
     const day = utcDay(now);
-    const used = await this.counter.get(ns, day);
+    let used: number;
+    try {
+      used = await this.counter.get(ns, day);
+    } catch {
+      // the counter is unreadable (Blob 5xx / 429 / network): allow this plan, and never overwrite the day's count
+      return { ok: true, ns, status: 200, headers: { ...headers, "x-ratelimit-daily-remaining": "unknown" } };
+    }
     headers["x-ratelimit-daily-limit"] = String(lim.dailyPlans);
     if (used >= lim.dailyPlans) {
       return {
@@ -207,8 +211,8 @@ export class RateLimiter {
         message: ns === "public" ? "Daily public capacity reached. The receipts of the latest live runs are at /integrations/qloo." : `Daily ${ns} capacity reached.`,
       };
     }
-    const n = await this.counter.incr(ns, day);
-    headers["x-ratelimit-daily-remaining"] = String(Math.max(0, lim.dailyPlans - n));
+    const n = await this.counter.incr(ns, day).catch(() => null);
+    headers["x-ratelimit-daily-remaining"] = n === null ? "unknown" : String(Math.max(0, lim.dailyPlans - n));
     return { ok: true, ns, status: 200, headers };
   }
 }

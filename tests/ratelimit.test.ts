@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { classify, clientIp, limitsFromEnv, MemoryDailyCounter, MemoryWindow, RateLimiter, refused, tokenMatches, utcDay } from "../lib/ratelimit";
 
 const JUDGE = "judge-token-0123456789abcdef";
@@ -75,5 +75,13 @@ describe("rate limiting (lib/ratelimit.ts)", () => {
     expect(l.public.perIpPerHour.plan).toBe(20);
     expect(l.public.dailyPlans).toBe(600);
     expect(l.bench.perIpPerHour.plan).toBe(Infinity);
+  });
+
+  it("QA round 4: an unreadable daily counter allows the plan and is never reset to 1", async () => {
+    const incr = vi.fn(async () => 1);
+    const rl = new RateLimiter({ kind: "blob", get: async () => { throw new Error("Failed to fetch blob: 503"); }, incr }, {});
+    const d = await rl.check(req({ "x-forwarded-for": "8.8.8.8" }), "plan");
+    expect(d.ok).toBe(true);
+    expect(incr).not.toHaveBeenCalled();
   });
 });
