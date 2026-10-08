@@ -53,17 +53,21 @@ def caveat_md(rows) -> str:
 
 
 def killer(r, au) -> str:
-    # same grader first (QA round 1): arm A is graded by the address pipeline (Nominatim + /search name match), and so
-    # is B-sym (Rekindle's own cards through that pipeline); B by Qloo ID is 0 by construction and is stated second
+    # a2a r04 (judge lens): lead with the plain-language count. Arm A and B-sym are graded by the same address pipeline
+    # (Nominatim + /search name match); B by Qloo ID is 0 by construction and stated last; the manual audit stays labelled
+    # "not blind; done by the build agent".
     a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
+    am, bm = au["arms"]["A"], au["arms"]["B"]
+    alc = "serves" if a["alcohol"] == 1 else "serve"
+    misses = f"all {bs['violation']} misses are" if bs["unverifiable"] == bs["violation"] else f"{bs['unverifiable']} of its {bs['violation']} misses are"
     return (
-        f"**{pct(a['violation_rate'])} vs {pct(bs['violation_rate'])} through the same address pipeline** "
-        f"({pct(b['violation_rate'])} when Rekindle's cards are checked by their Qloo ID). Across {r['profiles']} fictional profiles, "
-        f"{a['violation']} of {a['outing_venues']} outing venues in plans from the same LLM asked for named places were wrong: "
-        f"{a['unverifiable']} unverifiable, {a['closed_at_slot']} closed at the slot, {a['alcohol']} serving alcohol to a patient in recovery. "
-        f"Rekindle: {bs['violation']} of {bs['outing_venues']} through the same pipeline ("
-        f"{'all ' if bs['unverifiable'] == bs['violation'] else ''}{bs['unverifiable']} unverifiable, i.e. geocode or name-match misses on venues Qloo verified), {b['violation']} of {b['outing_venues']} by Qloo ID (`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
-        + audit_pair(au)
+        f"**The same LLM, asked for named places, got {a['violation']} of {a['outing_venues']} venues wrong**: "
+        f"{a['unverifiable']} don't verify, {a['closed_at_slot']} are closed at the planned hour, {a['alcohol']} {alc} alcohol to a patient in recovery "
+        f"({r['profiles']} fictional profiles). Through the same checker, Rekindle's cards score {pct(bs['violation_rate'])}, and {misses} "
+        f"venues Qloo verified that the address match failed on (by Qloo ID: {b['violation']} of {b['outing_venues']}; `bench/results.json`, run "
+        f"{r['finished_at'][:16].replace('T', ' ')} UTC). A hand check of {am['sampled']} venues per arm against public listings (not blind; done by the "
+        f"build agent): {am['violations']} of {am['checked']} wrong vs {bm['violations']} of {bm['checked']} "
+        f"({am['inconclusive']} and {bm['inconclusive']} inconclusive, `bench/audit.json`)."
     )
 
 
