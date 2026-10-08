@@ -1,0 +1,30 @@
+name: uptime
+
+# Liveness of the judged deployment. A failed run emails the repo owner (GitHub's default notification).
+# Every 6 h while the repo is private (Actions minutes are metered there); switch the cron to hourly at the
+# public flip, when minutes are free. /api/health?deep=1 = Qloo /v2/tags + an LLM ping + one Redis PING, cached
+# 60 s per instance; it returns 503 when any probe fails or the instance is in safe mode.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: GET /api/health?deep=1
+        run: |
+          code=$(curl -s -o body.json -w '%{http_code}' --max-time 30 "https://rekindle.edycu.dev/api/health?deep=1" || echo 000)
+          echo "HTTP $code"; cat body.json || true; echo
+          { echo "### Production health"; echo "HTTP $code"; echo '```json'; cat body.json || true; echo; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          test "$code" = "200"
+          python3 -c "import json,sys; d=json.load(open('body.json')); sys.exit(0 if d.get('ok') and d.get('store')=='redis' and not d.get('storeDegraded') else 1)"
