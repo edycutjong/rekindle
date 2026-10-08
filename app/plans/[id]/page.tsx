@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
+import { readCase, readPlan } from "@/lib/reads";
 import { storeFor } from "@/lib/scope";
 import { latestVersion } from "@/lib/service";
 
@@ -15,9 +16,8 @@ const ID_RE = /^[0-9a-f-]{36}$/i;
 /** "Week N · <label> · Rekindle"; a missing week is titled like every other 404 (QA round 3) */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const store = storeFor({ headers: await headers() });
-  const plan = await store.getPlan(id).catch(() => null);
-  const c = plan ? await store.getCase(plan.case_id).catch(() => null) : null;
+  const plan = await readPlan(id);
+  const c = plan ? await readCase(plan.case_id) : null;
   return { title: plan && c ? `Week ${plan.week} · ${c.label} · Rekindle` : "Not found · Rekindle", robots: { index: false } };
 }
 
@@ -30,14 +30,14 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const replaced = (await searchParams).replaced;
   const h = await headers();
   const store = storeFor({ headers: h });
-  const found = await store.getPlan(id).catch(() => null);
+  const found = await readPlan(id);
   if (!found) notFound();
   if (found.superseded_by) {
     const latest = await latestVersion(store, found);
     if (latest.id !== found.id) redirect(`/plans/${latest.id}?replaced=${found.id}`);
   }
   const plan = found;
-  const c = await store.getCase(plan.case_id).catch(() => null);
+  const c = await readCase(plan.case_id);
   if (!c) notFound();
   // a re-planned week shows the rated week it came from, with the ember threads
   const previous = plan.diff ? await store.getPlan(plan.diff.from_plan_id).catch(() => null) : null;

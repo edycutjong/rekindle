@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
+import { readCase } from "@/lib/reads";
 import { storeFor } from "@/lib/scope";
 import { latestVersion, planRunState } from "@/lib/service";
 
@@ -12,9 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const c = await storeFor({ headers: await headers() })
-    .getCase(id)
-    .catch(() => null);
+  const c = await readCase(id);
   return { title: c ? `Week 1 · ${c.label} · Rekindle` : "Not found · Rekindle", robots: { index: false } };
 }
 
@@ -28,7 +27,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   const fault = (await searchParams).fault === "qloo_unreachable" ? "qloo_unreachable" : null;
   const h = await headers();
   const store = storeFor({ headers: h });
-  const c = await store.getCase(id).catch(() => null);
+  const c = await readCase(id);
   if (!c) notFound();
   // week 1 already saved for this case (a reopened link, a reload after the run): show it, never run it again
   const state = await planRunState(store, id);

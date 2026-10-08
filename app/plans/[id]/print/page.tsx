@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PrintButton } from "@/components/PrintButton";
-import { storeFor } from "@/lib/scope";
+import { readCase, readPlan } from "@/lib/reads";
 import { printSheet, stampLabel } from "@/lib/view";
 import s from "./print.module.css";
 
@@ -11,9 +10,7 @@ export const dynamic = "force-dynamic";
 /** a missing week is titled as such (the 404 used to say "Activity sheet") */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const plan = await storeFor({ headers: await headers() })
-    .getPlan(id)
-    .catch(() => null);
+  const plan = await readPlan(id);
   return { title: plan ? "Activity sheet · Rekindle" : "Not found · Rekindle", robots: { index: false } };
 }
 
@@ -23,10 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
  */
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const store = storeFor({ headers: await headers() });
-  const plan = await store.getPlan(id).catch(() => null);
+  const plan = await readPlan(id);
   if (!plan) notFound();
-  const c = await store.getCase(plan.case_id).catch(() => null);
+  const c = await readCase(plan.case_id);
   if (!c) notFound();
   const sheet = printSheet(plan);
 
