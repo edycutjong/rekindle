@@ -2,6 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { receiptsPaused, RECEIPTS_PAUSED_NOTE } from "../lib/receipts-cached";
 import { benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
 import { countRules, summarise } from "../lib/receipts";
 
@@ -81,5 +82,11 @@ describe("/judge view model", () => {
     expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 4, wrong: 3, inconclusive: 3 } } } })).toMatch(/4 of the 10 LLM venues the automated checker could not match were real and open/);
     expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 0, wrong: 2, inconclusive: 0 } } } })).toBeNull();
     expect(oracleOverFlag(null)).toBeNull();
+  });
+
+  it("QA round 4 (a2a r06): RECEIPTS_PAUSED=1 pauses the latest-plans list() and the page says so in plain words", () => {
+    expect(receiptsPaused({ RECEIPTS_PAUSED: "1" })).toBe(true);
+    expect(receiptsPaused({})).toBe(false);
+    expect(RECEIPTS_PAUSED_NOTE).toMatch(/paused to protect this deployment's storage budget/);
   });
 });

@@ -25,7 +25,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 | Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
 | Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
 | Ember threads on live re-plans | 2 of 77 rekindled-top cards clear the 0.02 lead; 75 are shown as ties (median lead 0.0068) | `bench/ember-live.json` |
-| Unit + property tests | 195 Vitest tests, 16 files, no keys needed | `npm test` |
+| Unit + property tests | 196 Vitest tests, 16 files, no keys needed | `npm test` |
 | Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
 

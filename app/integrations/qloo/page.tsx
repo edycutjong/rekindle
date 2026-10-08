@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import r from "@/components/rekindle.module.css";
 import { latestReceipts, type Receipts } from "@/lib/receipts";
+import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsPaused } from "@/lib/receipts-cached";
 import { storeFromEnv } from "@/lib/store";
 import s from "./qloo.module.css";
 
@@ -20,8 +21,11 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
   const planId = plan && ID_RE.test(plan) ? plan : null;
   let data: Receipts | null = null;
   let error: string | null = null;
+  const paused = !planId && receiptsPaused();
   try {
-    data = await latestReceipts(storeFromEnv(), { planId, limit: 5 });
+    // one plan: two reads by path; the latest-plans view (a list()) is cached across instances or paused (a2a r06)
+    if (planId) data = await latestReceipts(storeFromEnv(), { planId, limit: 5 });
+    else if (!paused) data = await cachedLatestReceipts(5);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -40,6 +44,7 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
             <>The latest plans run on this deployment, newest first. Host: hackathon.api.qloo.com, GET only; the API key stays on the server and is never logged.</>
           )}
         </p>
+        {paused && <p className={r.notice}>{RECEIPTS_PAUSED_NOTE}</p>}
         {error && <p className={r.errorBox}>Could not read the call logs: {error}</p>}
         {data && (
           <>
