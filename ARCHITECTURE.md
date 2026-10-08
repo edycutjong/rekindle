@@ -29,7 +29,7 @@ flowchart LR
     V[lib/verify.ts<br/>R-ID … R-HIST]
     GT[lib/gate.ts]
     RP[lib/replan.ts<br/>ratings → signals / exclusions · diff]
-    S[(lib/store.ts<br/>private Vercel Blob)]
+    S[(lib/store.ts<br/>Upstash Redis · Blob fallback)]
   end
 
   Q[(Qloo<br/>hackathon.api.qloo.com)]
@@ -80,16 +80,18 @@ The Qloo friction we hit, with repro commands, is in [DX-REPORT.md](DX-REPORT.md
 
 ## Persistence, limits, observability
 
-- **Store** (`lib/store.ts`): one zod-validated JSON document per case, per plan, and per plan's Qloo call log, in a private Vercel Blob store.
-  - Without `BLOB_READ_WRITE_TOKEN` it uses an in-memory store locally. It refuses to start on Vercel without the token.
+- **Store** (`lib/store.ts`): one zod-validated JSON document per case, per plan, and per plan's Qloo call log.
+  - Backend precedence: Upstash Redis when `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set (one key per document, `SET NX` / compare-and-set run claims, a newest-first sorted set of plan ids instead of a `list()`), else a private Vercel Blob store, else in memory locally. `STORE_BACKEND=blob` is the rollback; it refuses to start on Vercel with no store. Both backends pass one contract suite (`tests/store-contract.test.ts`, Redis on an in-process fake).
+  - Why Redis: Vercel Hobby allows 2,000 Blob advanced operations per rolling 30 days and suspends the store for 30 days past that.
+  - **Safe mode:** when the backend refuses (suspended, over quota, 5xx, network), the instance opens a 5-minute circuit and keeps planning live on its own memory under a banner that says the week is not saved. A saved week that cannot be read is "unavailable right now" (a page, or a 503 with `retry-after`), never "Not found" and never a 500.
   - Bench requests (`x-bench-token`) read and write under a `bench/` prefix (`lib/scope.ts`).
 - **Rate limits** (`lib/ratelimit.ts`): three namespaces.
   - **public:** per-IP hourly limit + a global daily cap.
   - **judge:** `/?judge=<token>` sets a cookie (`middleware.ts`). It has its own quota and never counts against the public cap.
   - **bench:** `x-bench-token`.
-  - Counters are in memory, plus a Blob-backed daily counter. Defaults and overrides are in [`.env.example`](.env.example).
+  - The per-IP window is in memory per instance and also meters the saved-week pages and the receipts (zero store reads when refused). The daily plan counter follows the store: an atomic Redis `INCR`, else a Blob document; if it cannot be read, the cap is counted on the instance instead. Defaults and overrides are in [`.env.example`](.env.example).
 - **Receipts:** every Qloo request of a plan is stored without the key (path, params, status, ms, result count). It is shown on `/integrations/qloo` and summarised on `/judge`.
-- **Health:** `GET /api/health` makes one Qloo `/v2/tags` call and one LLM ping; `?deep=1` adds one Blob `head()` (a billed simple op on Vercel Hobby, so only an hourly monitor should use it). Each depth is cached for 60 s per instance, and the endpoint returns 503 when any probe is down.
+- **Health:** `GET /api/health` makes one Qloo `/v2/tags` call and one LLM ping; `?deep=1` adds one store probe: a Redis `PING`, or on Blob one `head()` (a billed simple op on Vercel Hobby, so only an hourly monitor should use it). The body names the store (`redis` / `blob` / `memory`) and whether the instance is in safe mode. Each depth is cached for 60 s per instance, and the endpoint returns 503 when any probe is down.
 
 ## Failure and edge states
 
@@ -101,6 +103,8 @@ The Qloo friction we hit, with repro commands, is in [DX-REPORT.md](DX-REPORT.md
 | Empty | no candidate passed, or the clinician removed one | the slot left empty with the reason |
 | Coverage refusal | outing slots empty at the case radius | how many outings verified, why each slot is empty, "Widen to N km with clinician consent" |
 | Qloo unavailable | a Qloo error during a tool call | solid empty slot + banner; `/judge` has a labelled demo (`?fault=qloo_unreachable`) that sends no request and is excluded from receipts |
+| Store unavailable | the store refuses (`StoreUnavailable`: Blob suspended, Redis over quota, 5xx, network) | new weeks still plan live from per-instance memory under a "Storage is paused" banner; saved weeks render "unavailable right now"; the API answers 503 + `retry-after` (`STORE_FAULT=unavailable` reproduces it off production, `e2e/safe-mode.spec.ts`) |
+| Too many page reads | the per-IP `read` window (in memory) | "Too many requests, try again in N min", with nothing read from the store |
 
 ## Generated from the code
 

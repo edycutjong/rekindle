@@ -94,7 +94,7 @@ flowchart LR
 - **Next.js 15** (App Router, TypeScript) on Vercel. The UI and API routes are one deploy, and week plans stream to the browser as Server-Sent Events.
 - **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call in a 6 s window after the 20 s routing budget, and the first valid answer wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
   Constraints never come from the model: radius, price, recovery, quiet and wheelchair are applied from the stored case on every request.
-- **Store:** a private Vercel Blob store (one zod-validated JSON document per case, plan, and plan call log); in memory for local development.
+- **Store:** one zod-validated JSON document per case, plan, and plan call log, in Upstash Redis when it is configured, else a private Vercel Blob store; in memory for local development. If the store refuses, the app keeps planning live on per-instance memory under a banner, and saved weeks say "unavailable right now" rather than "Not found".
 - **Rate limits:** public / judge / bench namespaces, so judges have their own quota and the bench never touches the public one.
 
 Full detail, with route, module and rule tables generated from the code: [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -105,7 +105,7 @@ Full detail, with route, module and rule tables generated from the code: [ARCHIT
 | **Agent** | Vercel AI SDK `generateText` with typed zod tools; `qwen3.8-flash` (DashScope-intl), Groq `openai/gpt-oss-120b` as fallback and coaching-race runner |
 | **Truth layer** | Deterministic verifier `lib/verify.ts` (R-ID … R-HIST), no I/O |
 | **Data** | Qloo Insights API (`/v2/insights`, heatmap, `/entities`, `/search`, `/v2/tags`) |
-| **Store** | Private Vercel Blob (zod-validated JSON documents); in memory locally |
+| **Store** | Upstash Redis, or private Vercel Blob as the fallback (zod-validated JSON documents); in memory locally |
 | **Hosting** | Vercel |
 
 ## 🏆 Qloo Integration: why Qloo is the engine
@@ -135,7 +135,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Unit + property tests | **218** (Vitest, 19 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
 | Tests named for the defect they pin | 76 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
-| Coverage (`lib/`, API routes) | 92.9% lines · 80.2% branches | `npm run test:coverage` (CI uploads the report) |
+| Coverage (`lib/`, API routes) | 93.8% lines · 80.5% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO in the CI runs for 6672043, cdb9070 and 73be59e (100 on all three pages except performance 97 on / at 6672043) | CI Stage 5: [run 37660324552](https://github.com/edycutjong/rekindle/actions/runs/37660324552) (73be59e); later runs write the scores to the job summary and keep the LHR JSON as a 90-day `lighthouse` artifact. Thresholds in `lighthouserc.json`; accessibility < 0.9 fails |
 | Plan latency, hosted | p50 17.43 s · p95 20.61 s (bench run; it predates later plan-path changes, see the caveat under The number) | `bench/results.json` |
