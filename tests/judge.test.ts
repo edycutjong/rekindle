@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { benchReceipt, benchRows, loadJudgeData, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
+import { benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
 import { countRules, summarise } from "../lib/receipts";
 
 const arm = (o: Partial<BenchResults["arms"][string]> = {}) => ({ outing_venues: 10, errors: 0, violation: 3, violation_rate: 0.3, unverifiable: 2, closed_at_slot: 1, alcohol: 0, alcohol_denominator: 5, unknown_hours: 1, ...o });
@@ -74,5 +74,12 @@ describe("/judge view model", () => {
     const t = summarise([plan({ "R-ALC": 2 }, 1), plan({ "R-ALC": 1, "R-NEAR": 4 }, 0)]);
     expect(t.refusals_by_rule).toEqual({ "R-ALC": 3, "R-NEAR": 4 });
     expect(t.review).toBe(1);
+  });
+
+  it("QA round 4 (a2a r05): /judge states the checker's over-flag from oracle_vs_hand, and says nothing when there is none", () => {
+    const base = { generated_by: "x", finished_at: "x", auditor: "x", method: "x", arms: {} } as AuditResults;
+    expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 4, wrong: 3, inconclusive: 3 } } } })).toMatch(/4 of the 10 LLM venues the automated checker could not match were real and open/);
+    expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 0, wrong: 2, inconclusive: 0 } } } })).toBeNull();
+    expect(oracleOverFlag(null)).toBeNull();
   });
 });

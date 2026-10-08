@@ -86,6 +86,16 @@ export interface AuditResults {
   auditor: string;
   method: string;
   arms: Record<string, AuditArm>;
+  /** a2a r05: the automated checker's grade vs the hand verdict on the same sampled venue, per arm */
+  oracle_vs_hand?: Record<string, Record<string, { ok: number; wrong: number; inconclusive: number }>>;
+}
+
+/** One sentence from oracle_vs_hand: how often the checker's "unverifiable" was a real, open place in the hand sample. */
+export function oracleOverFlag(audit: AuditResults | null): string | null {
+  const cell = audit?.oracle_vs_hand?.A?.unverifiable;
+  if (!cell || !cell.ok) return null;
+  const n = cell.ok + cell.wrong + cell.inconclusive;
+  return `In the same random sample, ${cell.ok} of the ${n} LLM venues the automated checker could not match were real and open (it matches by street address, which misses large venues such as parks), so the hand check is the headline.`;
 }
 
 /** bench/predates.json (scripts/bench_table.py): plan-path commits made after the bench finished */
@@ -138,7 +148,7 @@ export async function loadJudgeData(dir = path.join(process.cwd(), "bench")): Pr
 export const ARM_LABEL: Record<string, string> = {
   A: "A · LLM only (same model, asked for named venues)",
   B: "B · Rekindle",
-  "B-": "B− · Rekindle, alcohol screen off",
+  "B-": "B− · screen off, 14-tag exclusion kept",
   "B-4": "B−4 · screen off, 4 bar tags only",
   "B-sym": "B · Rekindle cards through arm A's address pipeline",
 };
@@ -155,7 +165,7 @@ export interface BenchRow {
   closed: number;
   alcohol: string;
   unknownHours: number;
-  /** blind-audit rate for this arm, or a reason it has none */
+  /** manual-audit rate for this arm (not blind), or a reason it has none */
   audited: string;
 }
 

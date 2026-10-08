@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { StartCase } from "@/components/StartCase";
 import r from "@/components/rekindle.module.css";
 import rigorJson from "@/docs/rigor.json";
-import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, pctLabel, profilesWith, type Rigor } from "@/lib/judge";
+import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type Rigor } from "@/lib/judge";
 import { latestReceipts, type Receipts } from "@/lib/receipts";
 import { SEEDS } from "@/lib/service";
 import { storeFromEnv } from "@/lib/store";
@@ -287,7 +287,7 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
               the venues against public listings instead.{" "}
               {audit ? (
                 <>
-                  Audit: {audit.method} Auditor: {audit.auditor}.
+                  Audit: {audit.method} Auditor: {audit.auditor}. {oracleOverFlag(audit)}
                 </>
               ) : (
                 "The manual audit has not been summarised yet."

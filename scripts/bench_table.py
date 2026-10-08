@@ -52,22 +52,35 @@ def caveat_md(rows) -> str:
     )
 
 
+def plural(n: int, one: str, many: str) -> str:
+    """'1 venue', '0 venues', '3 venues' — so a re-run with 0 or 1 never prints 'all 0' or '1 don't'"""
+    return f"{n} {one if n == 1 else many}"
+
+
 def killer(r, au) -> str:
-    # a2a r04 (judge lens): lead with the plain-language count. Arm A and B-sym are graded by the same address pipeline
-    # (Nominatim + /search name match); B by Qloo ID is 0 by construction and stated last; the manual audit stays labelled
-    # "not blind; done by the build agent".
+    # a2a r05 (judge lens): the hand check leads. It is a random sample of the same venues, graded against public
+    # listings, and it disagrees with the automated checker: oracle_vs_hand in bench/audit.json shows the checker
+    # flagging real, open places (large venues such as parks sit far from a street address) as unverifiable. The full-run
+    # checker numbers follow, with that over-flag stated.
     a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
     am, bm = au["arms"]["A"], au["arms"]["B"]
-    alc = "serves" if a["alcohol"] == 1 else "serve"
-    misses = f"all {bs['violation']} misses are" if bs["unverifiable"] == bs["violation"] else f"{bs['unverifiable']} of its {bs['violation']} misses are"
+    ovh = (au.get("oracle_vs_hand") or {}).get("A", {}).get("unverifiable", {})
+    fu = sum(ovh.values()) if ovh else 0
+    fp = ovh.get("ok", 0) if ovh else 0
+    over = (
+        f", but it over-flags: in the same random sample, {fp} of the {plural(fu, 'venue', 'venues')} it couldn't match "
+        f"{'was' if fp == 1 else 'were'} real and open, because it matches by street address and misses large venues such as parks"
+        if fp else ""
+    )
     return (
-        f"**The same LLM, asked for named places, got {a['violation']} of {a['outing_venues']} venues wrong**: "
-        f"{a['unverifiable']} don't verify, {a['closed_at_slot']} are closed at the planned hour, {a['alcohol']} {alc} alcohol to a patient in recovery "
-        f"({r['profiles']} fictional profiles). Through the same checker, Rekindle's cards score {pct(bs['violation_rate'])}, and {misses} "
-        f"venues Qloo verified that the address match failed on (by Qloo ID: {b['violation']} of {b['outing_venues']}; `bench/results.json`, run "
-        f"{r['finished_at'][:16].replace('T', ' ')} UTC). A hand check of {am['sampled']} venues per arm against public listings (not blind; done by the "
-        f"build agent): {am['violations']} of {am['checked']} wrong vs {bm['violations']} of {bm['checked']} "
-        f"({am['inconclusive']} and {bm['inconclusive']} inconclusive, `bench/audit.json`)."
+        f"**Asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'hand-checked venue', 'hand-checked venues')} wrong "
+        f"({pct(am['rate'])}); Rekindle: {bm['violations']} of {bm['checked']}.** "
+        f"Wrong means not found ({am['not_found']}), closed at the planned hour ({am['closed_at_slot']}) or serving alcohol to a patient in recovery "
+        f"({am['alcohol']}); a random {am['sampled']} per arm against public listings, not blind, done by the build agent, "
+        f"{am['inconclusive']} and {bm['inconclusive']} inconclusive (`bench/audit.json`). "
+        f"Our automated checker, on all {r['profiles']} fictional profiles, flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')} "
+        f"and {bs['violation']} of Rekindle's {b['outing_venues']} ({b['violation']} by Qloo ID){over} "
+        f"(`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
     )
 
 
@@ -96,7 +109,7 @@ def table(r, rp, au) -> str:
         "A": "A · LLM only (same model, asked for named venues)",
         "B": "B · Rekindle",
         "B-sym": "B-sym · Rekindle's cards through arm A's address pipeline",
-        "B-": "B− · Rekindle, alcohol screen off",
+        "B-": "B− · screen off, 14-tag exclusion kept",
         "B-4": "B−4 · screen off, 4 bar tags only",
     }
     rows = [
@@ -223,8 +236,36 @@ def stale_files(r, rp, au, rows, write: bool) -> list:
     return stale
 
 
+def devpost_bullets(r, au) -> list[str]:
+    """a2a r05: the Devpost copy of "The number" and "Ablation", generated from the same files as the README, so the
+    kitchen check (../scripts/devpost_check.py) can fail when the pasted copy drifts after the final bench re-run."""
+    a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
+    am, bm = au["arms"]["A"], au["arms"]["B"]
+    ovh = (au.get("oracle_vs_hand") or {}).get("A", {}).get("unverifiable", {})
+    fu, fp = sum(ovh.values()), ovh.get("ok", 0)
+    over = f", but {fp} of the {plural(fu, 'venue', 'venues')} it couldn't match in the audit sample {'was' if fp == 1 else 'were'} real and open" if fp else ""
+    number = (
+        f"- **The number:** asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'hand-checked venue', 'hand-checked venues')} wrong "
+        f"({round((am['rate'] or 0) * 100)}%: {am['not_found']} not found, {am['closed_at_slot']} closed at the planned hour, {am['alcohol']} serving alcohol to a patient in recovery); "
+        f"Rekindle got {bm['violations']} of {bm['checked']} (a random {am['sampled']} per arm against public listings; not blind, done by the build agent; `bench/audit.json`). "
+        f"We lead with the hand check because our automated checker leans on Qloo, which flatters Rekindle, and over-flags the LLM: across all "
+        f"{r['profiles']} profiles it flags {a['violation']} of {a['outing_venues']} vs {bs['violation']} of {b['outing_venues']}{over}."
+    )
+    ab = r["ablation_in_recovery"]
+    on, off, four = ab["B"], ab["B-"], ab["B-4"]
+    ablation = (
+        f"- **Ablation** ({plural(on['profiles'], 'in-recovery profile', 'in-recovery profiles')}): with the screen on, {on['plan_alcohol_leak']} of {on['outing_cards']} outing cards serve alcohol. "
+        f"Screen off, Qloo's 14-tag exclusion kept: {off['plan_alcohol_leak']} of {off['outing_cards']}. "
+        f"Screen off, only the 4 obvious bar tags excluded: {four['plan_alcohol_leak']} of {four['outing_cards']} (`bench/results.json`, `ablation_in_recovery`)."
+    )
+    return [number, ablation]
+
+
 def main() -> int:
     r, rp, au = load("results.json"), load("replan.json"), load("audit.json")
+    if "--devpost" in sys.argv:
+        print("\n".join(devpost_bullets(r, au)))
+        return 0
     rows = predates(r)
     if "--check" not in sys.argv:
         print("updated: " + (", ".join(stale_files(r, rp, au, rows, True)) or "nothing"))

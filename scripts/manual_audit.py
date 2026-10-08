@@ -103,6 +103,34 @@ def handout(a):
     print("the arm of every row is recoverable from the public repo, so blinding depends on that.")
 
 
+def oracle_class(v) -> str:
+    """the automated checker's grade for one bench venue (scripts/bench.py classes)"""
+    c = v.get("classes") or {}
+    if c.get("unverifiable"):
+        return "unverifiable"
+    if c.get("closed_at_slot"):
+        return "closed_at_slot"
+    if c.get("alcohol"):
+        return "alcohol"
+    return "pass"
+
+
+def oracle_vs_hand(rows, key, venues):
+    """a2a r05: per arm, the automated checker's grade against the hand verdict on the same sampled venue (joined on
+    arm + venue name + day + hour). This is the measurement results.json definitions.known_limit promises: how often
+    the oracle is wrong (e.g. a park that grades unverifiable from a street address but is real and open)."""
+    out = {}
+    for r in rows:
+        arm = key[r["audit_id"]]
+        hit = [v for v in venues if v["arm"] == arm and v.get("name") == r["venue_name"] and v["day"] == r["day"] and f"{int(v['hour']):02d}:00" == r["hour"]]
+        o = oracle_class(hit[0]) if hit else "unmatched"
+        v = verdict(r)
+        h = "wrong" if v["wrong"] else "ok" if v["checked"] else "inconclusive"
+        cell = out.setdefault(arm, {}).setdefault(o, {"ok": 0, "wrong": 0, "inconclusive": 0})
+        cell[h] += 1
+    return out
+
+
 def summary(a):
     key = {r["audit_id"]: r["arm"] for r in csv.DictReader(open(KEY))}
     if a.from_handout:
@@ -134,14 +162,18 @@ def summary(a):
     with open(os.path.join(os.path.dirname(KEY), "audit_wrong_ids.json"), "w") as f:
         json.dump(wrong, f, indent=1)
         f.write("\n")
+    prev = json.load(open(os.path.join(BENCH, "audit.json"))) if os.path.exists(os.path.join(BENCH, "audit.json")) else {}
+    res = json.load(open(os.path.join(BENCH, "results.json")))
     out = {
         "generated_by": "scripts/manual_audit.py summary",
         "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source": SOURCE,
-        "auditor": a.auditor,
-        "method": a.method,
+        # a re-summary without --auditor/--method keeps what the audit recorded
+        "auditor": a.auditor if a.auditor != "unspecified" else prev.get("auditor", a.auditor),
+        "method": a.method if a.method != "unspecified" else prev.get("method", a.method),
         "definition": "wrong = venue not found, or not open at the slot, or (in-recovery case) serves alcohol, per public sources; rate = wrong / checked; inconclusive rows are excluded from the denominator",
         "arms": arms,
+        "oracle_vs_hand": oracle_vs_hand(rows, key, res["venues"]),
     }
     with open(os.path.join(BENCH, "audit.json"), "w") as f:
         json.dump(out, f, indent=1, ensure_ascii=False)
