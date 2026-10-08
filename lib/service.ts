@@ -5,7 +5,7 @@
 import profiles from "../fixtures/profiles.json";
 import { assembleCoaching, coachingAlcohol, coachRace, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
-import { QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
+import { QLOO_RUN_BUDGET_MS, QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
 import { ALCOHOL_EXCLUDE_4, ALCOHOL_EXCLUDE_14 } from "./tags";
 import { alcoholScreen } from "./verify";
@@ -154,7 +154,8 @@ async function runWeekOne(o: RunPlanOptions, c: CaseDoc): Promise<PlanDoc> {
     calls.push(l);
     o.onEvent?.({ type: "qloo", path: l.path, status: l.status, ms: l.ms, n_results: l.n_results, params: l.params });
   };
-  const qloo = (o.fault ? unreachableQloo : (o.qloo ?? qlooFromEnv))(onCall);
+  const deadline = Date.now() + QLOO_RUN_BUDGET_MS;
+  const qloo = (o.fault ? unreachableQloo : (o.qloo ?? ((cb: (l: QlooCallLog) => void) => qlooFromEnv(cb, { deadline }))))(onCall);
   // the outage demo routes deterministically: no LLM spend for a week that cannot get any Qloo data
   const llms = o.fault ? [] : (o.llms ?? llmChainFromEnv());
   const pool = new Map<string, { entity_id: string; name: string; verdict: "REFUSE" | "REVIEW"; hits: string[] }>();
@@ -226,7 +227,7 @@ export async function toggleConstraints(o: { store: Store; planId: string; patch
   if (Object.keys(changed).length === 0) return { plan: parent, case: c };
   const next = CaseDoc.parse({ ...c, ...changed, id: newId(), created_at: new Date().toISOString() });
   const calls: QlooCallLog[] = [];
-  const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
+  const qloo = (o.qloo ?? ((cb: (l: QlooCallLog) => void) => qlooFromEnv(cb, { deadline: t0 + QLOO_RUN_BUDGET_MS })))((l) => calls.push(l));
   const w = await applyConstraints(qloo, weekPlanFromDoc(parent), caseRowFromDoc(next), parent.history, { refillEmpty: loosens(c, next) });
   const prior = (await o.store.getCalls(parent.id))?.calls ?? [];
   const toggled = planDocFromToggle(parent, w, { caseId: next.id, changed, struck: w.struck.length, refilled: w.refilled, ms: Date.now() - t0, calls: prior.length + calls.length, coach: (card) => templateCoaching(card) });

@@ -104,4 +104,15 @@ describe("lib/qloo", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(9);
     expect(peak).toBe(3);
   });
+
+  it("QA round 4: run deadline: an in-flight attempt is cut at it, no attempt starts after it, and a refused call is not a receipt", async () => {
+    const logs: QlooCallLog[] = [];
+    const hang = (async (_u: string, init: RequestInit) => new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch;
+    const c = new QlooClient({ apiKey: "k", fetchImpl: hang, onCall: (l) => logs.push(l), sleep: async () => {}, random: () => 0, deadline: Date.now() + 800 });
+    const t = Date.now();
+    await expect(c.insights({ "filter.type": "urn:entity:place" })).rejects.toThrow(/run deadline/);
+    expect(Date.now() - t).toBeLessThan(1500); // cut at ~800 ms, not 8 s per attempt
+    await expect(c.insights({ "filter.type": "urn:entity:place" })).rejects.toThrow(/run deadline/);
+    expect(logs).toHaveLength(1); // the second request never left the server
+  });
 });

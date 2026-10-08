@@ -48,7 +48,19 @@ export interface QlooClientOptions {
   random?: () => number;
   /** max requests in flight from this client (default 3) */
   maxConcurrent?: number;
+  /** epoch ms: no attempt starts after it and an in-flight attempt is aborted at it (QLOO_RUN_BUDGET_MS) */
+  deadline?: number;
+  /** injectable clock (tests) */
+  now?: () => number;
 }
+
+/**
+ * Qloo time one plan / re-plan / toggle / swap may spend, so the week is stored before the route's maxDuration (60 s)
+ * kills the function. Past it no attempt starts and an in-flight one is aborted; the slot says "Qloo unavailable".
+ */
+export const QLOO_RUN_BUDGET_MS = 40_000;
+/** an attempt with less than this left before the deadline is not started */
+const MIN_ATTEMPT_MS = 500;
 
 /** Serialise params for a GET: arrays → comma-joined, booleans → "true"/"false", empty values dropped. */
 export function encodeParams(params: QlooParams): Record<string, string> {
@@ -120,6 +132,8 @@ export class QlooClient {
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly random: () => number;
   private readonly gate: Gate;
+  private readonly deadline?: number;
+  private readonly now: () => number;
 
   constructor(opts: QlooClientOptions) {
     if (!opts.apiKey) throw new Error("QLOO_API_KEY is not set");
@@ -135,6 +149,8 @@ export class QlooClient {
     this.sleep = opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
     this.random = opts.random ?? Math.random;
     this.gate = new Gate(Math.max(1, opts.maxConcurrent ?? 3));
+    this.deadline = opts.deadline;
+    this.now = opts.now ?? Date.now;
   }
 
   get<T = unknown>(path: string, params: QlooParams = {}): Promise<T> {
@@ -150,14 +166,16 @@ export class QlooClient {
     let lastError = "";
     let wait: number | null = null;
     const maxAttempts = () => (lastStatus === 429 ? MAX_ATTEMPTS_429 : MAX_ATTEMPTS);
+    const left = () => (this.deadline === undefined ? Infinity : this.deadline - this.now());
     while (attempts < maxAttempts()) {
+      if (left() < MIN_ATTEMPT_MS) break;
       attempts++;
       wait = null;
       try {
         const res = await this.fetchImpl(url, {
           method: "GET",
           headers: { "X-Api-Key": this.apiKey, Accept: "application/json" },
-          signal: AbortSignal.timeout(this.timeoutMs),
+          signal: AbortSignal.timeout(Math.min(this.timeoutMs, left())),
         });
         lastStatus = res.status;
         if (res.ok) {
@@ -173,9 +191,15 @@ export class QlooClient {
         lastStatus = 0;
         lastError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       }
-      if (attempts < maxAttempts()) await this.sleep((wait ?? 250) + Math.floor(this.random() * 500));
+      if (attempts < maxAttempts()) {
+        const pause = (wait ?? 250) + Math.floor(this.random() * 500);
+        if (left() - pause < MIN_ATTEMPT_MS) break;
+        await this.sleep(pause);
+      }
     }
-    this.log(path, encoded, lastStatus, t0, 0, attempts, lastError);
+    if (left() < MIN_ATTEMPT_MS) lastError = lastError ? `run deadline reached (${lastError})` : "run deadline reached";
+    // a request that never left the server is not a receipt
+    if (attempts > 0) this.log(path, encoded, lastStatus, t0, 0, attempts, lastError);
     throw new QlooError(`Qloo ${path} failed (${lastStatus || "network"}): ${lastError}`, lastStatus, path);
   }
 
@@ -269,6 +293,6 @@ export interface TagsResponse {
 }
 
 /** Build a client from process.env (server-side only). */
-export function qlooFromEnv(onCall?: (log: QlooCallLog) => void): QlooClient {
-  return new QlooClient({ apiKey: process.env.QLOO_API_KEY ?? "", baseUrl: process.env.QLOO_BASE_URL || undefined, onCall });
+export function qlooFromEnv(onCall?: (log: QlooCallLog) => void, o: { deadline?: number } = {}): QlooClient {
+  return new QlooClient({ apiKey: process.env.QLOO_API_KEY ?? "", baseUrl: process.env.QLOO_BASE_URL || undefined, onCall, deadline: o.deadline });
 }

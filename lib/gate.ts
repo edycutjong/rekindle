@@ -14,7 +14,7 @@
  */
 import { runAgent, templateCoaching } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
-import { qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
+import { QLOO_RUN_BUDGET_MS, qlooFromEnv, type QlooCallLog, type QlooClient } from "./qloo";
 import { findAtHome, findOutings, placeSocial, recheckKept, type Card, type HomeType, type SlotSpec, type ToolContext } from "./plan";
 import { diffWeeks, historyFromRatings, keptCandidate, type KeptNote, type Rating } from "./replan";
 import { assertCurrent, Conflict, latestVersion, NotFound, reclaimableRun, refreshDiff, RUN_STALE_MS, runningConflict, type RunPlanOptions } from "./service";
@@ -82,7 +82,7 @@ export async function actOnCard(o: { store: Store; planId: string; cardId: strin
   const c = await o.store.getCase(plan.case_id);
   if (!c) throw new NotFound(`case ${plan.case_id} not found`);
   const calls: QlooCallLog[] = [];
-  const qloo = (o.qloo ?? qlooFromEnv)((l) => calls.push(l));
+  const qloo = (o.qloo ?? ((cb: (l: QlooCallLog) => void) => qlooFromEnv(cb, { deadline: t0 + QLOO_RUN_BUDGET_MS })))((l) => calls.push(l));
   const struck = plan.refusals.filter((r) => r.by_clinician).map((r) => r.qloo_entity_id);
   const onSheet = plan.cards.map((x) => x.qloo_entity_id);
   const used = new Set([...onSheet, ...struck]);
@@ -232,7 +232,8 @@ async function replanRun(o: Omit<RunPlanOptions, "caseId"> & { planId: string },
     calls.push(l);
     o.onEvent?.({ type: "qloo", path: l.path, status: l.status, ms: l.ms, n_results: l.n_results, params: l.params });
   };
-  const qloo = (o.qloo ?? qlooFromEnv)(onCall);
+  const deadline = Date.now() + QLOO_RUN_BUDGET_MS;
+  const qloo = (o.qloo ?? ((cb: (l: QlooCallLog) => void) => qlooFromEnv(cb, { deadline })))(onCall);
   const llms: LlmHandle[] = o.llms ?? llmChainFromEnv();
   const week = parent.week + 1;
   const row = caseRowFromDoc(c);
