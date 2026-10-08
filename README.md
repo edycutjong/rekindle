@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="docs/assets/icon-animated.svg" alt="Rekindle icon" width="144" height="144">
+  <img src="docs/assets/icon-animated.svg" alt="Rekindle mark: the letter R on a pencil line that strikes through a pencilled word, then catches ember" width="144" height="144">
   <h1>Rekindle 🕯️</h1>
   <p><b>A behavioral-activation planning agent for clinicians.</b><br>
   It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.</p>
-  <img src="docs/assets/readme-replan-live.png" alt="A live Rekindle re-plan, captured from the deployed app on 7 Oct 2026: week 2 for Maya, a fictional case, with In recovery on. Above it, week 1 as rated: Big Thief P 8 and Las Culturistas P 9 underlined, Juice Generation P 2 struck as excluded. Las Culturistas comes back on Tuesday marked kept from last week, rated 9, re-checked live; other cards name the rated shows as a tied input next to Qloo's explainability weights. The agent trace runs down the right." width="100%">
+  <img src="docs/assets/readme-hero-animated.svg" alt="Rekindle — re-plans a patient's week from her pleasure ratings: Maya rated Dun-Well Doughnuts 8: kept, re-checked live, and threaded to two new outings. Juice Generation, rated 2, stays out. Maya is a fictional case; the names and scores are from a live run on 8 Oct 2026." width="100%">
 
   <br/>
 
@@ -68,6 +68,9 @@ Behavioral activation (BA) is a first-line, low-cost treatment for depression. I
    Refused candidates **stay on the sheet, struck through, with their rule**. Ambiguous ones go to the clinician in a dashed REVIEW box.
 4. **The clinician gate.** Approve, swap (re-runs that one slot live) or remove each card, then **Approve week**. Nothing reaches the patient without approval. A patient sheet prints only the approved activities.
 5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to a week-2 card only where it is the card's top rated Qloo explainability input and outweighs the case's best original love by at least 0.02 (the bench's margin); other ratings that also outweigh the loves are named on the label, and a narrower lead is labelled a tie. The top-rated activity itself comes back in its slot ("↻ kept") after a live re-check.
+
+<p align="center"><img src="docs/assets/readme-replan-live.png" alt="A live Rekindle re-plan, captured from the deployed app on 8 Oct 2026: week 2 for Maya, a fictional case, with In recovery on. Above it, week 1 as rated: Lucy Dacus P 7 and Dun-Well Doughnuts P 8 underlined in ember, Juice Generation P 2 struck as excluded. Dun-Well Doughnuts comes back on Thursday marked kept from last week, rated 8, re-checked live; two ember threads run from it to Saturday's Ceremonia Bakeshop and Sunday's Bushwick Pita Palace, each labelled with its lead over Phoebe Bridgers, an original love. The agent trace runs down the right." width="100%"></p>
+<p align="center"><sub>Week 2 on the live app, 8 Oct 2026 (plan e0adf88a; Maya is a fictional case). The threads are Qloo's attribution, not causation.</sub></p>
 
 Every card carries a **because** line with Qloo's explainability weights for the patient's entity loves (artists, shows, books), for example "because Phoebe Bridgers 0.54 · Fleabag 0.46". Tag loves such as ramen change the ranking, but Qloo doesn't attribute tag signals ([DX-REPORT §7](DX-REPORT.md#7-explainability-covers-entity-signals-only)).
 

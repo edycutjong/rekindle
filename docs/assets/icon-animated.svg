@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Rekindle — a pencil line strikes through a refused entry, then catches ember from a rating: Maya rated Las Culturistas 9. It comes back in week two, re-checked live. Juice Generation, rated 2, stays out.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Rekindle — a pencil line strikes through a refused entry, then catches ember from a rating: Maya rated Dun-Well Doughnuts 8: kept, re-checked live, and threaded to two new outings. Juice Generation, rated 2, stays out.">
 <!-- STORYBOARD (dur 6s — must equal this file's single master dur)
   0-8%    steady state: the full static mark — plate, the printed R, a pencilled word struck through by a pencil line that levels off past it and glows ember at its end, with its warmth (poster rule: all brand visible at t=0)
   8-24%   trigger:      a week not yet rated: the lit run greys back to pencil graphite and its warmth goes out   data-story="beat-2"
-  24-50%  mechanism:    Maya rated Las Culturistas 9. It comes back in week two, re-checked live. Juice Generation, rated 2, stays out.   data-story="beat-3"
+  24-50%  mechanism:    Maya rated Dun-Well Doughnuts 8: kept, re-checked live, and threaded to two new outings. Juice Generation, rated 2, stays out.   data-story="beat-3"
                         (a pencil pass re-traces the strike through the refused word, which stays struck; then the ember catches along the line left→right with a spark at its head, and the warmth comes back)
   50-85%  resolution:   the ember flares as it reaches the line's end, then holds while the warmth breathes twice   data-story="beat-4"
   85-100% breathe + seam fade: the pencil pass fades 86-94%, story group fades 96-100% (in 0-2%), poster returns with no cut
@@ -27,7 +27,7 @@
     <animate attributeName="opacity" dur="6s" repeatCount="indefinite" keyTimes="0;0.08;0.16;0.31;0.46;0.52;0.6;0.68;0.76;0.85;1" values="0.42;0.42;0;0;0.9;0.5;0.66;0.42;0.62;0.42;0.42"/>
   </path>
 </g>
-<g id="story">
+<g id="story" data-story="beat-2..4 container">
   <animate attributeName="opacity" dur="6s" repeatCount="indefinite" keyTimes="0;0.02;0.96;1" values="0;1;1;0"/>
   <!-- beat 2: the lit run greys back (a graphite copy of the line over its ember run); beat 3 retreats it left→right -->
   <g clip-path="url(#ia-run)" opacity="0" data-story="beat-2">
