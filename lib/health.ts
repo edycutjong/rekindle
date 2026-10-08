@@ -1,5 +1,5 @@
 /**
- * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping.
+ * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call, one tiny LLM ping and one Blob `head()` (a simple op).
  * Reports status and latency for each and never a key. Results are cached per instance for 60 s so an uptime pinger or
  * a refresh loop cannot turn the endpoint into a key-spending loop.
  */
@@ -19,6 +19,8 @@ export interface Health {
   qloo: Probe;
   llm: Probe & { provider: string | null; model: string | null };
   store: string;
+  /** a2a r01: the store is probed, not named — a suspended Blob store (e.g. over plan quota) used to report ok */
+  storeProbe: Probe;
   cached: boolean;
 }
 
@@ -51,9 +53,25 @@ export async function probeLlm(llms: LlmHandle[]): Promise<Health["llm"]> {
   return { ok: false, ms: Date.now() - t0, detail: errors.join("; "), provider: null, model: null };
 }
 
+/** One Blob `head()` on a path that need not exist: a 404 means the store answered; anything else is a failure. */
+export async function probeStore(token: string | undefined, head?: (path: string, o: { token: string }) => Promise<unknown>): Promise<Probe> {
+  const t0 = Date.now();
+  if (!token) return { ok: true, ms: 0, detail: "in-memory store" };
+  try {
+    const blob = await import("@vercel/blob");
+    const h = head ?? ((path: string, o: { token: string }) => blob.head(path, o));
+    await h("health/ping.json", { token }).catch((e: unknown) => {
+      if (!(e instanceof blob.BlobNotFoundError)) throw e;
+    });
+    return { ok: true, ms: Date.now() - t0, detail: "blob store reachable" };
+  } catch (e) {
+    return { ok: false, ms: Date.now() - t0, detail: short(e) };
+  }
+}
+
 let cache: { at: number; h: Health } | null = null;
 
-export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => LlmHandle[]; store: string }, now = Date.now(), ttlMs = 60_000): Promise<Health> {
+export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => LlmHandle[]; store: string; probeStore?: () => Promise<Probe> }, now = Date.now(), ttlMs = 60_000): Promise<Health> {
   if (cache && now - cache.at < ttlMs) return { ...cache.h, cached: true };
   let qlooProbe: Probe;
   try {
@@ -62,7 +80,8 @@ export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => Ll
     qlooProbe = { ok: false, ms: 0, detail: short(e) };
   }
   const llm = await probeLlm(deps.llms());
-  const h: Health = { ok: qlooProbe.ok && llm.ok, at: new Date(now).toISOString(), qloo: qlooProbe, llm, store: deps.store, cached: false };
+  const storeProbe = deps.probeStore ? await deps.probeStore() : { ok: true, ms: 0, detail: "not probed" };
+  const h: Health = { ok: qlooProbe.ok && llm.ok && storeProbe.ok, at: new Date(now).toISOString(), qloo: qlooProbe, llm, store: deps.store, storeProbe, cached: false };
   cache = { at: now, h };
   return h;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkHealth, probeLlm, probeQloo, resetHealthCache } from "../lib/health";
+import { checkHealth, probeLlm, probeQloo, probeStore, resetHealthCache } from "../lib/health";
 import { makeLlm } from "../lib/llm";
 import { QlooClient } from "../lib/qloo";
 
@@ -39,6 +39,21 @@ describe("/api/health (lib/health.ts)", () => {
     const c = await checkHealth(deps, 62_000);
     expect([a.ok, a.cached, b.cached, c.cached]).toEqual([true, false, true, false]);
     expect(n).toBe(2);
+    resetHealthCache();
+  });
+
+  it("QA round 4 (a2a r01): the Blob store is probed — a 404 means it answered, a suspended store fails health (an uptime pinger can see a quota lockout)", async () => {
+    const { BlobNotFoundError, BlobStoreSuspendedError } = await import("@vercel/blob");
+    expect((await probeStore(undefined)).detail).toBe("in-memory store");
+    expect((await probeStore("tok", async () => { throw new BlobNotFoundError(); })).ok).toBe(true);
+    const down = await probeStore("tok", async () => { throw new BlobStoreSuspendedError(); });
+    expect(down.ok).toBe(false);
+    expect(down.detail).not.toContain("tok");
+    resetHealthCache();
+    const ok = { ok: true, ms: 1, detail: "x" };
+    const h = await checkHealth({ qloo: () => ({ tags: async () => ({ results: { tags: [{}] } }) }) as never, llms: () => [], store: "blob", probeStore: async () => ({ ...ok, ok: false }) }, 5_000_000);
+    expect(h.storeProbe.ok).toBe(false);
+    expect(h.ok).toBe(false);
     resetHealthCache();
   });
 });
