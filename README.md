@@ -14,7 +14,7 @@
   <br/>
 
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![tests](https://img.shields.io/badge/tests-193_passing-2E5B4F?style=flat)
+  ![tests](https://img.shields.io/badge/tests-195_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
@@ -33,7 +33,7 @@
 ## 🎯 The number
 
 <!-- bench:killer:start -->
-**The same LLM, asked for named places, got 58 of 79 venues wrong**: 48 don't verify, 9 are closed at the planned hour, 1 serves alcohol to a patient in recovery (20 fictional profiles). Through the same checker, Rekindle's cards score 9.1%, and all 6 misses are venues Qloo verified that the address match failed on (by Qloo ID: 0 of 66; `bench/results.json`, run 2026-10-07 13:11 UTC). A hand check of 20 venues per arm against public listings (not blind; done by the build agent): 7 of 17 wrong vs 0 of 14 (3 and 6 inconclusive, `bench/audit.json`).
+**Asked for named places, the same LLM got 7 of 17 hand-checked venues wrong (41.2%); Rekindle: 0 of 14.** Wrong means not found (4), closed at the planned hour (2) or serving alcohol to a patient in recovery (1); a random 20 per arm against public listings, not blind, done by the build agent, 3 and 6 inconclusive (`bench/audit.json`). Our automated checker, on all 20 fictional profiles, flags 58 of the LLM's 79 venues and 6 of Rekindle's 66 (0 by Qloo ID), but it over-flags: in the same random sample, 4 of the 10 venues it couldn't match were real and open, because it matches by street address and misses large venues such as parks (`bench/results.json`, run 2026-10-07 13:11 UTC).
 <!-- bench:killer:end -->
 
 <!-- bench:caveat:start -->
@@ -69,7 +69,7 @@ Behavioral activation (BA) is a first-line, low-cost treatment for depression. I
 4. **The clinician gate.** Approve, swap (re-runs that one slot live) or remove each card, then **Approve week**. Nothing reaches the patient without approval. A patient sheet prints only the approved activities.
 5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to a week-2 card only where Qloo's explainability names it as the strongest input by at least 0.02; a narrower lead is labelled a tie. The top-rated activity itself comes back in its slot ("↻ kept") after a live re-check.
 
-Every card carries a **because** line with Qloo's per-love explainability weights, for example "because Phoebe Bridgers 0.54 · Fleabag 0.46".
+Every card carries a **because** line with Qloo's explainability weights for the patient's entity loves (artists, shows, books), for example "because Phoebe Bridgers 0.54 · Fleabag 0.46". Tag loves such as ramen change the ranking, but Qloo doesn't attribute tag signals ([DX-REPORT §7](DX-REPORT.md#7-explainability-covers-entity-signals-only)).
 
 ## 🏗️ Architecture & Tech Stack
 
@@ -132,9 +132,9 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Metric | Value | Source |
 |---|---|---|
-| Unit + property tests | **193** (Vitest, 15 files), no keys needed | `npm test` |
+| Unit + property tests | **195** (Vitest, 16 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
-| Tests named for the defect they pin | 51 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
+| Tests named for the defect they pin | 53 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 92.9% lines · 80.3% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO in the CI runs for 6672043, cdb9070 and 73be59e (100 on all three pages except performance 97 on / at 6672043) | CI Stage 5: [run 37660324552](https://github.com/edycutjong/rekindle/actions/runs/37660324552) (73be59e); later runs write the scores to the job summary and keep the LHR JSON as a 90-day `lighthouse` artifact. Thresholds in `lighthouserc.json`; accessibility < 0.9 fails |
@@ -194,7 +194,7 @@ npm run dev                    # http://localhost:3000
 
 ## 🧪 Testing & CI
 
-- **193 tests** (Vitest, 15 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
+- **195 tests** (Vitest, 16 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.

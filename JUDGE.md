@@ -17,7 +17,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 ## Receipts
 
 <!-- bench:killer:start -->
-**The same LLM, asked for named places, got 58 of 79 venues wrong**: 48 don't verify, 9 are closed at the planned hour, 1 serves alcohol to a patient in recovery (20 fictional profiles). Through the same checker, Rekindle's cards score 9.1%, and all 6 misses are venues Qloo verified that the address match failed on (by Qloo ID: 0 of 66; `bench/results.json`, run 2026-10-07 13:11 UTC). A hand check of 20 venues per arm against public listings (not blind; done by the build agent): 7 of 17 wrong vs 0 of 14 (3 and 6 inconclusive, `bench/audit.json`).
+**Asked for named places, the same LLM got 7 of 17 hand-checked venues wrong (41.2%); Rekindle: 0 of 14.** Wrong means not found (4), closed at the planned hour (2) or serving alcohol to a patient in recovery (1); a random 20 per arm against public listings, not blind, done by the build agent, 3 and 6 inconclusive (`bench/audit.json`). Our automated checker, on all 20 fictional profiles, flags 58 of the LLM's 79 venues and 6 of Rekindle's 66 (0 by Qloo ID), but it over-flags: in the same random sample, 4 of the 10 venues it couldn't match were real and open, because it matches by street address and misses large venues such as parks (`bench/results.json`, run 2026-10-07 13:11 UTC).
 <!-- bench:killer:end -->
 
 | Receipt | Value | Source |
@@ -25,7 +25,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 | Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
 | Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
 | Ember threads on live re-plans | 2 of 77 rekindled-top cards clear the 0.02 lead; 75 are shown as ties (median lead 0.0068) | `bench/ember-live.json` |
-| Unit + property tests | 193 Vitest tests, 15 files, no keys needed | `npm test` |
+| Unit + property tests | 195 Vitest tests, 16 files, no keys needed | `npm test` |
 | Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
 

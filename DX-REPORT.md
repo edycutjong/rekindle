@@ -62,8 +62,7 @@ The same query is sent three times, with three different exclusion sets. Our scr
   So excluding a concept means listing every tag that expresses it.
 - **Ask:** a concept-level exclusion (for example "serves alcohol"), or a documented list of the tags that imply it.
 - **Effect on us:** an exact tag-ID deny list plus a token and name screen, with an allow list (`tea bar`, `espresso_bar`, `non_alcoholic`).
-  Ambiguous hits go to clinician review. The bench measures whether this screen matters: with the screen switched off, 3 of 28 outing cards in the 10 in-recovery profiles serve alcohol.
-  With only the 4 bar tags excluded, 21 of 28 do (`bench/results.json`, `ablation_in_recovery`).
+  Ambiguous hits go to clinician review. The bench measures whether this screen matters (10 in-recovery profiles): with the screen on, 0 of 30 outing cards serve alcohol. Screen off, our 14-tag exclusion kept: 3 of 28. Screen off, only the 4 bar tags excluded: 21 of 28 (`bench/results.json`, `ablation_in_recovery`).
 
 ## 3. Opening hours: day-level filter, and places with no hours
 
