@@ -4,7 +4,7 @@ import { errorResponse, parseSse, sseResponse } from "../lib/http";
 import { makeLlm } from "../lib/llm";
 import { EMPTY_HISTORY } from "../lib/plan";
 import { caseFromSeed, runPlanForCase, SEEDS } from "../lib/service";
-import { BlobStore, callsDoc, CaseDoc, CorruptDocument, caseRowFromDoc, MemoryStore, PlanDoc, planDocFromAgent, storeFromEnv, weekPlanFromDoc } from "../lib/store";
+import { BlobStore, callsDoc, FailoverStore, CaseDoc, CorruptDocument, caseRowFromDoc, MemoryStore, PlanDoc, planDocFromAgent, storeFromEnv, weekPlanFromDoc } from "../lib/store";
 import type { QlooCallLog, QlooClient } from "../lib/qloo";
 import { MAYA, replayClient } from "./replay";
 import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
@@ -84,7 +84,10 @@ describe("persistence (lib/store.ts)", () => {
   });
 
   it("storeFromEnv: Blob with a token; in-memory only off Vercel; refused on a deployment without a token", () => {
-    expect(storeFromEnv({ BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_x" })).toBeInstanceOf(BlobStore);
+    // a2a r06: behind a FailoverStore (safe mode), whose primary is the Blob store
+    const s = storeFromEnv({ BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_x" });
+    expect(s.kind).toBe("blob");
+    expect((s as FailoverStore).primary).toBeInstanceOf(BlobStore);
     expect(storeFromEnv({}).kind).toBe("memory");
     expect(() => storeFromEnv({ VERCEL: "1" })).toThrow(/BLOB_READ_WRITE_TOKEN/);
   });

@@ -2,19 +2,21 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
 import { readCase } from "@/lib/reads";
 import { storeFor } from "@/lib/scope";
 import { latestVersion, planRunState } from "@/lib/service";
+import { storeDegraded } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const c = await readCase(id);
-  return { title: c ? `Week 1 · ${c.label} · Rekindle` : "Not found · Rekindle", robots: { index: false } };
+  return { title: "doc" in c ? `Week 1 · ${c.doc.label} · Rekindle` : "down" in c ? UNAVAILABLE_TITLE : "Not found · Rekindle", robots: { index: false } };
 }
 
 /**
@@ -27,8 +29,11 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   const fault = (await searchParams).fault === "qloo_unreachable" ? "qloo_unreachable" : null;
   const h = await headers();
   const store = storeFor({ headers: h });
-  const c = await readCase(id);
-  if (!c) notFound();
+  const cr = await readCase(id);
+  // a2a r06: a store outage is "unavailable right now", never "Not found"
+  if ("down" in cr) return <PageUnavailable what="This case" />;
+  if ("missing" in cr) notFound();
+  const c = cr.doc;
   // week 1 already saved for this case (a reopened link, a reload after the run): show it, never run it again
   const state = await planRunState(store, id);
   // (its newest version, when a constraint toggle replaced it)
@@ -37,7 +42,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
     <div className={r.wrap}>
       <SiteHeader />
       <main>
-        <Workbench initialCase={c} initialPlan={null} fault={fault} canEdit={canWrite({ headers: h }, c)} />
+        <Workbench initialCase={c} initialPlan={null} fault={fault} canEdit={canWrite({ headers: h }, c)} degraded={storeDegraded()} />
       </main>
     </div>
   );

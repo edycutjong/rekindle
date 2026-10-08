@@ -4,6 +4,7 @@ import { assertOwner } from "@/lib/owner";
 import { NotFound } from "@/lib/service";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
+import { storeDegraded } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -43,6 +44,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   return sseResponse(async (send) => {
     const r = await replanWeek({ store, planId: id, claimed, onEvent: (e) => send(e.type, e) });
-    send("plan", { plan: r.plan, reused: r.reused });
+    send("plan", { plan: r.plan, reused: r.reused, degraded: storeDegraded() });
   }, g.headers);
 }

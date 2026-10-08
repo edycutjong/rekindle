@@ -3,8 +3,16 @@ import { ZodError } from "zod";
 import { Forbidden } from "./owner";
 import { BadInput } from "./intake";
 import { Conflict, NotFound } from "./service";
+import { StoreUnavailable, storeDegraded } from "./store";
 
-export const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(body, { status, headers: { ...headers, "cache-control": "no-store" } });
+/** a2a r06: set while this instance runs in safe mode (lib/store.ts FailoverStore); the Workbench shows its banner */
+export const DEGRADED_HEADER = "x-store-degraded";
+const degradedHeaders = (): Record<string, string> => (storeDegraded() ? { [DEGRADED_HEADER]: "1" } : {});
+
+export const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => Response.json(body, { status, headers: { ...headers, ...degradedHeaders(), "cache-control": "no-store" } });
+
+/** the 503 body when saved weeks cannot be read (never a 500, never a fake 404) */
+export const STORE_UNAVAILABLE_MESSAGE = "Saved weeks are unavailable right now (storage). Planning a new fictional week still runs live.";
 
 export function errorResponse(e: unknown): Response {
   if (e instanceof NotFound) return json({ error: e.message }, 404);
@@ -15,6 +23,7 @@ export function errorResponse(e: unknown): Response {
   if (e instanceof SyntaxError) return json({ error: "invalid JSON" }, 400);
   if (e instanceof ZodError) return json({ error: "invalid input", issues: e.issues.map((i) => ({ path: i.path.join("."), message: i.message })) }, 400);
   if (e instanceof Error && e.message === "invalid id") return json({ error: "invalid id" }, 400);
+  if (e instanceof StoreUnavailable) return json({ error: STORE_UNAVAILABLE_MESSAGE, store: "unavailable" }, 503, { "retry-after": "60" });
   console.error(e);
   return json({ error: "internal error" }, 500);
 }
@@ -46,7 +55,7 @@ export function sseResponse(run: (send: Send) => Promise<void>, extraHeaders: Re
       }
     },
   });
-  return new Response(stream, { headers: { ...extraHeaders, "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store, no-transform", connection: "keep-alive", "x-accel-buffering": "no" } });
+  return new Response(stream, { headers: { ...extraHeaders, ...degradedHeaders(), "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-store, no-transform", connection: "keep-alive", "x-accel-buffering": "no" } });
 }
 
 /** Parse an SSE body into {event, data} frames (tests and scripts). */

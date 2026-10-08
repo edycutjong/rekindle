@@ -500,6 +500,27 @@ const planScore = (createdAt: string) => {
 /** A stored document that no longer parses is the server's fault: never let its ZodError reach http.ts as a client 400. */
 export class CorruptDocument extends Error {}
 
+/**
+ * a2a r06 safe mode: the backend refused or could not be reached (Blob suspended or rate limited, Upstash over its
+ * request quota, a 5xx, the network). Distinct from CorruptDocument (500) and from "not found" (null): http.ts answers
+ * 503 with retry-after, and pages say "unavailable right now" instead of "Not found".
+ */
+export class StoreUnavailable extends Error {
+  constructor(readonly reason?: unknown) {
+    super(`store unavailable${reason instanceof Error ? ` (${reason.message.slice(0, 120)})` : ""}`);
+    this.name = "StoreUnavailable";
+  }
+}
+/** wraps only a backend SDK call: zod, "invalid id" and CorruptDocument keep their meaning */
+export const toStoreError = (e: unknown) => (e instanceof StoreUnavailable || e instanceof CorruptDocument ? e : new StoreUnavailable(e));
+async function sdk<T>(f: () => Promise<T>): Promise<T> {
+  try {
+    return await f();
+  } catch (e) {
+    throw toStoreError(e);
+  }
+}
+
 function parseOrNull<T>(schema: z.ZodType<T>, v: unknown): T | null {
   if (v === null) return null;
   const r = schema.safeParse(v);
@@ -519,14 +540,17 @@ export class BlobStore implements Store {
   }
 
   private async put(path: string, v: unknown) {
+    const body = JSON.stringify(v);
     const { put } = await import("@vercel/blob");
-    await put(path, JSON.stringify(v), { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: true });
+    await sdk(() => put(path, body, { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: true }));
   }
   private async get(path: string): Promise<unknown | null> {
     const { get } = await import("@vercel/blob");
-    const r = await get(path, { access: "private", token: this.token, useCache: false });
-    if (!r || !r.stream) return null;
-    return JSON.parse(await new Response(r.stream).text());
+    const text = await sdk(async () => {
+      const r = await get(path, { access: "private", token: this.token, useCache: false });
+      return r && r.stream ? new Response(r.stream).text() : null;
+    });
+    return text === null ? null : parseStored(text);
   }
   putCase = (d: CaseDoc) => this.put(this.paths.case(d.id), CaseDoc.parse(d));
   getCase = async (id: string) => parseOrNull(CaseDoc, await this.get(this.paths.case(id)));
@@ -542,15 +566,19 @@ export class BlobStore implements Store {
   async claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null> {
     const { get, put, BlobPreconditionFailedError } = await import("@vercel/blob");
     const path = this.runPath(d);
-    const r = await get(path, { access: "private", token: this.token, useCache: false });
+    const next = JSON.stringify(RunDoc.parse(d));
+    const r = await sdk(async () => {
+      const got = await get(path, { access: "private", token: this.token, useCache: false });
+      return got && got.stream ? { text: await new Response(got.stream).text(), etag: got.blob.etag } : null;
+    });
     let etag: string | undefined;
-    if (r && r.stream) {
-      const cur = RunDoc.parse(JSON.parse(await new Response(r.stream).text()));
+    if (r) {
+      const cur = parseOrNull(RunDoc, parseStored(r.text))!;
       if (!reclaimable(cur)) return cur;
-      etag = r.blob.etag;
+      etag = r.etag;
     }
     try {
-      await put(path, JSON.stringify(RunDoc.parse(d)), { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: !!etag, ...(etag ? { ifMatch: etag } : {}) });
+      await put(path, next, { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: !!etag, ...(etag ? { ifMatch: etag } : {}) });
       return null;
     } catch (e) {
       // another request claimed it between our read and our write
@@ -558,12 +586,12 @@ export class BlobStore implements Store {
         const now = await this.get(path).catch(() => null);
         return now ? RunDoc.parse(now) : RunDoc.parse(d);
       }
-      throw e;
+      throw toStoreError(e);
     }
   }
   async listPlanIds(limit = 50) {
     const { list } = await import("@vercel/blob");
-    const r = await list({ prefix: this.paths.plans, token: this.token, limit: 1000 });
+    const r = await sdk(() => list({ prefix: this.paths.plans, token: this.token, limit: 1000 }));
     return r.blobs
       .sort((a, b) => +new Date(b.uploadedAt) - +new Date(a.uploadedAt))
       .slice(0, limit)
@@ -639,11 +667,12 @@ export class RedisStore implements Store {
   private k = (path: string) => this.envPrefix + path;
   private idx = () => this.k(`${this.prefix}idx/plans`);
   private async getJson(path: string): Promise<unknown | null> {
-    const s = await this.r.get<string>(this.k(path));
+    const s = await sdk(() => this.r.get<string>(this.k(path)));
     return s === null || s === undefined ? null : parseStored(s);
   }
   private async setJson(path: string, v: unknown) {
-    await this.r.set(this.k(path), JSON.stringify(v));
+    const body = JSON.stringify(v);
+    await sdk(() => this.r.set(this.k(path), body));
   }
   putCase = (d: CaseDoc) => this.setJson(this.paths.case(d.id), CaseDoc.parse(d));
   getCase = async (id: string) => parseOrNull(CaseDoc, await this.getJson(this.paths.case(id)));
@@ -653,7 +682,7 @@ export class RedisStore implements Store {
     const m = this.r.multi().set(this.k(this.paths.plan(doc.id)), JSON.stringify(doc));
     if (doc.superseded_by || doc.fault) m.zrem(this.idx(), doc.id);
     else m.zadd(this.idx(), { score: planScore(doc.created_at), member: doc.id });
-    await m.exec();
+    await sdk(() => m.exec());
   }
   getPlan = async (id: string) => parseOrNull(PlanDoc, await this.getJson(this.paths.plan(id)));
   putCalls = (d: QlooCallsDoc) => this.setJson(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
@@ -666,19 +695,19 @@ export class RedisStore implements Store {
   async claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null> {
     const key = this.k(this.runPath(d));
     const next = JSON.stringify(RunDoc.parse(d));
-    const raw = await this.r.get<string>(key);
+    const raw = await sdk(() => this.r.get<string>(key));
     if (raw !== null && raw !== undefined) {
       const cur = parseOrNull(RunDoc, parseStored(raw))!;
       if (!reclaimable(cur)) return cur;
-      if (Number(await this.r.eval(CAS_SCRIPT, [key], [raw, next])) === 1) return null;
-    } else if ((await this.r.set(key, next, { nx: true })) === "OK") return null;
+      if (Number(await sdk(() => this.r.eval(CAS_SCRIPT, [key], [raw, next]))) === 1) return null;
+    } else if ((await sdk(() => this.r.set(key, next, { nx: true }))) === "OK") return null;
     // another request claimed it between our read and our write
-    const now = await this.r.get<string>(key);
+    const now = await sdk(() => this.r.get<string>(key));
     return now === null || now === undefined ? RunDoc.parse(d) : parseOrNull(RunDoc, parseStored(now))!;
   }
   async listPlanIds(limit = 50) {
     if (limit <= 0) return [];
-    return (await this.r.zrange(this.idx(), 0, limit - 1, { rev: true })).map(String);
+    return (await sdk(() => this.r.zrange(this.idx(), 0, limit - 1, { rev: true }))).map(String);
   }
 }
 
@@ -691,21 +720,124 @@ function parseStored(s: string): unknown {
   }
 }
 
+/* ------------------------------------------------------------------ safe mode */
+
+/** how long a failing backend is left alone before the next request probes it again */
+export const CIRCUIT_MS = 5 * 60_000;
+
+/**
+ * a2a r06 safe mode. When the backend throws StoreUnavailable, this instance opens a 5-minute circuit and new work
+ * moves to its own memory: seed → plan → toggle → approve → rate → re-plan keep running live (Qloo and the LLM are
+ * still called) under a banner that says the week is not saved. While degraded, a document that is not in memory is
+ * "unavailable" (503 / an honest page), never "missing" (404). Documents written during the outage stay readable from
+ * this instance's memory after the backend recovers.
+ */
+export class FailoverStore implements Store {
+  private openUntil = 0;
+  constructor(
+    readonly primary: Store,
+    readonly mem: MemoryStore,
+    private readonly now: () => number = Date.now,
+  ) {}
+  get kind() {
+    return this.primary.kind;
+  }
+  degraded = () => this.now() < this.openUntil;
+  private async w<T>(op: (s: Store) => Promise<T>): Promise<T> {
+    if (!this.degraded()) {
+      try {
+        return await op(this.primary);
+      } catch (e) {
+        if (!(e instanceof StoreUnavailable)) throw e;
+        this.openUntil = this.now() + CIRCUIT_MS;
+        console.error(`store ${this.primary.kind} unavailable; per-instance memory for ${CIRCUIT_MS / 60_000} min`, e.reason ?? e);
+      }
+    }
+    return op(this.mem);
+  }
+  /** primary, then this instance's memory; `strict`: a miss while degraded is unavailable, not missing */
+  private async r<T>(op: (s: Store) => Promise<T | null>, strict: boolean): Promise<T | null> {
+    const v = await this.w(op);
+    if (v !== null) return v;
+    const m = await op(this.mem);
+    if (m === null && strict && this.degraded()) throw new StoreUnavailable();
+    return m;
+  }
+  putCase = (d: CaseDoc) => this.w((s) => s.putCase(d));
+  getCase = (id: string) => this.r((s) => s.getCase(id), true);
+  putPlan = (d: PlanDoc) => this.w((s) => s.putPlan(d));
+  getPlan = (id: string) => this.r((s) => s.getPlan(id), true);
+  putCalls = (d: QlooCallsDoc) => this.w((s) => s.putCalls(d));
+  getCalls = (id: string) => this.r((s) => s.getCalls(id), false);
+  putRun = (d: RunDocIn) => this.w((s) => s.putRun(d));
+  /** null = "no run yet", a normal answer; a marker written during an outage is still found after it */
+  getRun = (id: string) => this.r((s) => s.getRun(id), false);
+  getReplanRun = (id: string) => this.r((s) => s.getReplanRun(id), false);
+  claimRun = (d: RunDocIn, f: (c: RunDoc) => boolean) => this.w((s) => s.claimRun(d, f));
+  listPlanIds = (limit?: number) => this.w((s) => s.listPlanIds(limit));
+}
+
+/** STORE_FAULT=unavailable (never honoured on production): every backend call fails, to exercise safe mode end to end */
+class UnavailableStore implements Store {
+  constructor(readonly kind: Store["kind"]) {}
+  private no = async (): Promise<never> => {
+    throw new StoreUnavailable(new Error("STORE_FAULT=unavailable (injected)"));
+  };
+  putCase = this.no;
+  getCase = this.no;
+  putPlan = this.no;
+  getPlan = this.no;
+  putCalls = this.no;
+  getCalls = this.no;
+  putRun = this.no;
+  getRun = this.no;
+  getReplanRun = this.no;
+  claimRun = this.no;
+  listPlanIds = this.no;
+}
+
+export const storeFaultInjected = (env: Record<string, string | undefined> = process.env) => env.STORE_FAULT === "unavailable" && env.VERCEL_ENV !== "production";
+
 /* ------------------------------------------------------------------ selection */
 
-/** one in-memory store per process (dev compiles each route separately; module state alone would split it) */
-const g = globalThis as typeof globalThis & { __rekindleMemory?: MemoryStore };
+/** one in-memory store and one FailoverStore per backend + prefix, per process (dev compiles each route separately) */
+const g = globalThis as typeof globalThis & { __rekindleMemory?: MemoryStore; __rekindleFailover?: Map<string, FailoverStore> };
+
+const memoryFor = (prefix: StorePrefix) => {
+  g.__rekindleMemory ??= new MemoryStore();
+  return prefix ? g.__rekindleMemory.withPrefix(prefix) : g.__rekindleMemory;
+};
+
+function failover(key: string, make: () => Store, prefix: StorePrefix): FailoverStore {
+  g.__rekindleFailover ??= new Map();
+  let f = g.__rekindleFailover.get(key);
+  if (!f) {
+    f = new FailoverStore(make(), memoryFor(prefix));
+    g.__rekindleFailover.set(key, f);
+  }
+  return f;
+}
+
+/** Is any store on this instance in safe mode right now? (the Workbench banner, the x-store-degraded header) */
+export const storeDegraded = (): boolean => [...(g.__rekindleFailover?.values() ?? [])].some((f) => f.degraded());
+
+/** tests: forget every circuit */
+export const resetFailover = () => g.__rekindleFailover?.clear();
 
 /**
  * Redis when configured (KV_REST_API_* or UPSTASH_REDIS_REST_*, unless STORE_BACKEND=blob), else Blob when
- * BLOB_READ_WRITE_TOKEN is set, else in-memory, which is refused on a Vercel deployment.
+ * BLOB_READ_WRITE_TOKEN is set, each behind a FailoverStore; else in-memory, which is refused on a Vercel deployment.
  */
 export function storeFromEnv(env: Record<string, string | undefined> = process.env, prefix: StorePrefix = ""): Store {
+  const fault = storeFaultInjected(env);
   const redis = redisFromEnv(env);
-  if (redis) return new RedisStore(redis, prefix, envKeyPrefix(env));
   const token = env.BLOB_READ_WRITE_TOKEN;
-  if (token) return new BlobStore(token, prefix);
+  if (redis) {
+    const url = env.KV_REST_API_URL || env.UPSTASH_REDIS_REST_URL;
+    return failover(`redis|${fault}|${url}|${envKeyPrefix(env)}|${prefix}`, () => (fault ? new UnavailableStore("redis") : new RedisStore(redis, prefix, envKeyPrefix(env))), prefix);
+  }
+  if (token) return failover(`blob|${fault}|${token}|${prefix}`, () => (fault ? new UnavailableStore("blob") : new BlobStore(token, prefix)), prefix);
   if (env.VERCEL) throw new Error("no store on this deployment (KV_REST_API_URL + KV_REST_API_TOKEN, or BLOB_READ_WRITE_TOKEN); refusing the in-memory store");
-  g.__rekindleMemory ??= new MemoryStore();
-  return prefix ? g.__rekindleMemory.withPrefix(prefix) : g.__rekindleMemory;
+  if (fault) return failover(`memory|fault|${prefix}`, () => new UnavailableStore("memory"), prefix);
+  return memoryFor(prefix);
 }

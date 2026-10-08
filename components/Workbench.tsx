@@ -55,7 +55,7 @@ async function readSse(res: Response, on: (event: string, data: unknown) => void
   }
 }
 
-export function Workbench({ initialCase, initialPlan, previousPlan = null, fault = null, canEdit = true }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null; fault?: "qloo_unreachable" | null; canEdit?: boolean }) {
+export function Workbench({ initialCase, initialPlan, previousPlan = null, fault = null, canEdit = true, degraded: degradedAtLoad = false }: { initialCase: CaseDoc; initialPlan: PlanDoc | null; previousPlan?: PlanDoc | null; fault?: "qloo_unreachable" | null; canEdit?: boolean; degraded?: boolean }) {
   const [c, setCase] = useState(initialCase);
   const [plan, setPlan] = useState<PlanDoc | null>(initialPlan);
   /** the rated week this one was re-planned from (shown above the ledger with the ember threads) */
@@ -70,6 +70,11 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   const [notice, setNotice] = useState<string | null>(null);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const started = useRef(false);
+  /** a2a r06 safe mode: the server's store is down and this week lives in one server instance's memory */
+  const [degraded, setDegraded] = useState(degradedAtLoad);
+  const noteStore = useCallback((res: Response) => {
+    if (res.headers.get("x-store-degraded") === "1") setDegraded(true);
+  }, []);
 
   /** Stream an agent run into the ledger: week 1 for the case, or week N+1 re-planned from a rated week. */
   const run = useCallback(async (rated?: PlanDoc) => {
@@ -91,6 +96,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
           !rated && fault ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ fault }) } : { method: "POST" },
         );
       let res = await post();
+      noteStore(res);
       // a reload or a second tab during the run (week 1 or a re-plan): the first run is still in flight server side
       // (409 running) — wait for its stored week
       // instead of starting another agent run; each check is answered before the rate limiter
@@ -100,6 +106,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         if (i === 0) setLive([`this ${rated ? "week is already being re-planned" : "case is already being planned"} (a reload or another tab) — waiting for that run's saved week, no second run`]);
         await new Promise((r) => setTimeout(r, 3000));
         res = await post();
+        noteStore(res);
       }
       if (!res.ok || !res.body) {
         const b = (await res.json().catch(() => ({}))) as { error?: string };
@@ -118,8 +125,10 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         if (event === "qloo") return setQloo((n) => n + 1);
         if (event === "plan") {
           got = true;
-          const p = (data as { plan: PlanDoc }).plan;
+          const p = (data as { plan: PlanDoc; degraded?: boolean }).plan;
+          if ((data as { degraded?: boolean }).degraded) setDegraded(true);
           setPlan(p);
+          // history only, never a router navigation: in safe mode the week exists on the server instance that made it
           window.history.replaceState(null, "", `/plans/${p.id}`);
           return;
         }
@@ -148,7 +157,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
     } finally {
       setPhase("idle");
     }
-  }, [c.id, fault]);
+  }, [c.id, fault, noteStore]);
 
   useEffect(() => {
     // another visitor's case is read-only: never start a run from here (the server would refuse it with a 403)
@@ -166,6 +175,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
       const before = new Set(plan.refusals.map((r) => `${r.day_name}|${r.qloo_entity_id}|${r.rule}`));
       try {
         const res = await fetch(`/api/plans/${plan.id}/constraints`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(patch) });
+        noteStore(res);
         const b = (await res.json()) as { plan?: PlanDoc; case?: CaseDoc; error?: string; superseded_by?: string };
         if (!res.ok || !b.plan || !b.case) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status, superseded_by: b.superseded_by });
         setCase(b.case);
@@ -182,16 +192,17 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
         setPhase("idle");
       }
     },
-    [plan, c],
+    [plan, c, noteStore],
   );
 
   /** one JSON request that returns `{ plan }`; errors land in the failure box */
   const send = useCallback(async (url: string, method: string, body?: unknown) => {
     const res = await fetch(url, { method, ...(body !== undefined ? { headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {}) });
+    noteStore(res);
     const b = (await res.json().catch(() => ({}))) as { plan?: PlanDoc; error?: string; superseded_by?: string; swap?: { found: boolean; ms: number; calls: number } };
     if (!res.ok || !b.plan) throw Object.assign(new Error(b.error ?? `HTTP ${res.status}`), { status: res.status, superseded_by: b.superseded_by });
     return b as { plan: PlanDoc; swap?: { found: boolean; ms: number; calls: number } };
-  }, []);
+  }, [noteStore]);
 
   const act = useCallback(
     async (cardId: string, action: CardAction) => {
@@ -341,6 +352,12 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
           </button>{" "}
           plans a fresh week 1 for you from the same fictional intake.
         </div>
+      )}
+      {degraded && (
+        <p className={s.notice} role="status" data-testid="degraded-banner">
+          <strong>Storage is paused,</strong> so this week isn&apos;t saved and a reload may lose it. Planning still runs live: every card below still comes from
+          Qloo and the verifier.
+        </p>
       )}
       {phase === "streaming" && (
         <p className={s.notice} role="status">

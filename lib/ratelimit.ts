@@ -195,6 +195,8 @@ export const utcDay = (now = Date.now()) => new Date(now).toISOString().slice(0,
 
 export class RateLimiter {
   readonly window = new MemoryWindow();
+  /** a2a r06: when the shared counter cannot be read or written, the cap is counted here (per instance), never "unknown" */
+  readonly fallback = new MemoryDailyCounter();
   constructor(
     readonly counter: DailyCounter,
     private readonly env: Record<string, string | undefined> = process.env,
@@ -217,11 +219,15 @@ export class RateLimiter {
     if (action !== "plan") return { ok: true, ns, status: 200, headers };
     const day = utcDay(now);
     let used: number;
+    let counter: DailyCounter = this.counter;
     try {
       used = await this.counter.get(ns, day);
     } catch {
-      // the counter is unreadable (Blob 5xx / 429 / network): allow this plan, and never overwrite the day's count
-      return { ok: true, ns, status: 200, headers: { ...headers, "x-ratelimit-daily-remaining": "unknown" } };
+      // the shared counter is unreadable (store 5xx / 429 / quota / network): count on this instance instead, and
+      // never overwrite the day's shared count from a failed read (a2a r06: never "unknown", the cap still holds)
+      counter = this.fallback;
+      used = await counter.get(ns, day);
+      headers["x-ratelimit-counter"] = "instance";
     }
     headers["x-ratelimit-daily-limit"] = String(lim.dailyPlans);
     if (used >= lim.dailyPlans) {
@@ -234,8 +240,15 @@ export class RateLimiter {
         message: ns === "public" ? "Daily public capacity reached. The receipts of the latest live runs are at /integrations/qloo." : `Daily ${ns} capacity reached.`,
       };
     }
-    const n = await this.counter.incr(ns, day).catch(() => null);
-    headers["x-ratelimit-daily-remaining"] = n === null ? "unknown" : String(Math.max(0, lim.dailyPlans - n));
+    let n: number;
+    try {
+      n = await counter.incr(ns, day);
+    } catch {
+      // never below what the shared counter already said
+      n = Math.max(used + 1, await this.fallback.incr(ns, day));
+      headers["x-ratelimit-counter"] = "instance";
+    }
+    headers["x-ratelimit-daily-remaining"] = String(Math.max(0, lim.dailyPlans - n));
     return { ok: true, ns, status: 200, headers };
   }
 }

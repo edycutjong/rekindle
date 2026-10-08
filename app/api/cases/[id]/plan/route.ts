@@ -3,6 +3,7 @@ import { errorResponse, json, sseResponse } from "@/lib/http";
 import { assertCaseOwner } from "@/lib/owner";
 import { classify, guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
+import { storeDegraded } from "@/lib/store";
 import { claimWeekOne, planRunState, runPlanForCase } from "@/lib/service";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +57,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
   return sseResponse(async (send) => {
     const plan = await runPlanForCase({ store: storeFor(req), caseId: id, bench, fault, claimed, onEvent: (e) => send(e.type, e) });
-    send("plan", { plan });
+    // a2a r06: `degraded` = the store is down and this week lives in this instance's memory (the Workbench banner)
+    send("plan", { plan, degraded: storeDegraded() });
   }, g.headers);
 }
 

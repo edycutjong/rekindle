@@ -3,7 +3,7 @@ import { json } from "@/lib/http";
 import { llmChainFromEnv } from "@/lib/llm";
 import { qlooFromEnv } from "@/lib/qloo";
 import { guard } from "@/lib/ratelimit";
-import { redisFromEnv, storeFromEnv } from "@/lib/store";
+import { redisFromEnv, storeDegraded, storeFromEnv } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -28,5 +28,6 @@ export async function GET(req: Request) {
   const deep = new URL(req.url).searchParams.get("deep") === "1";
   const st = storeProbe();
   const h = await checkHealth({ qloo: () => qlooFromEnv(), llms: () => llmChainFromEnv(), store: st.kind, ...(deep ? { probeStore: st.probe } : {}) });
-  return json(h, h.ok ? 200 : 503, g.headers);
+  // a2a r06: `storeDegraded` = this instance is in safe mode (its store refused; new weeks live in its memory)
+  return json({ ...h, storeDegraded: storeDegraded() }, h.ok ? 200 : 503, g.headers);
 }
