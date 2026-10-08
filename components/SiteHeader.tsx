@@ -6,7 +6,7 @@ export function SiteHeader() {
     <header className={s.site}>
       <Link href="/" className={s.brand} aria-label="Rekindle home">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icon.svg" alt="" width={28} height={28} />
+        <img src="/favicon.svg" alt="" width={28} height={28} />
         Rekindle
       </Link>
       <nav className={s.siteNav} aria-label="Site">
