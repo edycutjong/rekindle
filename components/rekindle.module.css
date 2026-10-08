@@ -703,9 +703,12 @@
   gap: 4px;
   margin-top: 8px;
 }
+/* D14a: the stepper fits its card at every ledger width. At 1440 px a desktop card is ~112 px wide, so the old fixed
+   22 + 44 + 44 + 44 px row (160 px) pushed "+" past the card edge. Columns now share the card (buttons stay 44 px tall
+   and ≥ 27 px wide on desktop, so WCAG 2.5.8's 24 px floor holds; on a phone they grow to the full row). */
 .stepper {
   display: grid;
-  grid-template-columns: 22px 44px minmax(44px, 1fr) 44px;
+  grid-template-columns: 16px minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr);
   align-items: center;
   gap: 2px;
 }
@@ -724,6 +727,8 @@
 }
 .stepBtn {
   height: 44px;
+  min-width: 0;
+  padding: 0;
   font: 20px var(--font-data);
   color: var(--ink);
   background: var(--paper);
