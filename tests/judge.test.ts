@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { receiptsPaused, RECEIPTS_PAUSED_NOTE } from "../lib/receipts-cached";
-import { benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type AuditResults, type BenchResults } from "../lib/judge";
+import { benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, REPO_CLOSED_NOTE, repoPublic, type AuditResults, type BenchResults } from "../lib/judge";
 import { countRules, summarise } from "../lib/receipts";
 
 const arm = (o: Partial<BenchResults["arms"][string]> = {}) => ({ outing_venues: 10, errors: 0, violation: 3, violation_rate: 0.3, unverifiable: 2, closed_at_slot: 1, alcohol: 0, alcohol_denominator: 5, unknown_hours: 1, ...o });
@@ -82,6 +82,13 @@ describe("/judge view model", () => {
     expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 4, wrong: 3, inconclusive: 3 } } } })).toMatch(/4 of the 10 LLM venues the automated checker could not match were real and open/);
     expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 0, wrong: 2, inconclusive: 0 } } } })).toBeNull();
     expect(oracleOverFlag(null)).toBeNull();
+  });
+
+  it("QA round 6: /judge links into the repository only once REPO_PUBLIC=1 is set; before the flip its files are named, marked public at submission", () => {
+    expect(repoPublic({ REPO_PUBLIC: "1" })).toBe(true);
+    expect(repoPublic({})).toBe(false);
+    expect(repoPublic({ REPO_PUBLIC: "true" })).toBe(false);
+    expect(REPO_CLOSED_NOTE).toBe("public at submission");
   });
 
   it("QA round 4 (a2a r06): RECEIPTS_PAUSED=1 pauses the latest-plans list() and the page says so in plain words", () => {

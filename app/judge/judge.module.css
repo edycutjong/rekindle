@@ -32,6 +32,12 @@
   padding: 12px 14px;
   margin: 8px 0 10px;
 }
+/* "(public at submission)": a repository file named, not linked, while the repo is private */
+.closed {
+  color: var(--muted);
+  font-size: 0.88em;
+  white-space: nowrap;
+}
 .links {
   display: flex;
   flex-wrap: wrap;

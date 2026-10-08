@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StartCase } from "@/components/StartCase";
 import r from "@/components/rekindle.module.css";
 import rigorJson from "@/docs/rigor.json";
-import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type Rigor } from "@/lib/judge";
+import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, REPO, REPO_CLOSED_NOTE, repoPublic, type Rigor } from "@/lib/judge";
 import { pageGate } from "@/lib/reads";
 import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsError, receiptsPaused } from "@/lib/receipts-cached";
 import { type Receipts } from "@/lib/receipts";
@@ -15,11 +16,26 @@ import j from "./judge.module.css";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Judge receipts · Rekindle" };
 
-const REPO = "https://github.com/edycutjong/rekindle";
 const LIVE = "https://rekindle.edycu.dev";
 const rigor: Rigor = rigorJson;
 
 const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ?? slug;
+
+/** A file in the repository: a link once it is public (REPO_PUBLIC=1), plain text marked "(public at submission)" before. */
+function RepoFile({ open, path = "", target = false, children }: { open: boolean; path?: string; target?: boolean; children: ReactNode }) {
+  if (open) {
+    return (
+      <a className={target ? `${r.link} ${r.linkTarget}` : r.link} href={`${REPO}${path}`} data-testid="repo-file">
+        {children}
+      </a>
+    );
+  }
+  return (
+    <span className={target ? r.linkTarget : undefined} data-testid="repo-file">
+      {children} <span className={j.closed}>({REPO_CLOSED_NOTE})</span>
+    </span>
+  );
+}
 
 /**
  * /judge: the receipts a judge needs without reading code — the claim, the 30-second path, how to reproduce, the honest
@@ -29,6 +45,7 @@ const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ??
  */
 export default async function Judge() {
   const { bench, replan, audit, predates, emberLive } = await loadJudgeData();
+  const open = repoPublic();
   let live: Receipts | null = null;
   let liveError: string | null = null;
   const paused = receiptsPaused();
@@ -81,9 +98,9 @@ export default async function Judge() {
         </ol>
         <p className={j.def}>
           The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in{" "}
-          <a className={r.link} href={`${REPO}/blob/main/DEMO.md`}>
+          <RepoFile open={open} path="/blob/main/DEMO.md">
             DEMO.md
-          </a>
+          </RepoFile>
           , about 4 minutes.
         </p>
 
@@ -105,7 +122,7 @@ export default async function Judge() {
 
         <h2 className={s.h2}>Reproduce (the real path)</h2>
         <pre className={j.cmd} data-testid="reproduce">
-          {`# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
+          {`${open ? "" : `# the repository is private until submission; these commands work once it is public\n`}# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
 git clone ${REPO} && cd rekindle && npm ci
 python3 scripts/ui_smoke.py ${LIVE} /tmp/shots live
 E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
@@ -136,18 +153,18 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
         </ol>
         <p className={j.def}>
           All seven are in the{" "}
-          <a className={r.link} href={`${REPO}#limitations-honest-limits-7`}>
+          <RepoFile open={open} path="#limitations-honest-limits-7">
             README (Limitations)
-          </a>
+          </RepoFile>
           .
         </p>
 
         <h2 className={s.h2}>Links</h2>
-        <ul className={j.links} data-testid="links">
+        <ul className={j.links} data-testid="links" data-repo-public={open ? "1" : "0"}>
           <li>
-            <a className={`${r.link} ${r.linkTarget}`} href={REPO}>
+            <RepoFile open={open} target>
               GitHub repository
-            </a>
+            </RepoFile>
           </li>
           <li>
             <a className={`${r.link} ${r.linkTarget}`} href={LIVE}>
@@ -155,24 +172,24 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
             </a>
           </li>
           <li>
-            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/DEMO.md`}>
+            <RepoFile open={open} path="/blob/main/DEMO.md" target>
               DEMO.md (click path + bench)
-            </a>
+            </RepoFile>
           </li>
           <li>
-            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/JUDGE.md`}>
+            <RepoFile open={open} path="/blob/main/JUDGE.md" target>
               JUDGE.md (this page as a file)
-            </a>
+            </RepoFile>
           </li>
           <li>
-            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/ARCHITECTURE.md`}>
+            <RepoFile open={open} path="/blob/main/ARCHITECTURE.md" target>
               ARCHITECTURE.md (generated from the code)
-            </a>
+            </RepoFile>
           </li>
           <li>
-            <a className={`${r.link} ${r.linkTarget}`} href={`${REPO}/blob/main/DX-REPORT.md`}>
+            <RepoFile open={open} path="/blob/main/DX-REPORT.md" target>
               Qloo DX report
-            </a>
+            </RepoFile>
           </li>
         </ul>
 

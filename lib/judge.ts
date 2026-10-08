@@ -205,6 +205,15 @@ export function profilesWith(bench: BenchResults | null, what: "review" | "cover
   return bench.plans.filter((p) => p.arm === "B" && p.review > 0).map((p) => p.profile);
 }
 
+/**
+ * The GitHub repository stays private until submission, so /judge links into it only once REPO_PUBLIC=1 is set (in the
+ * same step as the visibility flip, then a redeploy). Until then the repo's files are named as plain text marked
+ * "(public at submission)": a link that 404s for everyone without access is worse than no link.
+ */
+export const REPO = "https://github.com/edycutjong/rekindle";
+export const REPO_CLOSED_NOTE = "public at submission";
+export const repoPublic = (env: Record<string, string | undefined> = process.env) => env.REPO_PUBLIC === "1";
+
 /** docs/rigor.json ← scripts/rigor.py: test counts measured from the suite (drift-checked by npm run docs:check) */
 export interface Rigor {
   tests: number;

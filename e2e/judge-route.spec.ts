@@ -15,7 +15,18 @@ test("/judge is 200 with no credentials and no session, and shows the receipts",
   await expect(page.getByTestId("receipt-line")).toContainText(/\d+ Vitest tests in \d+ files/);
   await expect(page.getByTestId("reproduce")).toContainText("scripts/ui_smoke.py https://rekindle.edycu.dev");
   await expect(page.getByTestId("limitations").getByRole("listitem")).toHaveCount(4);
-  await expect(page.getByTestId("links").getByRole("link", { name: "GitHub repository" })).toHaveAttribute("href", "https://github.com/edycutjong/rekindle");
+  // the repository is private until submission: /judge links into it only with REPO_PUBLIC=1 (set at the public flip);
+  // before that every repo file is named as text marked "(public at submission)", and no link to it 404s (QA round 6)
+  const links = page.getByTestId("links");
+  const pub = await links.getAttribute("data-repo-public");
+  if (!process.env.E2E_BASE_URL) expect(pub).toBe(process.env.REPO_PUBLIC === "1" ? "1" : "0");
+  if (pub === "1") {
+    await expect(links.getByRole("link", { name: "GitHub repository" })).toHaveAttribute("href", "https://github.com/edycutjong/rekindle");
+  } else {
+    await expect(links.getByTestId("repo-file").first()).toHaveText("GitHub repository (public at submission)");
+    await expect(page.locator('a[href^="https://github.com/edycutjong/rekindle"]')).toHaveCount(0);
+    await expect(page.getByTestId("reproduce")).toContainText("the repository is private until submission");
+  }
   await expect(page.getByTestId("edge-states")).toBeVisible();
   await expect(page.getByTestId("bench-table")).toBeVisible(); // read from the committed bench/results.json
   await ctx.close();
