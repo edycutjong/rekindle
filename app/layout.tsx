@@ -7,7 +7,7 @@ const body = Atkinson_Hyperlegible({ variable: "--font-atkinson", weight: ["400"
 const data = IBM_Plex_Mono({ variable: "--font-plex-mono", weight: ["400", "500"], subsets: ["latin"] });
 
 // Bump OG_IMAGE's version whenever public/og-image.png changes: Discord, X and Slack cache cards by URL (social-card trap 1).
-const OG_IMAGE = "/og-image.png?v=d14a";
+const OG_IMAGE = "/og-image.png?v=qa5";
 const OG_ALT =
   "Rekindle: hand-checked, the same LLM got 7 of 17 named venues wrong and Rekindle 0 of 14; beside it, week two re-planned live from a fictional patient's ratings.";
 
