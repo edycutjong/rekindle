@@ -5,7 +5,8 @@ import { StartCase } from "@/components/StartCase";
 import r from "@/components/rekindle.module.css";
 import rigorJson from "@/docs/rigor.json";
 import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, type Rigor } from "@/lib/judge";
-import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsPaused } from "@/lib/receipts-cached";
+import { pageGate } from "@/lib/reads";
+import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsError, receiptsPaused } from "@/lib/receipts-cached";
 import { type Receipts } from "@/lib/receipts";
 import { SEEDS } from "@/lib/service";
 import s from "../integrations/qloo/qloo.module.css";
@@ -31,10 +32,13 @@ export default async function Judge() {
   let live: Receipts | null = null;
   let liveError: string | null = null;
   const paused = receiptsPaused();
+  // a2a r06 F4: one per-IP window hit (in memory) before the receipts read; a refused view keeps every committed number
+  const gate = paused ? null : await pageGate();
+  const limited = gate && !gate.ok ? (gate.message ?? "Too many requests from this address.") : null;
   try {
-    if (!paused) live = await cachedLatestReceipts(5);
+    if (!paused && !limited) live = await cachedLatestReceipts(5);
   } catch (e) {
-    liveError = e instanceof Error ? e.message : String(e);
+    liveError = receiptsError(e);
   }
   const review = profilesWith(bench, "review");
   const coverage = profilesWith(bench, "coverage");
@@ -370,6 +374,11 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
 
         <h2 className={s.h2}>Latest live runs on this deployment</h2>
         {paused && <p className={r.notice}>{RECEIPTS_PAUSED_NOTE}</p>}
+        {limited && (
+          <p className={r.notice} data-testid="receipts-limited">
+            Live receipts skipped: {limited}
+          </p>
+        )}
         {liveError && <p className={r.errorBox}>Could not read the call logs: {liveError}</p>}
         {live && (
           <dl className={s.totals} data-testid="live-totals">

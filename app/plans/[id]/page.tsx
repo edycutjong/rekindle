@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
-import { PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
+import { LIMITED_TITLE, PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const plan = await readPlan(id);
   const c = "doc" in plan ? await readCase(plan.doc.case_id) : null;
+  if ("limited" in plan || (c && "limited" in c)) return { title: LIMITED_TITLE, robots: { index: false } };
   if ("down" in plan || (c && "down" in c)) return { title: UNAVAILABLE_TITLE, robots: { index: false } };
   return { title: "doc" in plan && c && "doc" in c ? `Week ${plan.doc.week} · ${c.doc.label} · Rekindle` : "Not found · Rekindle", robots: { index: false } };
 }
@@ -35,6 +36,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const store = storeFor({ headers: h });
   const read = await readPlan(id);
   // a2a r06: a store outage is "unavailable right now", never "Not found"
+  if ("limited" in read) return <PageUnavailable limited={read.limited} />;
   if ("down" in read) return <PageUnavailable />;
   if ("missing" in read) notFound();
   const found = read.doc;
@@ -44,6 +46,7 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   }
   const plan = found;
   const cr = await readCase(plan.case_id);
+  if ("limited" in cr) return <PageUnavailable limited={cr.limited} />;
   if ("down" in cr) return <PageUnavailable />;
   if ("missing" in cr) notFound();
   const c = cr.doc;

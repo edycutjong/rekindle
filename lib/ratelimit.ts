@@ -35,14 +35,19 @@ const num = (v: string | undefined, d: number) => {
 };
 
 export function limitsFromEnv(env: Record<string, string | undefined> = process.env): Record<Namespace, Limits> {
+  // a2a r06: every public per-IP limit that guards a store write or read comes from env (defaults unchanged); `read`
+  // also meters the saved-week pages (lib/reads.ts). Judges keep at least twice the public allowance.
+  const toggle = num(env.RL_PUBLIC_TOGGLES_PER_IP_HOUR, 40);
+  const write = num(env.RL_PUBLIC_WRITES_PER_IP_HOUR, 40);
+  const read = num(env.RL_PUBLIC_READS_PER_IP_HOUR, 120);
   return {
     public: {
-      perIpPerHour: { plan: num(env.RL_PUBLIC_PLANS_PER_IP_HOUR, 20), toggle: 40, resolve: 120, write: 40, health: 30, read: 120 },
+      perIpPerHour: { plan: num(env.RL_PUBLIC_PLANS_PER_IP_HOUR, 20), toggle, resolve: 120, write, health: 30, read },
       // 600/day ≈ 4× the expected judging-period traffic; re-size from the counter
       dailyPlans: num(env.RL_PUBLIC_DAILY_PLANS, 600),
     },
     judge: {
-      perIpPerHour: { plan: num(env.RL_JUDGE_PLANS_PER_IP_HOUR, 60), toggle: 120, resolve: 240, write: 120, health: 60, read: 240 },
+      perIpPerHour: { plan: num(env.RL_JUDGE_PLANS_PER_IP_HOUR, 60), toggle: Math.max(120, 2 * toggle), resolve: 240, write: Math.max(120, 2 * write), health: 60, read: Math.max(240, 2 * read) },
       dailyPlans: num(env.RL_JUDGE_DAILY_PLANS, 400),
     },
     bench: {
@@ -202,7 +207,8 @@ export class RateLimiter {
     private readonly env: Record<string, string | undefined> = process.env,
   ) {}
 
-  async check(req: Request, action: Action, now = Date.now()): Promise<Decision> {
+  /** only reads headers: a route's Request, or `{ headers: await headers() }` in a server component (page reads) */
+  async check(req: HasHeaders, action: Action, now = Date.now()): Promise<Decision> {
     const ns = classify(req, this.env);
     const lim = limitsFromEnv(this.env)[ns];
     const perIp = lim.perIpPerHour[action];

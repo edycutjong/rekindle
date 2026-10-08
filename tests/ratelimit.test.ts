@@ -101,4 +101,28 @@ describe("rate limiting (lib/ratelimit.ts)", () => {
     expect((await caseGet(new Request(`http://x/api/cases/${id}`, { headers: { "x-forwarded-for": "6.6.6.7" } }), { params: Promise.resolve({ id }) })).status).toBe(404);
     vi.unstubAllEnvs();
   });
+
+  it("QA round 4 (a2a r06): toggle / write / read per-IP limits come from env (defaults unchanged), and judges keep at least twice the public allowance", () => {
+    const d = limitsFromEnv({});
+    expect([d.public.perIpPerHour.toggle, d.public.perIpPerHour.write, d.public.perIpPerHour.read]).toEqual([40, 40, 120]);
+    expect([d.judge.perIpPerHour.toggle, d.judge.perIpPerHour.write, d.judge.perIpPerHour.read]).toEqual([120, 120, 240]);
+    const l = limitsFromEnv({ RL_PUBLIC_TOGGLES_PER_IP_HOUR: "20", RL_PUBLIC_WRITES_PER_IP_HOUR: "60", RL_PUBLIC_READS_PER_IP_HOUR: "300" });
+    expect([l.public.perIpPerHour.toggle, l.public.perIpPerHour.write, l.public.perIpPerHour.read]).toEqual([20, 60, 300]);
+    expect([l.judge.perIpPerHour.toggle, l.judge.perIpPerHour.write, l.judge.perIpPerHour.read]).toEqual([120, 120, 600]);
+    expect(limitsFromEnv({ RL_PUBLIC_READS_PER_IP_HOUR: "-1" }).public.perIpPerHour.read).toBe(120); // invalid → default
+  });
+
+  it("QA round 4 (a2a r06): saved-week pages are metered per IP in memory before any store read; a refused view reads nothing", async () => {
+    const { gatedRead } = await import("../lib/reads");
+    const rl = new RateLimiter(new MemoryDailyCounter(), { ...env, RL_PUBLIC_READS_PER_IP_HOUR: "3" });
+    const page = (h: Record<string, string>) => ({ headers: new Headers(h) }); // what a server component passes: headers only
+    const reads = vi.fn(async () => ({ id: "x" }));
+    const out = [];
+    for (let i = 0; i < 4; i++) out.push(await gatedRead(() => rl.check(page({ "x-forwarded-for": "4.3.2.1" }), "read"), reads));
+    expect(out.slice(0, 3)).toEqual([{ doc: { id: "x" } }, { doc: { id: "x" } }, { doc: { id: "x" } }]);
+    expect(out[3]).toMatchObject({ limited: expect.stringMatching(/^Too many requests from this address — try again in \d+ min\.$/) });
+    expect(reads).toHaveBeenCalledTimes(3);
+    // a judge (cookie) on the same address has their own, larger window
+    expect(await gatedRead(() => rl.check(page({ "x-forwarded-for": "4.3.2.1", cookie: `rk_judge=${JUDGE}` }), "read"), reads)).toEqual({ doc: { id: "x" } });
+  });
 });

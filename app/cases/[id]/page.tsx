@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
-import { PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
+import { LIMITED_TITLE, PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
 import { Workbench } from "@/components/Workbench";
 import r from "@/components/rekindle.module.css";
 import { canWrite } from "@/lib/owner";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const c = await readCase(id);
-  return { title: "doc" in c ? `Week 1 · ${c.doc.label} · Rekindle` : "down" in c ? UNAVAILABLE_TITLE : "Not found · Rekindle", robots: { index: false } };
+  return { title: "doc" in c ? `Week 1 · ${c.doc.label} · Rekindle` : "limited" in c ? LIMITED_TITLE : "down" in c ? UNAVAILABLE_TITLE : "Not found · Rekindle", robots: { index: false } };
 }
 
 /**
@@ -31,6 +31,7 @@ export default async function CasePage({ params, searchParams }: { params: Promi
   const store = storeFor({ headers: h });
   const cr = await readCase(id);
   // a2a r06: a store outage is "unavailable right now", never "Not found"
+  if ("limited" in cr) return <PageUnavailable limited={cr.limited} />;
   if ("down" in cr) return <PageUnavailable what="This case" />;
   if ("missing" in cr) notFound();
   const c = cr.doc;

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import r from "@/components/rekindle.module.css";
 import { latestReceipts, type Receipts } from "@/lib/receipts";
-import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsPaused } from "@/lib/receipts-cached";
+import { pageGate } from "@/lib/reads";
+import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsError, receiptsPaused } from "@/lib/receipts-cached";
 import { storeFromEnv } from "@/lib/store";
 import s from "./qloo.module.css";
 
@@ -22,12 +23,16 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
   let data: Receipts | null = null;
   let error: string | null = null;
   const paused = !planId && receiptsPaused();
+  // a2a r06 F4: one per-IP window hit (in memory) before any store read
+  const gate = paused ? null : await pageGate();
+  const limited = gate && !gate.ok ? (gate.message ?? "Too many requests from this address.") : null;
   try {
     // one plan: two reads by path; the latest-plans view (a list()) is cached across instances or paused (a2a r06)
-    if (planId) data = await latestReceipts(storeFromEnv(), { planId, limit: 5 });
+    if (limited) data = null;
+    else if (planId) data = await latestReceipts(storeFromEnv(), { planId, limit: 5 });
     else if (!paused) data = await cachedLatestReceipts(5);
   } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
+    error = receiptsError(e);
   }
   return (
     <div className={r.wrap}>
@@ -45,6 +50,11 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
           )}
         </p>
         {paused && <p className={r.notice}>{RECEIPTS_PAUSED_NOTE}</p>}
+        {limited && (
+          <p className={r.notice} data-testid="receipts-limited">
+            {limited}
+          </p>
+        )}
         {error && <p className={r.errorBox}>Could not read the call logs: {error}</p>}
         {data && (
           <>

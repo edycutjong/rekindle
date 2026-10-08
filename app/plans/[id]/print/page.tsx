@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
+import { LIMITED_TITLE, PageUnavailable, UNAVAILABLE_TITLE } from "@/components/PageUnavailable";
 import { PrintButton } from "@/components/PrintButton";
 import { readCase, readPlan } from "@/lib/reads";
 import { printSheet, stampLabel } from "@/lib/view";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const plan = await readPlan(id);
-  return { title: "doc" in plan ? "Activity sheet · Rekindle" : "down" in plan ? UNAVAILABLE_TITLE : "Not found · Rekindle", robots: { index: false } };
+  return { title: "doc" in plan ? "Activity sheet · Rekindle" : "limited" in plan ? LIMITED_TITLE : "down" in plan ? UNAVAILABLE_TITLE : "Not found · Rekindle", robots: { index: false } };
 }
 
 /**
@@ -22,10 +22,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function PrintPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const pr = await readPlan(id);
+  if ("limited" in pr) return <PageUnavailable limited={pr.limited} />;
   if ("down" in pr) return <PageUnavailable what="This activity sheet" />;
   if ("missing" in pr) notFound();
   const plan = pr.doc;
   const cr = await readCase(plan.case_id);
+  if ("limited" in cr) return <PageUnavailable limited={cr.limited} />;
   if ("down" in cr) return <PageUnavailable what="This activity sheet" />;
   if ("missing" in cr) notFound();
   const c = cr.doc;
