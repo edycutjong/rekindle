@@ -127,11 +127,19 @@ export interface EmberLive {
   threshold: number;
   replans: number;
   new_cards_naming_a_rating: number;
-  rekindled_top: number;
+  /** cards whose top rated input outweighs the best original love (margin >= 0) */
+  rating_leads_loves: number;
   threaded: number;
   tied: number;
+  threaded_with_co_inputs: number;
+  /** median lead over the best original love (T16 rule), on rating_leads_loves cards */
   margin_median: number | null;
-  margin_over_original_loves_median: number | null;
+  /** each (rated set, card entity) once: Qloo returns the same week for the same ratings */
+  distinct: { cards: number; rating_sets: number; rating_leads_loves: number; threaded: number; previous_rule_threaded: number };
+  /** the rule before T16 (lead over the next input of any kind), on the same cards */
+  previous_rule: { rekindled_top: number; threaded: number; margin_median: number | null };
+  /** bench/replan.json's new cards measured by the same margin */
+  bench: { source: string; finished_at: string | null; new_cards: number | null; cards_with_margin: number; threaded: number; margin_median: number | null } | null;
 }
 
 export async function loadJudgeData(dir = path.join(process.cwd(), "bench")): Promise<JudgeData> {

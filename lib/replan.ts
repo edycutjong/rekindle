@@ -48,22 +48,48 @@ export interface ReplanDiff {
   signals: { day: DayName; name: string; reason: string }[];
   /**
    * Week-2 cards whose explainability names a rekindled (≥ 7) entity. Qloo spreads explainability across every signal
-   * entity, so almost every week-2 card names every rekindled entity; `top` marks the stronger claim — the rekindled
-   * entity is that card's highest-weighted input by at least EMBER_MIN_MARGIN over every other input. `margin` = its
-   * weight minus the strongest other input's. The UI draws an ember thread only for `top` links; a rekindled entity
-   * that leads by less is shown as a tie, never as "because of" (QA round 3: threads drawn on 0.003 margins).
+   * entity, so almost every week-2 card names every rekindled entity; `top` marks the stronger claim (T16, a2a r04):
+   * the entity is the card's highest-weighted RATED input and leads the card's best ORIGINAL-LOVE input (the case's
+   * loves, i.e. every input that is not a rating) by at least EMBER_MIN_MARGIN — the same margin bench/replan.json
+   * reports. `margin` = its weight minus that best original-love weight. The other rated inputs on the card are its
+   * co-inputs (shown on the label, never threaded). The UI draws an ember thread only for `top` links; a rated input
+   * that leads the loves by less is shown as a tie, never as "because of" (QA round 3). It is Qloo's attribution, not
+   * causation. Before T16 the margin was the lead over the card's next input of any kind, so two ratings cancelled
+   * each other's threads (2 of 77 live cards threaded).
    */
   ember: { from: string; from_id: string; to: string; to_id: string; day: DayName; score: number; top: boolean; margin: number }[];
 }
 
 /**
- * Minimum lead of a rekindled entity's explainability weight over the card's next-strongest input before the UI says
- * "because of" it. Qloo splits explainability roughly evenly across signals (≈ 1/3 each with three loves), so smaller
- * leads are ties; 0.02 is the bench's PASS definition for "the rated input leads".
+ * Minimum lead of the top rated input's explainability weight over the card's best original-love input before the UI
+ * says "because of" it. Qloo splits explainability roughly evenly across signals (≈ 1/3 each with three loves), so
+ * smaller leads are ties; 0.02 is the bench's PASS definition for "the rated input leads".
  */
 export const EMBER_MIN_MARGIN = 0.02;
 
-/** Weight of `id` minus the strongest other input in the same explainability list (negative: another input leads). */
+export interface ExplainInput {
+  entity_id: string;
+  name?: string;
+  score: number;
+}
+
+/**
+ * The ember rule on one card's explainability (T16). `rated` = the rekindled (≥ 7) entity IDs; every other input is an
+ * original love. `top` = the highest-weighted rated input (score > 0), `love` = the best original-love input,
+ * `margin` = top − love (love absent → 0), `co` = the other rated inputs that also outweigh that love, strongest first.
+ * `threads` = margin ≥ EMBER_MIN_MARGIN. Returns null when no rated input carries weight on the card.
+ */
+export function emberLead<T extends ExplainInput>(why: readonly T[], rated: ReadonlySet<string>): { top: T; love: T | null; margin: number; co: T[]; threads: boolean } | null {
+  const rek = why.filter((w) => rated.has(w.entity_id) && w.score > 0).sort((a, b) => b.score - a.score);
+  const top = rek[0];
+  if (!top) return null;
+  const love = [...why].filter((w) => !rated.has(w.entity_id)).sort((a, b) => b.score - a.score)[0] ?? null;
+  const floor = Math.max(0, love?.score ?? 0);
+  const margin = Math.round((top.score - floor) * 1e6) / 1e6;
+  return { top, love, margin, co: rek.slice(1).filter((w) => w.score > floor), threads: margin >= EMBER_MIN_MARGIN };
+}
+
+/** Weight of `id` minus the strongest other input in the same explainability list (negative: another input leads). The pre-T16 ember margin; scripts/ember-margins.ts still reports it for comparison. */
 export function explainMargin(why: readonly { entity_id: string; score: number }[], id: string): number {
   const own = why.find((w) => w.entity_id === id)?.score ?? 0;
   const other = Math.max(0, ...why.filter((w) => w.entity_id !== id).map((w) => w.score));
@@ -82,15 +108,18 @@ export function diffWeeks(w1: WeekPlan, w2: WeekPlan, h: PlanHistory, keptNote: 
   const ids1 = new Set(w1.slots.flatMap((s) => (s.card ? [s.card.entity_id] : [])));
   const ids2 = new Set(w2.slots.flatMap((s) => (s.card ? [s.card.entity_id] : [])));
   const rek = new Map(h.rekindled.map((r) => [r.entity_id, r.name]));
+  const rated = new Set(rek.keys());
   const out: ReplanDiff = { kept: [], added: [], removed: [], signals: [], ember: [] };
   for (const s of w2.slots) {
     if (!s.card) continue;
     if (ids1.has(s.card.entity_id)) out.kept.push({ day: s.slot.day, name: s.card.name, ...(rek.has(s.card.entity_id) ? { reason: keptNote?.entity_id === s.card.entity_id && keptNote.ok ? `rated ≥7 — ${keptNote.detail}` : "rated ≥7 — kept" } : {}) });
     else out.added.push({ day: s.slot.day, name: s.card.name, because: s.card.why.map((w) => ({ name: w.name, score: w.score })) });
+    const lead = emberLead(s.card.why, rated);
+    const floor = Math.max(0, lead?.love?.score ?? 0);
     for (const w of s.card.why) {
       if (!rek.has(w.entity_id) || w.score <= 0) continue;
-      const margin = explainMargin(s.card.why, w.entity_id);
-      out.ember.push({ from: rek.get(w.entity_id)!, from_id: w.entity_id, to: s.card.name, to_id: s.card.entity_id, day: s.slot.day, score: w.score, top: margin >= EMBER_MIN_MARGIN, margin });
+      const margin = Math.round((w.score - floor) * 1e6) / 1e6;
+      out.ember.push({ from: rek.get(w.entity_id)!, from_id: w.entity_id, to: s.card.name, to_id: s.card.entity_id, day: s.slot.day, score: w.score, top: !!lead?.threads && lead.top.entity_id === w.entity_id, margin });
     }
   }
   for (const s of w1.slots) {

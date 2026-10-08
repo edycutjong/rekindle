@@ -8,6 +8,7 @@ bench/audit.json (scripts/manual_audit.py summary). Each target file carries mar
   <!-- bench:table:start -->  … <!-- bench:table:end -->    the full arm table + ablation + latency + re-plan
   <!-- bench:predates:start --> … <!-- bench:predates:end --> the plan-path commits made after the bench run (git log)
   <!-- bench:caveat:start -->  … <!-- bench:caveat:end -->   one-line "predates N changes" caveat under the killer number
+  <!-- bench:ember:start -->   … <!-- bench:ember:end -->     ember-thread counts (bench/ember-live.json ← scripts/ember-margins.ts)
 
 bench/predates.json (read by /judge) carries the same commit list.
 
@@ -202,6 +203,25 @@ def predates_md(rows) -> str:
     return "\n".join(head + [f"- `{x['commit']}` {x['subject']}" for x in rows])
 
 
+def ember_md() -> str:
+    """T16: the ember-thread receipt, from bench/ember-live.json (live re-plans + the bench's cards, same margin)."""
+    p = ROOT / "bench" / "ember-live.json"
+    if not p.exists():
+        return "Ember threads: `scripts/ember-margins.ts` has not been run yet."
+    e = json.loads(p.read_text())
+    b = e.get("bench") or {}
+    bench = f" On the bench's {b['cards_with_margin']} new week-2 cards (`{b['source']}`, the same margin), {b['threaded']} clear it." if b else ""
+    d = e["distinct"]
+    return (
+        f"**Ember threads on live re-plans** (`bench/ember-live.json`, `scripts/ember-margins.ts`, {e['generated_at'][:16].replace('T', ' ')} UTC): "
+        f"{plural(e['replans'], 're-plan', 're-plans')} with {plural(d['rating_sets'], 'distinct rating set', 'distinct rating sets')} (Qloo returns the same week for the same ratings). "
+        f"Of {d['cards']} distinct new week-2 cards that name a rating, a rating outweighed the case's best original love on {d['rating_leads_loves']}; "
+        f"{d['threaded']} cleared the {e['threshold']} lead that draws a thread and {d['rating_leads_loves'] - d['threaded']} are shown as ties. "
+        f"The rule before T16 (a lead over the next input of any kind) threaded {d['previous_rule_threaded']} of the same cards.{bench} "
+        "The live sample is small; Qloo's attribution, not causation."
+    )
+
+
 def replace(doc: str, name: str, body: str) -> str:
     s, e = f"<!-- bench:{name}:start -->", f"<!-- bench:{name}:end -->"
     if s not in doc:
@@ -228,7 +248,7 @@ def stale_files(r, rp, au, rows, write: bool) -> list:
         if not p.exists():
             continue
         doc = p.read_text()
-        new = replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows))
+        new = replace(replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows)), "ember", ember_md())
         if new != doc:
             stale.append(p.name)
             if write:

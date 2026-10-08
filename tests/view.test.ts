@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { CardDoc, PlanDoc } from "../lib/store";
-import { EMBER_MIN_MARGIN, explainMargin } from "../lib/replan";
+import { EMBER_MIN_MARGIN, diffWeeks, emberLead, explainMargin } from "../lib/replan";
+import type { WeekPlan } from "../lib/plan";
+import { EMPTY_HISTORY } from "../lib/plan";
 import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
 
@@ -141,12 +143,43 @@ describe("gate + re-plan view helpers", () => {
     const t = emberThreads(diff, [{ qloo_entity_id: "L", pleasure: 9 }], cards);
     expect(t.map((x) => [x.to_id, x.tied])).toEqual([["S", true], ["C", false]]);
     expect(emberLabel(t[0]!)).toBe("with Lucy Dacus, rated 9 · tied with Fleabag (0.350 vs 0.347)");
-    expect(emberLabel(t[1]!)).toBe("← because of Lucy Dacus, rated 9 · 0.410, +0.110 over Fleabag");
+    expect(emberLabel(t[1]!)).toBe("← because of Lucy Dacus, rated 9 · 0.410, +0.110 over Fleabag (original love)");
     // the stored `top` flag alone never threads a tie: margins come from the card's own explainability
     expect(t.filter((x) => !x.tied).map((x) => x.to_id)).toEqual(["C"]);
     // a stored diff (before margins) without cards: the old `top` links are kept but count as a zero-lead tie
     expect(emberThreads(diff, []).every((x) => x.tied)).toBe(true);
     expect(emberThreads(null)).toEqual([]);
+  });
+
+  it("QA round 4 (a2a r08): the ember thread measures the top RATED input against the best ORIGINAL LOVE, so two ratings no longer cancel each other's thread; the other rating is a co-input", () => {
+    const why = (pairs: [string, string, number][]) => pairs.map(([entity_id, name, score]) => ({ entity_id, name, score }));
+    const week = (cards: { id: string; name: string; why: ReturnType<typeof why> }[]) =>
+      ({ slots: cards.map((c, i) => ({ slot: { day: (["friday", "saturday", "sunday"] as const)[i], hour: 15, rung: "social" }, card: { entity_id: c.id, name: c.name, why: c.why } })) }) as unknown as WeekPlan;
+    const h = { ...EMPTY_HISTORY, rekindled: [{ entity_id: "L", name: "Lucy Dacus", tags: [], entityType: "urn:entity:artist" }, { entity_id: "B", name: "Big Thief", tags: [], entityType: "urn:entity:artist" }] };
+    const lead = why([["L", "Lucy Dacus", 0.36], ["B", "Big Thief", 0.35], ["F", "Fleabag", 0.29]]);
+    const loveWins = why([["F", "Fleabag", 0.4], ["L", "Lucy Dacus", 0.36], ["B", "Big Thief", 0.35]]);
+    // the old rule: 0.36 leads the NEXT input (the other rating, 0.35) by 0.01 → a tie, no thread
+    expect(explainMargin(lead, "L")).toBeLessThan(EMBER_MIN_MARGIN);
+    // the new rule: 0.36 leads the best original love (0.29) by 0.07 → a thread, Big Thief carried as a co-input
+    expect(emberLead(lead, new Set(["L", "B"]))).toMatchObject({ top: { entity_id: "L" }, love: { entity_id: "F" }, margin: 0.07, threads: true, co: [{ entity_id: "B" }] });
+    const d = diffWeeks(week([]), week([{ id: "S", name: "Seek Treatment", why: lead }, { id: "C", name: "Ceremonia", why: loveWins }]), h);
+    expect(d.ember.filter((e) => e.top).map((e) => [e.to_id, e.from_id, e.margin])).toEqual([["S", "L", 0.07]]);
+    expect(d.ember.find((e) => e.to_id === "S" && e.from_id === "B")).toMatchObject({ top: false, margin: 0.06 });
+    const cards = [
+      { qloo_entity_id: "S", explain_json: lead },
+      { qloo_entity_id: "C", explain_json: loveWins },
+    ];
+    const t = emberThreads({ from_plan_id: "w1", kept_check: null, ...d }, [{ qloo_entity_id: "L", pleasure: 9 }, { qloo_entity_id: "B", pleasure: 8 }], cards, ["L", "B"]);
+    // the best original love beats every rated input on Ceremonia → no link at all (no thread, no tie label)
+    expect(t.map((x) => [x.to_id, x.from_id, x.tied])).toEqual([["S", "L", false]]);
+    expect(emberLabel(t[0]!)).toBe("← because of Lucy Dacus, rated 9 · 0.360, +0.070 over Fleabag (original love) · with Big Thief 0.350");
+    expect(emberLead(loveWins, new Set(["L", "B"]))!.margin).toBeLessThan(0);
+    // a rated input that only edges the loves stays a tie, whatever the other rating does
+    const edge = emberLead(why([["L", "Lucy Dacus", 0.31], ["F", "Fleabag", 0.3]]), new Set(["L"]));
+    expect(edge).toMatchObject({ threads: false, co: [] });
+    // no original love on the card: the rated input's own weight is the lead; no rated input with weight → null
+    expect(emberLead(why([["L", "Lucy Dacus", 0.5]]), new Set(["L"]))).toMatchObject({ love: null, margin: 0.5, threads: true });
+    expect(emberLead(why([["F", "Fleabag", 0.5], ["L", "Lucy Dacus", 0]]), new Set(["L"]))).toBeNull();
   });
 
   it("diffWeeks marks top only above the margin and stores the margin", () => {

@@ -292,8 +292,8 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   }, [c.id]);
   const coverage = useMemo(() => (plan ? coverageRefusal(plan, c) : null), [plan, c]);
   const outage = useMemo(() => (plan ? outageState(plan) : null), [plan]);
-  // every rekindled-led card gets a label; only a clear lead (not a tie) gets a thread and counts as rekindled
-  const links = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards, plan.cards) : []), [plan, prev]);
+  // every card a rating leads (over the case's loves) gets a label; only a clear lead (not a tie) gets a thread and counts as rekindled
+  const links = useMemo(() => (plan && prev ? emberThreads(plan.diff, prev.cards, plan.cards, plan.history.rekindled.map((r) => r.entity_id)) : []), [plan, prev]);
   const threads = useMemo(() => links.filter((l) => !l.tied), [links]);
 
   const days: DayView[] = useMemo(() => {

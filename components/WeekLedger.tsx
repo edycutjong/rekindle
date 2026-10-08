@@ -1,6 +1,6 @@
 import type { CardDoc } from "@/lib/store";
 import type { DayName } from "@/lib/verify";
-import { DAY_SHORT, emberLabel, fmtHour, keptLabel, hoursCheck, isOutage, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
+import { DAY_SHORT, EMBER_TITLE, emberLabel, fmtHour, keptLabel, hoursCheck, isOutage, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
 import { CardActions, PMBox, type CardGate } from "./Gate";
 import s from "./rekindle.module.css";
 
@@ -118,7 +118,7 @@ export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: Em
       )}
       <WhyLine parts={why} />
       {ember && (
-        <div className={ember.tied ? s.emberTied : s.emberLabel} data-testid={ember.tied ? "ember-tied" : "ember-label"}>
+        <div className={ember.tied ? s.emberTied : s.emberLabel} data-testid={ember.tied ? "ember-tied" : "ember-label"} title={EMBER_TITLE}>
           {emberLabel(ember)}
         </div>
       )}

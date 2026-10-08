@@ -2,7 +2,7 @@
 """Logged-out end-to-end run of the ONE flow, Playwright against a real deployment:
 home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows the same week -> clinician gate
 (swap one card live, approve one card, approve the week -> stamp) -> rate 3 activities (P/M) -> re-plan week 2 (live)
--> diff + ember underline + top-weighted ember threads -> reload keeps week 2 -> week 1 links to week 2 ->
+-> diff + ember underline + ember threads (top rated input over the best original love) -> reload keeps week 2 -> week 1 links to week 2 ->
 375 px has no horizontal scroll -> /integrations/qloo lists the calls.
 Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `pip install playwright`).
 Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
@@ -162,7 +162,7 @@ gates = {
     "re-plan disabled < 3 rated, enabled at 3": (not res["replan_enabled_before"]) and res["replan_enabled_after"],
     "week 2 re-planned with a diff": res["week2_heading"].startswith("Week 2") and res["week2_cards"] > 0,
     "ember underline on the >= 7 activities": res["rekindled_underlined"] == 2,
-    "ember threads only for top-weighted links (one per card)": res["ember_thread_paths"] == len(res["ember_labels"]),
+    "ember threads only where a rating leads the loves (one per card)": res["ember_thread_paths"] == len(res["ember_labels"]),
     # QA round 3: a "because of" label always shows a lead >= 0.020; ties say "tied with" and carry no thread
     "ember 'because of' only on a lead >= 0.02": all(re.search(r"\+0\.(\d{3})", t) and int(re.search(r"\+0\.(\d{3})", t).group(1)) >= 20 for t in res["ember_labels"]) and all("because of" not in t for t in res["ember_tied_labels"]),
     "week 2 survives a reload": res["week2_reload_same"],

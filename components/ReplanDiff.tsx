@@ -2,7 +2,8 @@
 /**
  * The ember moment. Week 1 as rated sits above the week-2 ledger in the same seven columns:
  * activities rated ≥ 7 get the single ember underline, ≤ 3 are struck in graphite. A thin ember thread runs from a rated
- * activity to each week-2 card whose TOP-weighted Qloo input it is by at least EMBER_MIN_MARGIN, labelled with that lead. `--after` appears nowhere
+ * activity to each week-2 card whose top-weighted RATED Qloo input it is, when that input leads the case's best original love
+ * by at least EMBER_MIN_MARGIN (T16), labelled with that lead (Qloo's attribution, not causation). `--after` appears nowhere
  * else in the product, so the colour means "rekindled". Below 720 px the thread becomes the inline label on the card.
  */
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -47,7 +48,7 @@ export function ReplanSummary({ prev, diff, threads }: { prev: PlanDoc; diff: No
   return (
     <section className={s.replanSummary} aria-label="What changed" data-testid="replan-summary">
       <p className={s.diffSummary}>
-        Week {prev.week + 1}: {diff.kept.length} kept · {diff.added.length} new · {threads.length} rekindled by a rating
+        Week {prev.week + 1}: {diff.kept.length} kept · {diff.added.length} new · {threads.length} rekindled by a rating <span className={s.reason}>(Qloo&apos;s attribution, not causation)</span>
       </p>
       {diff.kept.filter((k) => k.reason).map((k) => (
         <p key={k.day + k.name} className={s.reason} data-testid="kept-note">
