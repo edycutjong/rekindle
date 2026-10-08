@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { runAgent } from "../lib/agent";
-import { parseSse, sseResponse } from "../lib/http";
+import { errorResponse, parseSse, sseResponse } from "../lib/http";
 import { makeLlm } from "../lib/llm";
 import { EMPTY_HISTORY } from "../lib/plan";
 import { caseFromSeed, runPlanForCase, SEEDS } from "../lib/service";
-import { BlobStore, callsDoc, CaseDoc, caseRowFromDoc, MemoryStore, PlanDoc, planDocFromAgent, storeFromEnv, weekPlanFromDoc } from "../lib/store";
+import { BlobStore, callsDoc, CaseDoc, CorruptDocument, caseRowFromDoc, MemoryStore, PlanDoc, planDocFromAgent, storeFromEnv, weekPlanFromDoc } from "../lib/store";
 import type { QlooCallLog, QlooClient } from "../lib/qloo";
 import { MAYA, replayClient } from "./replay";
 import { POST as seedRoute } from "../app/api/cases/seed/[slug]/route";
@@ -162,5 +162,17 @@ describe("API routes (in-memory store, no network)", () => {
     });
     const frames = parseSse(await res.text());
     expect(frames.at(-1)).toMatchObject({ event: "error", data: { status: 404 } });
+  });
+
+  it("QA round 4 (a2a r01): a stored document that no longer parses is a 500, never a client 400 (its ZodError used to map to 'invalid input')", async () => {
+    const store = new MemoryStore();
+    const c = caseFromSeed("maya")!;
+    await store.putCase(c);
+    const docs = (store as unknown as { docs: Map<string, { at: number; body: string }> }).docs;
+    const key = [...docs.keys()].find((k) => k.includes(c.id))!;
+    docs.set(key, { at: 0, body: JSON.stringify({ id: c.id, loves: "not-an-array" }) });
+    const err = await store.getCase(c.id).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CorruptDocument);
+    expect(errorResponse(err).status).toBe(500);
   });
 });

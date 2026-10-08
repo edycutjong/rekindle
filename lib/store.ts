@@ -481,8 +481,14 @@ export class MemoryStore implements Store {
   }
 }
 
+/** A stored document that no longer parses is the server's fault: never let its ZodError reach http.ts as a client 400. */
+export class CorruptDocument extends Error {}
+
 function parseOrNull<T>(schema: z.ZodType<T>, v: unknown): T | null {
-  return v === null ? null : schema.parse(v);
+  if (v === null) return null;
+  const r = schema.safeParse(v);
+  if (!r.success) throw new CorruptDocument(`stored document failed validation (${r.error.issues.length} issue(s))`);
+  return r.data;
 }
 
 /** Private Vercel Blob store. Reads bypass the CDN cache so a reload always shows the latest write. */
