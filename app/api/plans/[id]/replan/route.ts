@@ -1,6 +1,7 @@
 import { claimReplan, replanPrecheck, replanWeek } from "@/lib/gate";
 import { errorResponse, json, sseResponse } from "@/lib/http";
 import { assertOwner } from "@/lib/owner";
+import { NotFound } from "@/lib/service";
 import { guard } from "@/lib/ratelimit";
 import { storeFor } from "@/lib/scope";
 
@@ -23,7 +24,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (pre.existing) return json({ plan: pre.existing, reused: true });
     parent = pre.parent;
     const c = await store.getCase(parent.case_id);
-    if (c) assertOwner(req, c);
+    // a2a r01: fail closed like assertPlanOwner — a week whose case is gone is a 404 before any quota or claim marker
+    if (!c) throw new NotFound(`case ${parent.case_id} not found`);
+    assertOwner(req, c);
   } catch (e) {
     return errorResponse(e);
   }
