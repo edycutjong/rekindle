@@ -55,7 +55,7 @@ flowchart LR
 
 The model chooses where to look. Qloo and deterministic code decide what is true.
 
-- **The model routes; it never names a venue.** The tools (`lib/agent.ts`) take a day, an at-home type, an optional slot hour and an optional `narrowMeters`.
+- **The model routes; it never picks a venue.** The tools (`lib/agent.ts`) take a day, an at-home type, an optional slot hour and an optional `narrowMeters`.
   Constraints never come from the model:
   - radius, price cap, recovery, quiet and wheelchair are read from the stored case on every request (`outingParams` in `lib/plan.ts`);
   - `narrowMeters` can only tighten the radius.

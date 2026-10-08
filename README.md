@@ -1,15 +1,15 @@
 <div align="center">
   <img src="docs/assets/icon-animated.svg" alt="Rekindle mark: the letter R on a pencil line that strikes through a pencilled word, then catches ember" width="144" height="144">
-  <h1>Rekindle 🕯️</h1>
+  <h1>Rekindle</h1>
   <p><b>A behavioral-activation planning agent for clinicians.</b><br>
   It turns what a depressed patient used to love into a week of real, open, nearby activities, verified with Qloo, approved by the clinician, and re-planned from the patient's own pleasure ratings.</p>
   <img src="docs/assets/readme-hero-animated.svg" alt="Rekindle — re-plans a patient's week from her pleasure ratings: Maya rated Dun-Well Doughnuts 8: kept, re-checked live, and threaded to two new outings. Juice Generation, rated 2, stays out. Maya is a fictional case; the names and scores are from a live run on 8 Oct 2026." width="100%">
 
   <br/>
 
-  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://rekindle.edycu.dev)
-  [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-f59e0b?style=for-the-badge)](https://rekindle.edycu.dev/judge)
-  [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-8b5cf6?style=for-the-badge)](https://qloo.devpost.com/)
+  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-26221D?style=for-the-badge)](https://rekindle.edycu.dev)
+  [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-C4501A?style=for-the-badge)](https://rekindle.edycu.dev/judge)
+  [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-2E5B4F?style=for-the-badge)](https://qloo.devpost.com/)
 
   <br/>
 
@@ -63,7 +63,7 @@ Behavioral activation (BA) is a first-line, low-cost treatment for depression. I
 
 1. **Intake.** The clinician enters 3–6 things the patient loved before the illness. Each is resolved to a Qloo entity or tag, typed so the clinician can tell them apart. The clinician also sets a neighbourhood point, an energy level and constraints (*in recovery*, *quiet*, *wheelchair entrance*, distance, budget).
 2. **A graded week, built by an agent.** An LLM tool loop works through an energy ladder: 10-minute at-home doses (an artist, podcast, book or show), then solo outings, then one social outing placed in the top-affinity taste cell near the patient, taken from a Qloo heatmap.
-   The model picks *where to look* and writes one coaching line per card. **It never names a venue.**
+   The model picks *where to look* and writes one coaching line per card. **It never picks the venue: Qloo does.**
 3. **Every candidate is verified.** Deterministic rules check what Qloo returned: open at the slot, near, within budget, an activity category, alcohol-free in recovery (exact tags plus a token screen), quiet or accessible when required, and not rated low before.
    Refused candidates **stay on the sheet, struck through, with their rule**. Ambiguous ones go to the clinician in a dashed REVIEW box.
 4. **The clinician gate.** Approve, swap (re-runs that one slot live) or remove each card, then **Approve week**. Nothing reaches the patient without approval. A patient sheet prints only the approved activities.
@@ -151,7 +151,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Alcohol screen matches whole tokens, never substrings | a substring screen refuses `espresso_bar` and `independent_publishing` | `tests/verify.test.ts:128` |
 | Drinking-establishment categories are refused for every case | "TeKu Tavern + Café" passed as a café (B5 bench) | `tests/verify.test.ts:174` |
 | Missing opening hours are refused, never assumed open | an unknown hour would put a patient outside a closed door | `tests/verify.test.ts:39`, property P3 |
-| A coaching line keyed to an ID no tool returned is dropped | the model must never name a venue | `tests/agent.test.ts:102` |
+| A coaching line keyed to an ID no tool returned is dropped | the model must never pick or invent a venue | `tests/agent.test.ts:102` |
 | Drinking language in coaching is dropped on every case | the model never sees the recovery flag (COACH-ALC) | `tests/agent.test.ts:265` |
 | Clinical words and contact data are refused before any Qloo request | love-box text is sent to Qloo | `tests/gate.test.ts:404` |
 | Fabricated entity IDs and duplicate loves are refused at intake | the client cannot plant a love Qloo never returned | `tests/gate.test.ts:423` |
