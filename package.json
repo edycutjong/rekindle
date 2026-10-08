@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.64",
+    "@upstash/redis": "1.39.0",
     "@vercel/blob": "^2.8.1",
     "ai": "^7.0.129",
     "next": "15.5.27",

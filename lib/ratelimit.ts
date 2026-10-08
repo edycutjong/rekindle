@@ -8,13 +8,13 @@
  *   bench   carries the bench token (`x-bench-token`): exempt from the per-IP limit and from both other caps, with its
  *           own daily quota
  *
- * Backend. Upstash would be the plan of record, but its Vercel Marketplace install needs the account owner to accept
- * terms in a browser (decision 2026-10-07). So: the per-IP window is in memory per serverless instance, and the daily
- * per-namespace counters live in the private Blob store (`counters/<ns>/<yyyy-mm-dd>.json`, read-modify-write). The
- * Blob counter is approximate under concurrency (two instances can read the same value), which is acceptable for caps
- * of hundreds per day. Without a Blob token (local dev, tests) the daily counter is in memory too.
+ * Backend. The per-IP window is in memory per serverless instance. The daily per-namespace counters follow the store
+ * (lib/store.ts storeFromEnv): an atomic Redis INCR on `counters/<ns>/<yyyy-mm-dd>` (expires after 3 days) when
+ * Upstash is configured; else the private Blob store (`counters/<ns>/<yyyy-mm-dd>.json`, read-modify-write, approximate
+ * under concurrency, and each count spends a Blob advanced op: a2a r06); else in memory (local dev, tests).
  */
 import { timingSafeEqual } from "node:crypto";
+import { envKeyPrefix, redisFromEnv, type RedisLike } from "./store";
 
 export type Namespace = "public" | "judge" | "bench";
 /** what the request costs: `plan` runs the agent (Qloo + LLM); the others are cheap reads or single Qloo calls */
@@ -111,7 +111,7 @@ export class MemoryWindow {
 /* ------------------------------------------------------------------ daily counters */
 
 export interface DailyCounter {
-  readonly kind: "blob" | "memory";
+  readonly kind: "redis" | "blob" | "memory";
   get(ns: Namespace, day: string): Promise<number>;
   /** increments and returns the new value */
   incr(ns: Namespace, day: string): Promise<number>;
@@ -154,6 +154,29 @@ export class BlobDailyCounter implements DailyCounter {
     const n = (await this.get(ns, day)) + 1;
     await put(this.path(ns, day), JSON.stringify({ n, at: new Date().toISOString() }), { access: "private", token: this.token, contentType: "application/json", addRandomSuffix: false, allowOverwrite: true });
     return n;
+  }
+}
+
+/** a2a r06: one atomic INCR per plan across every instance (the Blob counter read, then wrote, and spent an advanced op) */
+export class RedisDailyCounter implements DailyCounter {
+  readonly kind = "redis" as const;
+  constructor(
+    private readonly r: RedisLike,
+    private readonly envPrefix = envKeyPrefix(),
+  ) {}
+  private key(ns: Namespace, day: string) {
+    if (!DAY_RE.test(day)) throw new Error("invalid day");
+    return `${this.envPrefix}counters/${ns}/${day}`;
+  }
+  async get(ns: Namespace, day: string) {
+    const v = await this.r.get<string | number>(this.key(ns, day));
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) ? n : 0;
+  }
+  async incr(ns: Namespace, day: string) {
+    const k = this.key(ns, day);
+    const [n] = await this.r.pipeline().incr(k).expire(k, 3 * 86_400).exec<[number, number]>();
+    return Number(n);
   }
 }
 
@@ -219,11 +242,18 @@ export class RateLimiter {
 
 let shared: RateLimiter | null = null;
 
-/** One limiter per serverless instance; the daily counter is on Blob when its token is set. */
+/** The daily counter for this deployment: Redis, then Blob, then memory (the same precedence as the store). */
+export function counterFromEnv(env: Record<string, string | undefined> = process.env): DailyCounter {
+  const redis = redisFromEnv(env);
+  if (redis) return new RedisDailyCounter(redis, envKeyPrefix(env));
+  const token = env.BLOB_READ_WRITE_TOKEN;
+  return token ? new BlobDailyCounter(token) : new MemoryDailyCounter();
+}
+
+/** One limiter per serverless instance. */
 export function limiterFromEnv(env: Record<string, string | undefined> = process.env): RateLimiter {
   if (shared) return shared;
-  const token = env.BLOB_READ_WRITE_TOKEN;
-  shared = new RateLimiter(token ? new BlobDailyCounter(token) : new MemoryDailyCounter(), env);
+  shared = new RateLimiter(counterFromEnv(env), env);
   return shared;
 }
 

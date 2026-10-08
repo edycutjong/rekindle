@@ -3,12 +3,16 @@
  * every read and write. The schema mirrors the relational plan (cases / loves / plans / cards / refusals / qloo_calls):
  * loves are embedded in their case, cards and refusals in their plan, and the call log is its own document.
  *
- * Backend: a private Vercel Blob store (decision 2026-10-07: the Neon / Upstash marketplace integrations need the
- * account owner to accept terms in a browser; Blob is first-party and was provisioned non-interactively). Callers only
- * see the `Store` interface, so a Postgres implementation can replace it without touching them.
- *
- * The in-memory store exists for tests and for local dev without a token. It is refused on a Vercel deployment.
+ * Backends, chosen by `storeFromEnv` (callers only see the `Store` interface):
+ *   redis   Upstash Redis (KV_REST_API_URL + KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_*): one key per document at the
+ *           same path Blob uses, SET NX / compare-and-set run claims, and a newest-first sorted set of plan ids instead
+ *           of a list(). a2a r06: Vercel Hobby allows 2,000 Blob advanced ops per rolling 30 days and locks the store
+ *           for 30 days past that; a judge's click-through cost ~21 of them.
+ *   blob    a private Vercel Blob store (BLOB_READ_WRITE_TOKEN): the original backend, now the fallback when Redis is
+ *           not configured, and the rollback (`STORE_BACKEND=blob`) when it is.
+ *   memory  tests and local dev without either. Refused on a Vercel deployment.
  */
+import { Redis } from "@upstash/redis";
 import { z } from "zod";
 import type { AgentPlan } from "./agent";
 import type { QlooCallLog } from "./qloo";
@@ -393,7 +397,7 @@ export function callsDoc(planId: string, calls: QlooCallLog[]): QlooCallsDoc {
 /* ------------------------------------------------------------------ store */
 
 export interface Store {
-  readonly kind: "blob" | "memory";
+  readonly kind: "redis" | "blob" | "memory";
   putCase(d: CaseDoc): Promise<void>;
   getCase(id: string): Promise<CaseDoc | null>;
   putPlan(d: PlanDoc): Promise<void>;
@@ -409,7 +413,10 @@ export interface Store {
    * (failed / stale), atomically against a concurrent claim. Returns null when claimed, else the marker that blocks it.
    */
   claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null>;
-  /** newest first */
+  /**
+   * Newest first by `created_at`. Redis and memory leave out weeks a constraint toggle replaced (`superseded_by`) and
+   * the injected-outage demo (`fault`); Blob lists every plan by upload time, so callers still filter both.
+   */
   listPlanIds(limit?: number): Promise<string[]>;
 }
 
@@ -472,14 +479,23 @@ export class MemoryStore implements Store {
     this.docs.set(path, { at: ++this.tick.n, body: JSON.stringify(RunDoc.parse(d)) });
     return null;
   }
+  /** the Redis contract (tests/store-contract.test.ts): newest created first, replaced weeks and the outage demo left out */
   async listPlanIds(limit = 50) {
     return [...this.docs.entries()]
       .filter(([k]) => k.startsWith(this.paths.plans))
-      .sort((a, b) => b[1].at - a[1].at)
+      .map(([k, v]) => ({ id: k.slice(this.paths.plans.length, -5), at: v.at, p: JSON.parse(v.body) as Pick<PlanDoc, "created_at" | "superseded_by" | "fault"> }))
+      .filter((x) => !x.p.superseded_by && !x.p.fault)
+      .sort((a, b) => planScore(b.p.created_at) - planScore(a.p.created_at) || b.at - a.at)
       .slice(0, limit)
-      .map(([k]) => k.slice(this.paths.plans.length, -5));
+      .map((x) => x.id);
   }
 }
+
+/** sorted-set score of a plan: its creation time (a plan written with an unparseable date sorts as oldest) */
+const planScore = (createdAt: string) => {
+  const t = Date.parse(createdAt);
+  return Number.isFinite(t) ? t : 0;
+};
 
 /** A stored document that no longer parses is the server's fault: never let its ZodError reach http.ts as a client 400. */
 export class CorruptDocument extends Error {}
@@ -555,14 +571,141 @@ export class BlobStore implements Store {
   }
 }
 
+/* ------------------------------------------------------------------ redis */
+
+/** The subset of the @upstash/redis client RedisStore and RedisDailyCounter use (tests run them on an in-process fake). */
+export interface RedisBatch {
+  set(key: string, value: string): RedisBatch;
+  zadd(key: string, sm: { score: number; member: string }): RedisBatch;
+  zrem(key: string, member: string): RedisBatch;
+  incr(key: string): RedisBatch;
+  expire(key: string, seconds: number): RedisBatch;
+  exec<T extends unknown[] = unknown[]>(): Promise<T>;
+}
+export interface RedisLike {
+  get<T = string>(key: string): Promise<T | null>;
+  set(key: string, value: string, opts?: { nx: true }): Promise<unknown>;
+  eval(script: string, keys: string[], args: string[]): Promise<unknown>;
+  zrange(key: string, start: number, stop: number, opts: { rev: true }): Promise<unknown[]>;
+  ping(): Promise<string>;
+  /** MULTI/EXEC: the commands run together, in order */
+  multi(): RedisBatch;
+  /** non-transactional batch: one HTTP round trip */
+  pipeline(): RedisBatch;
+}
+
+/** the ifMatch of a Blob put: replace the marker only if it is still the one we read */
+export const CAS_SCRIPT = "if redis.call('GET', KEYS[1]) == ARGV[1] then redis.call('SET', KEYS[1], ARGV[2]) return 1 end return 0";
+
+/** Preview (and `vercel dev`) deployments share the production database, so they write under `preview/`. */
+export const envKeyPrefix = (env: Record<string, string | undefined> = process.env) => (env.VERCEL_ENV && env.VERCEL_ENV !== "production" ? "preview/" : "");
+
+const redisClients = new Map<string, RedisLike>();
+
+/**
+ * The Redis client when it is configured (Vercel Marketplace names first, then Upstash's own), else null.
+ * `STORE_BACKEND=blob` is the rollback lever: it ignores Redis even when the variables exist.
+ */
+export function redisFromEnv(env: Record<string, string | undefined> = process.env): RedisLike | null {
+  if (env.STORE_BACKEND === "blob") return null;
+  const url = env.KV_REST_API_URL || env.UPSTASH_REDIS_REST_URL;
+  const token = env.KV_REST_API_TOKEN || env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  const key = `${url}|${token}`;
+  let r = redisClients.get(key);
+  if (!r) {
+    // values are our own JSON strings, parsed by zod on the way out: no client-side deserialization
+    r = new Redis({ url, token, automaticDeserialization: false, enableTelemetry: false });
+    redisClients.set(key, r);
+  }
+  return r;
+}
+
+/**
+ * Upstash Redis: each document is one string key at the same path the Blob store uses (plus `preview/` off
+ * production), zod-validated on every read and write. Plans are also indexed in a sorted set scored by `created_at`,
+ * which never holds a superseded week or the outage demo, so the receipts never need a list().
+ */
+export class RedisStore implements Store {
+  readonly kind = "redis" as const;
+  private readonly paths: ReturnType<typeof pathsFor>;
+  constructor(
+    private readonly r: RedisLike,
+    readonly prefix: StorePrefix = "",
+    private readonly envPrefix = envKeyPrefix(),
+  ) {
+    this.paths = pathsFor(prefix);
+  }
+  private k = (path: string) => this.envPrefix + path;
+  private idx = () => this.k(`${this.prefix}idx/plans`);
+  private async getJson(path: string): Promise<unknown | null> {
+    const s = await this.r.get<string>(this.k(path));
+    return s === null || s === undefined ? null : parseStored(s);
+  }
+  private async setJson(path: string, v: unknown) {
+    await this.r.set(this.k(path), JSON.stringify(v));
+  }
+  putCase = (d: CaseDoc) => this.setJson(this.paths.case(d.id), CaseDoc.parse(d));
+  getCase = async (id: string) => parseOrNull(CaseDoc, await this.getJson(this.paths.case(id)));
+  /** the document and its index entry in one MULTI: a replaced week leaves the index as it is written */
+  async putPlan(d: PlanDoc) {
+    const doc = PlanDoc.parse(d);
+    const m = this.r.multi().set(this.k(this.paths.plan(doc.id)), JSON.stringify(doc));
+    if (doc.superseded_by || doc.fault) m.zrem(this.idx(), doc.id);
+    else m.zadd(this.idx(), { score: planScore(doc.created_at), member: doc.id });
+    await m.exec();
+  }
+  getPlan = async (id: string) => parseOrNull(PlanDoc, await this.getJson(this.paths.plan(id)));
+  putCalls = (d: QlooCallsDoc) => this.setJson(this.paths.calls(d.plan_id), QlooCallsDoc.parse(d));
+  getCalls = async (id: string) => parseOrNull(QlooCallsDoc, await this.getJson(this.paths.calls(id)));
+  private runPath = (d: RunDocIn) => (d.parent_plan_id ? this.paths.replanRun(d.parent_plan_id) : this.paths.run(d.case_id));
+  putRun = (d: RunDocIn) => this.setJson(this.runPath(d), RunDoc.parse(d));
+  getRun = async (id: string) => parseOrNull(RunDoc, await this.getJson(this.paths.run(id)));
+  getReplanRun = async (id: string) => parseOrNull(RunDoc, await this.getJson(this.paths.replanRun(id)));
+  /** SET NX when no marker exists; a compare-and-set script over a reclaimable one; a lost race returns the winner */
+  async claimRun(d: RunDocIn, reclaimable: (cur: RunDoc) => boolean): Promise<RunDoc | null> {
+    const key = this.k(this.runPath(d));
+    const next = JSON.stringify(RunDoc.parse(d));
+    const raw = await this.r.get<string>(key);
+    if (raw !== null && raw !== undefined) {
+      const cur = parseOrNull(RunDoc, parseStored(raw))!;
+      if (!reclaimable(cur)) return cur;
+      if (Number(await this.r.eval(CAS_SCRIPT, [key], [raw, next])) === 1) return null;
+    } else if ((await this.r.set(key, next, { nx: true })) === "OK") return null;
+    // another request claimed it between our read and our write
+    const now = await this.r.get<string>(key);
+    return now === null || now === undefined ? RunDoc.parse(d) : parseOrNull(RunDoc, parseStored(now))!;
+  }
+  async listPlanIds(limit = 50) {
+    if (limit <= 0) return [];
+    return (await this.r.zrange(this.idx(), 0, limit - 1, { rev: true })).map(String);
+  }
+}
+
+/** a stored string that is not JSON is a corrupt document (a server fault), not the client's "invalid JSON" */
+function parseStored(s: string): unknown {
+  try {
+    return JSON.parse(s);
+  } catch {
+    throw new CorruptDocument("stored document is not JSON");
+  }
+}
+
+/* ------------------------------------------------------------------ selection */
+
 /** one in-memory store per process (dev compiles each route separately; module state alone would split it) */
 const g = globalThis as typeof globalThis & { __rekindleMemory?: MemoryStore };
 
-/** Blob when BLOB_READ_WRITE_TOKEN is set; in-memory only off Vercel (local dev / tests). */
+/**
+ * Redis when configured (KV_REST_API_* or UPSTASH_REDIS_REST_*, unless STORE_BACKEND=blob), else Blob when
+ * BLOB_READ_WRITE_TOKEN is set, else in-memory, which is refused on a Vercel deployment.
+ */
 export function storeFromEnv(env: Record<string, string | undefined> = process.env, prefix: StorePrefix = ""): Store {
+  const redis = redisFromEnv(env);
+  if (redis) return new RedisStore(redis, prefix, envKeyPrefix(env));
   const token = env.BLOB_READ_WRITE_TOKEN;
   if (token) return new BlobStore(token, prefix);
-  if (env.VERCEL) throw new Error("BLOB_READ_WRITE_TOKEN is not set on this deployment; refusing the in-memory store");
+  if (env.VERCEL) throw new Error("no store on this deployment (KV_REST_API_URL + KV_REST_API_TOKEN, or BLOB_READ_WRITE_TOKEN); refusing the in-memory store");
   g.__rekindleMemory ??= new MemoryStore();
   return prefix ? g.__rekindleMemory.withPrefix(prefix) : g.__rekindleMemory;
 }

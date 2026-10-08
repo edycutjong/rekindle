@@ -1,6 +1,7 @@
 /**
- * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping. `?deep=1` adds one Blob `head()`
- * (a billed simple op on Hobby): point an hourly monitor at the deep check, never the frequent one.
+ * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping. `?deep=1` also probes the store:
+ * one Redis PING when Upstash is configured (no Blob call at all), else one Blob `head()` (a billed simple op on Hobby).
+ * `store` names the backend that serves requests (redis / blob / memory; scripts/bench.py and ui_smoke.py read it).
  * Reports status and latency for each and never a key. Results are cached per instance for 60 s so an uptime pinger or
  * a refresh loop cannot turn the endpoint into a key-spending loop.
  */
@@ -70,6 +71,17 @@ export async function probeStore(token: string | undefined, head?: (path: string
   }
 }
 
+/** One Redis PING (a2a r06): with Upstash configured the deep check never touches Blob. */
+export async function probeRedis(ping: () => Promise<unknown>): Promise<Probe> {
+  const t0 = Date.now();
+  try {
+    const r = await ping();
+    return { ok: String(r).toUpperCase() === "PONG", ms: Date.now() - t0, detail: `redis PING → ${String(r).slice(0, 20)}` };
+  } catch (e) {
+    return { ok: false, ms: Date.now() - t0, detail: short(e) };
+  }
+}
+
 let cache: { at: number; deep: boolean; h: Health } | null = null;
 
 export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => LlmHandle[]; store: string; probeStore?: () => Promise<Probe> }, now = Date.now(), ttlMs = 60_000): Promise<Health> {
@@ -83,7 +95,7 @@ export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => Ll
     qlooProbe = { ok: false, ms: 0, detail: short(e) };
   }
   const llm = await probeLlm(deps.llms());
-  const storeProbe = deps.probeStore ? await deps.probeStore() : { ok: true, ms: 0, detail: "not probed (?deep=1 adds one Blob head())" };
+  const storeProbe = deps.probeStore ? await deps.probeStore() : { ok: true, ms: 0, detail: "not probed (?deep=1 adds one store round trip)" };
   const h: Health = { ok: qlooProbe.ok && llm.ok && storeProbe.ok, at: new Date(now).toISOString(), qloo: qlooProbe, llm, store: deps.store, storeProbe, cached: false };
   cache = { at: now, deep, h };
   return h;
