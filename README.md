@@ -14,7 +14,7 @@
   <br/>
 
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![tests](https://img.shields.io/badge/tests-220_passing-2E5B4F?style=flat)
+  ![tests](https://img.shields.io/badge/tests-221_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
@@ -37,7 +37,7 @@
 <!-- bench:killer:end -->
 
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 19 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 20 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, the B-sym noise floor, the alcohol-screen ablation, latency, and re-plan responsiveness. It also says how to read it. Qloo grades both arms, and the manual audit was not blind.
@@ -67,7 +67,7 @@ Behavioral activation (BA) is a first-line, low-cost treatment for depression. I
 3. **Every candidate is verified.** Deterministic rules check what Qloo returned: open at the slot, near, within budget, an activity category, alcohol-free in recovery (exact tags plus a token screen), quiet or accessible when required, and not rated low before.
    Refused candidates **stay on the sheet, struck through, with their rule**. Ambiguous ones go to the clinician in a dashed REVIEW box.
 4. **The clinician gate.** Approve, swap (re-runs that one slot live) or remove each card, then **Approve week**. Nothing reaches the patient without approval. A patient sheet prints only the approved activities.
-5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to a week-2 card only where Qloo's explainability names it as the strongest input by at least 0.02; a narrower lead is labelled a tie. The top-rated activity itself comes back in its slot ("↻ kept") after a live re-check.
+5. **Ratings → re-plan.** Pleasure and mastery are rated 0–10. A rating ≥7 becomes a Qloo signal for week 2, and a rating ≤3 becomes an exclusion. The diff draws an ember thread from a rated activity to a week-2 card only where it is the card's top rated Qloo explainability input and outweighs the case's best original love by at least 0.02 (the bench's margin); other ratings that also outweigh the loves are named on the label, and a narrower lead is labelled a tie. The top-rated activity itself comes back in its slot ("↻ kept") after a live re-check.
 
 Every card carries a **because** line with Qloo's explainability weights for the patient's entity loves (artists, shows, books), for example "because Phoebe Bridgers 0.54 · Fleabag 0.46". Tag loves such as ramen change the ranking, but Qloo doesn't attribute tag signals ([DX-REPORT §7](DX-REPORT.md#7-explainability-covers-entity-signals-only)).
 
@@ -132,10 +132,10 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Metric | Value | Source |
 |---|---|---|
-| Unit + property tests | **220** (Vitest, 19 files), no keys needed | `npm test` |
+| Unit + property tests | **221** (Vitest, 19 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
-| Tests named for the defect they pin | 78 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
-| Coverage (`lib/`, API routes) | 94.4% lines · 80.8% branches | `npm run test:coverage` (CI uploads the report) |
+| Tests named for the defect they pin | 79 (probes P8–P23, bench B5 / D9, QA rounds 1–4, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
+| Coverage (`lib/`, API routes) | 94.5% lines · 80.9% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO in the CI runs for 6672043, cdb9070 and 73be59e (100 on all three pages except performance 97 on / at 6672043) | CI Stage 5: [run 37660324552](https://github.com/edycutjong/rekindle/actions/runs/37660324552) (73be59e); later runs write the scores to the job summary and keep the LHR JSON as a 90-day `lighthouse` artifact. Thresholds in `lighthouserc.json`; accessibility < 0.9 fails |
 | Plan latency, hosted | p50 17.43 s · p95 20.61 s (bench run; it predates later plan-path changes, see the caveat under The number) | `bench/results.json` |
@@ -164,7 +164,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 3. **A plan is slow:** p50 is about 17 s from click (see the latency table in DEMO.md). It meets the 30 s gate we set, but not the 15 s we aimed for. The LLM coaching step dominates.
 4. **Opening hours come from Qloo.** A venue whose hours are wrong upstream will pass R-OPEN. Missing hours are refused, never assumed open.
 5. **The alcohol screen is a deny list.** It is measured (see the ablation), but a venue that serves alcohol and carries none of the tags or keywords would get through.
-6. **The ember thread is Qloo's attribution, not causation.** It is drawn when a rated activity is a week-2 card's top-weighted explainability input by at least 0.02. Qloo splits explainability nearly evenly across signals, so on live re-plans most leads are ties (the live distribution is on /judge, from `scripts/ember-margins.ts`).
+6. **The ember thread is Qloo's attribution, not causation.** It is drawn when a week-2 card's top rated explainability input outweighs the case's best original love by at least 0.02, the margin the bench reports. Qloo splits explainability nearly evenly across signals, so on live re-plans of Maya most leads are still ties; the bench profiles clear it far more often (both counts are on /judge and in JUDGE.md, generated from `bench/ember-live.json` by `scripts/ember-margins.ts`).
 7. **Not built yet:** free-text address geocoding at intake (seeded neighbourhood points only), the heatmap map tile, mastery-driven rung changes (mastery is recorded and shown, but does not change the plan), multi-clinician use.
 
 ### What we got wrong
@@ -194,7 +194,7 @@ npm run dev                    # http://localhost:3000
 
 ## 🧪 Testing & CI
 
-- **220 tests** (Vitest, 19 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
+- **221 tests** (Vitest, 19 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.

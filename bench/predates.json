@@ -104,6 +104,11 @@
    "commit": "d5a72cd",
    "date": "2026-10-08",
    "subject": "a2a r01 found: the deterministic fallback (the path a hung or failed LLM lands on) routes its slots concurrently instead of one Qloo round …"
+  },
+  {
+   "commit": "15f0ce3",
+   "date": "2026-10-08",
+   "subject": "T16 (a2a r04): ember thread when the top rated input outweighs the best original love by >= 0.02 (EMBER_MIN_MARGIN, the bench's margin); …"
   }
  ]
 }

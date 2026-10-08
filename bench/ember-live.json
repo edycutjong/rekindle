@@ -1,15 +1,36 @@
 {
  "generated_by": "scripts/ember-margins.ts",
- "generated_at": "2026-10-07T16:12:57.560Z",
- "definition": "Live product re-plans on this deployment (newest version of each week). For each new week-2 card whose explainability names a rekindled (rated >= 7) entity: margin = that entity's weight - the card's strongest other input. A thread and \"because of\" need margin >= 0.02; a smaller lead is shown as a tie.",
+ "generated_at": "2026-10-08T08:33:33.138Z",
+ "definition": "Live product re-plans on this deployment (newest version of each week). For each new week-2 card whose explainability names a rated (>= 7) entity: margin = the top rated input's weight - the card's best original-love weight (lib/replan.ts emberLead, the bench's margin). A thread and \"because of\" need margin >= 0.02; a smaller lead is a tie; a love that outweighs every rating gets no label. Qloo returns the same week for the same ratings, so `distinct` counts each (rated set, card) once. Qloo's attribution, not causation.",
  "threshold": 0.02,
- "replans": 19,
- "new_cards_naming_a_rating": 100,
- "rekindled_top": 77,
- "threaded": 2,
- "tied": 75,
- "margin_median": 0.0068,
- "margin_min": 0.0006,
- "margin_max": 0.0236,
- "margin_over_original_loves_median": 0.0073
+ "replans": 7,
+ "new_cards_naming_a_rating": 34,
+ "rating_leads_loves": 22,
+ "threaded": 3,
+ "tied": 19,
+ "threaded_with_co_inputs": 2,
+ "margin_median": 0.0072,
+ "margin_min": 0.002,
+ "margin_max": 0.0628,
+ "distinct": {
+  "cards": 16,
+  "rating_sets": 3,
+  "rating_leads_loves": 11,
+  "threaded": 2,
+  "previous_rule_threaded": 2
+ },
+ "previous_rule": {
+  "definition": "margin = the rekindled entity's weight - the card's strongest other input of any kind (another rating included)",
+  "rekindled_top": 22,
+  "threaded": 3,
+  "margin_median": 0.0057
+ },
+ "bench": {
+  "source": "bench/replan.json",
+  "finished_at": "2026-10-07T13:14:44+00:00",
+  "new_cards": 84,
+  "cards_with_margin": 84,
+  "threaded": 50,
+  "margin_median": 0.0434
+ }
 }

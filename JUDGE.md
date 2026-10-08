@@ -24,13 +24,16 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 |---|---|---|
 | Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
 | Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
-| Ember threads on live re-plans | 2 of 77 rekindled-top cards clear the 0.02 lead; 75 are shown as ties (median lead 0.0068) | `bench/ember-live.json` |
-| Unit + property tests | 220 Vitest tests, 19 files, no keys needed | `npm test` |
+| Unit + property tests | 221 Vitest tests, 19 files, no keys needed | `npm test` |
 | Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
 
+<!-- bench:ember:start -->
+**Ember threads on live re-plans** (`bench/ember-live.json`, `scripts/ember-margins.ts`, 2026-10-08 08:33 UTC): 7 re-plans with 3 distinct rating sets (Qloo returns the same week for the same ratings). Of 16 distinct new week-2 cards that name a rating, a rating outweighed the case's best original love on 11; 2 cleared the 0.02 lead that draws a thread and 9 are shown as ties. The rule before T16 (a lead over the next input of any kind) threaded 2 of the same cards. On the bench's 84 new week-2 cards (`bench/replan.json`, the same margin), 50 clear it. The live sample is small; Qloo's attribution, not causation.
+<!-- bench:ember:end -->
+
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 19 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 20 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 [DEMO.md](DEMO.md#bench-reproduce) explains how to read the table (Qloo grades both arms; the manual audit was not blind).
@@ -50,7 +53,7 @@ E2E_BASE_URL=https://rekindle.edycu.dev E2E_LIVE=1 npx playwright test e2e/live-
 
 1. **Not a clinical tool.** Clinician support only: no diagnosis, no efficacy claims, no patient logins.
 2. **A plan is slow:** p50 about 17 s from click, inside our 30 s gate but over the 15 s target.
-3. **The ember thread is attribution, not causation**, and on live re-plans most leads are ties (above).
+3. **The ember thread is Qloo's attribution, not causation.** It needs the top rated input to outweigh the case's best original love by 0.02; on live re-plans of Maya most leads are still ties (above).
 4. **The alcohol screen is a deny list.** It is measured by the ablation, but an alcohol-serving venue with none of the tags or keywords would get through.
 
 The full list is in the [README](README.md) (Limitations).
