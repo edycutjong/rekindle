@@ -8,9 +8,12 @@ REVIEW depends on what Qloo returns that day; the /judge REVIEW button (Maya wit
 least one REVIEW box, or the run fails. Nothing is mocked.
 Usage: python3 scripts/edge_states.py <base-url> <screenshot-dir> [tag]   -> prints JSON; exits 1 on a failed state."""
 import json, re, sys, time
+from store_guard import require_redis
 
 ALC = re.compile(r"\b(drinks?|beers?|wines?|cocktails?|bars?)\b", re.I)
-from playwright.sync_api import sync_playwright
+# a2a r06 F5: every edge state starts a live plan; never on a Blob-backed deployment (scripts/store_guard.py)
+require_redis(sys.argv[1])
+from playwright.sync_api import sync_playwright  # noqa: E402
 
 base, out = sys.argv[1].rstrip("/"), sys.argv[2]
 tag = sys.argv[3] if len(sys.argv) > 3 else "local"

@@ -5,7 +5,11 @@ and confirmed by clicking a chip -> neighbourhood, energy, constraints -> save -
 Also: the form has no horizontal scroll at 375 px, and an unknown route shows the styled 404 with links back.
 Usage: python3 scripts/intake_smoke.py <base-url> <screenshot-dir> [tag]   -> prints JSON; exits 1 on a failed gate."""
 import json, sys, time
-from playwright.sync_api import sync_playwright
+from store_guard import require_redis
+
+# a2a r06 F5: the intake smoke writes a case and plans it live; never on a Blob-backed deployment (store_guard.py)
+require_redis(sys.argv[1])
+from playwright.sync_api import sync_playwright  # noqa: E402
 
 base, out = sys.argv[1].rstrip("/"), sys.argv[2]
 tag = sys.argv[3] if len(sys.argv) > 3 else "local"

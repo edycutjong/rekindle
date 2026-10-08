@@ -23,6 +23,7 @@ Usage: BENCH_TOKEN=... QWEN_API_KEY=... QWEN_BASE_URL=... QWEN_MODEL=qwen3.8-fla
 """
 import argparse, json, os, re, statistics, sys, threading, time, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from store_guard import require_redis
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -323,6 +324,8 @@ def main():
     token = os.environ.get("BENCH_TOKEN")
     if not token:
         sys.exit("BENCH_TOKEN is not set")
+    # a2a r06 F5: 350+ plans; never on a Blob-backed deployment (scripts/store_guard.py)
+    require_redis(a.base)
     arms = a.arms.split(",")
     profiles = json.load(open(os.path.join(ROOT, "fixtures", "profiles.json")))["profiles"]
     if a.only:

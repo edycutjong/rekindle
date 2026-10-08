@@ -5,10 +5,12 @@
  * Writes bench/ember-live.json, which /judge shows beside the bench's median.
  *
  *   tsx scripts/ember-margins.ts [--out bench/ember-live.json]
+ * On Blob it refuses unless ALLOW_BLOB_SCRIPT=1 (a2a r06: listPlanIds is a list(), an advanced op; script-guards.ts).
  */
 import { writeFile } from "node:fs/promises";
 import { EMBER_MIN_MARGIN, explainMargin } from "../lib/replan";
 import { storeFromEnv, type PlanDoc } from "../lib/store";
+import { assertListAllowed } from "./script-guards";
 
 const median = (xs: number[]) => {
   if (!xs.length) return null;
@@ -22,6 +24,7 @@ async function main() {
   const outIdx = process.argv.indexOf("--out");
   const out = outIdx > 0 ? process.argv[outIdx + 1]! : "bench/ember-live.json";
   const store = storeFromEnv();
+  assertListAllowed(store);
   const ids = await store.listPlanIds(1000);
   const plans = (await Promise.all(ids.map((id) => store.getPlan(id).catch(() => null)))).filter((p): p is PlanDoc => !!p);
   const weeks = plans.filter((p) => p.diff && !p.superseded_by && (p.origin === "replan" || p.parent_plan_id));

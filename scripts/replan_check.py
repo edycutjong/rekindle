@@ -17,6 +17,7 @@ Usage: BENCH_TOKEN=... python3 scripts/replan_check.py --base https://rekindle.e
 """
 import argparse, json, os, re, statistics, sys, time, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from store_guard import require_redis
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -116,6 +117,8 @@ def main():
     a = ap.parse_args()
     token = os.environ.get("BENCH_TOKEN") or sys.exit("BENCH_TOKEN is not set")
     base = a.base.rstrip("/")
+    # a2a r06 F5: re-plans write plans; never on a Blob-backed deployment (scripts/store_guard.py)
+    require_redis(base)
     res = json.load(open(a.results))
     profiles = {p["slug"]: p for p in json.load(open(os.path.join(ROOT, "fixtures", "profiles.json")))["profiles"]}
     runs = [p for p in res["plans"] if p["arm"] == "B"]

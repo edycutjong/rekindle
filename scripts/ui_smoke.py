@@ -7,7 +7,11 @@ home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows
 Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `pip install playwright`).
 Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
 import re, sys, time, json
-from playwright.sync_api import sync_playwright
+from store_guard import require_redis
+
+# a2a r06 F5: the smoke writes ~6 plans; never on a Blob-backed deployment (checked before playwright even loads)
+require_redis(sys.argv[1])
+from playwright.sync_api import sync_playwright  # noqa: E402
 
 ALC = re.compile(r"\b(drinks?|beers?|wines?|cocktails?|bars?)\b", re.I)
 base = sys.argv[1]; out = sys.argv[2]; tag = sys.argv[3] if len(sys.argv) > 3 else "local"
