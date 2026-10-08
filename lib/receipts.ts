@@ -37,11 +37,29 @@ export function summarise(plans: PlanReceipt[]): Receipts["totals"] {
 }
 
 let cache: { at: number; key: string; r: Receipts } | null = null;
+/** tests: the cache is module state */
+export const resetReceiptsCache = () => {
+  cache = null;
+};
+
+/**
+ * One strike per (day, venue, rule). The social fallback ladder and the narrow → wide retry can refuse the same venue
+ * more than once in a run; the sheet shows it once (lib/view.ts strikesByDay), so the receipts count it once too.
+ */
+export function distinctRefusals<R extends Pick<PlanDoc["refusals"][number], "rule" | "qloo_entity_id" | "day_name">>(rs: readonly R[]): R[] {
+  const seen = new Set<string>();
+  return rs.filter((r) => {
+    const k = `${r.day_name}|${r.qloo_entity_id}|${r.rule}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
 export async function latestReceipts(store: Store, o: { limit?: number; planId?: string | null } = {}, now = Date.now()): Promise<Receipts> {
   const limit = o.limit ?? 5;
   const key = `${o.planId ?? ""}|${limit}`;
-  if (cache && cache.key === key && now - cache.at < 20_000) return cache.r;
+  if (cache && cache.key === key && now >= cache.at && now - cache.at < 20_000) return cache.r;
   // over-read: weeks a constraint toggle replaced are skipped in the list (their newer version carries their calls too)
   const ids = o.planId ? [o.planId] : await store.listPlanIds(limit * 4);
   const plans: PlanReceipt[] = [];
@@ -51,9 +69,9 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     // the injected-outage demo sends no request; it is not a receipt of Qloo's behaviour
     if (!plan || plan.fault) continue;
     if (!o.planId && plan.superseded_by) continue;
-    const refusals = realRefusals(plan.refusals, plan.cards);
+    const refusals = distinctRefusals(realRefusals(plan.refusals, plan.cards));
     plans.push({
-      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: refusals.length, refusals_by_rule: countRules(refusals), review: plan.review.length },
+      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: new Set(refusals.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size, refusals_by_rule: countRules(refusals), review: plan.review.length },
       calls: calls?.calls ?? [],
     });
   }

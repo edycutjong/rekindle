@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { makeLlm } from "../lib/llm";
 import { recheckConstraints } from "../lib/plan";
 import type { QlooCallLog, QlooClient } from "../lib/qloo";
-import { latestReceipts, percentile, summarise } from "../lib/receipts";
+import { latestReceipts, percentile, resetReceiptsCache, summarise } from "../lib/receipts";
 import { caseFromSeed, latestVersion, planRunState, runPlanForCase, toggleConstraints } from "../lib/service";
 import { actOnCard, approveWeek } from "../lib/gate";
 import { errorResponse } from "../lib/http";
-import { printSheet } from "../lib/view";
+import { printSheet, realRefusals } from "../lib/view";
 import { cardFromDoc, MemoryStore, PlanDoc } from "../lib/store";
 import { replayClient } from "./replay";
 import { POST as toggleRoute } from "../app/api/plans/[id]/constraints/route";
@@ -179,6 +179,18 @@ describe("receipts (/integrations/qloo)", () => {
     expect(r.totals.params).toContain("filter.hours");
     expect(r.totals.params).not.toContain("take");
     expect(JSON.stringify(r)).not.toMatch(/api[-_]?key/i);
+  });
+
+  it("QA round 4: receipts count each struck venue once per day and rule, like the sheet (the social ladder re-refuses)", async () => {
+    resetReceiptsCache();
+    const { store, plan } = await mayaWeek();
+    // as in spike/plan-http-live.json: the social ladder refused CookUnity twice on Sunday (R-KIND); add a second rule too
+    const strike = (rule: string) => ({ id: crypto.randomUUID(), plan_id: plan.id, qloo_entity_id: "cook-unity", name: "CookUnity", rule, detail: "not an activity: personal_care", verdict: "REFUSE" as const, day_name: "sunday" as const, hour: 14 });
+    await store.putPlan(PlanDoc.parse({ ...plan, refusals: [...plan.refusals, strike("R-KIND"), strike("R-KIND"), strike("R-OPEN")] }));
+    const r = await latestReceipts(store, { planId: plan.id });
+    const base = realRefusals(plan.refusals, plan.cards);
+    expect(r.plans[0]!.plan.refusals).toBe(new Set(base.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size + 1); // one struck row on the sheet
+    expect(r.plans[0]!.plan.refusals_by_rule["R-KIND"]).toBe(base.filter((x) => x.rule === "R-KIND").length + 1);
   });
 
   it("percentile and summary edge cases", () => {
