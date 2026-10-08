@@ -288,7 +288,7 @@ export async function findAtHome(ctx: ToolContext, slot: SlotSpec, type: HomeTyp
   } catch (e) {
     return { card: null, refusals: [], review: [], empty: qlooDown(e), returned: 0 };
   }
-  const list = res.results.entities ?? [];
+  const list = res.results?.entities ?? [];
   list.forEach((e) => ctx.seen.add(e.entity_id));
   for (const e of list) {
     if (ctx.used.has(e.entity_id)) continue;
@@ -332,7 +332,7 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
   } catch (e) {
     return { card: null, refusals: [], review: [], empty: qlooDown(e), returned: 0 };
   }
-  const list = res.results.entities ?? [];
+  const list = res.results?.entities ?? [];
   list.forEach((e) => ctx.seen.add(e.entity_id));
   ctx.onPool?.({ day: slot.day, hour: slot.hour, rung: slot.rung, entities: list });
   const refusals: Refusal[] = [];
@@ -397,7 +397,7 @@ export async function diagnoseEmpty(ctx: ToolContext, slot: SlotSpec): Promise<R
   } catch {
     return null;
   }
-  const list = (res.results.entities ?? []).filter((e) => !ctx.used.has(e.entity_id));
+  const list = (res.results?.entities ?? []).filter((e) => !ctx.used.has(e.entity_id));
   list.forEach((e) => ctx.seen.add(e.entity_id));
   const hist = histSets(ctx.history);
   const passes = (cc: CaseRow) => list.filter((e) => verifyCard(e, { kind: "outing", constraints: cc, ...hist, seenIds: ctx.seen, alcoholScreen: ctx.alcoholScreen, slot: { day: slot.day, hour: slot.hour } }).verdict === "PASS").length;
@@ -423,7 +423,8 @@ export async function placeSocial(ctx: ToolContext, slot: SlotSpec): Promise<Too
   } catch (e) {
     return { card: null, refusals: [], review: [], empty: qlooDown(e), returned: 0 };
   }
-  const cells = (hm.results.heatmap ?? [])
+  const cells = (hm.results?.heatmap ?? [])
+    .filter((c) => !!c?.location && typeof c.query?.affinity === "number")
     .map((c) => ({ geohash: c.location.geohash, affinity: c.query.affinity, lat: c.location.latitude, lon: c.location.longitude }))
     .filter((c) => haversine(ctx.case.lat, ctx.case.lon, c.lat, c.lon) <= ctx.case.maxMeters)
     .sort((a, b) => b.affinity - a.affinity);
@@ -457,7 +458,7 @@ export async function placeSocial(ctx: ToolContext, slot: SlotSpec): Promise<Too
 }
 
 function qlooDown(e: unknown): string {
-  if (e instanceof QlooError) return `Qloo unavailable (${e.status || "network"}) — slot left empty`;
+  if (e instanceof QlooError) return `Qloo unavailable (${/run deadline/.test(e.message) ? "time limit" : e.status || "network"}) — slot left empty`;
   return "Qloo unavailable — slot left empty";
 }
 
@@ -585,7 +586,7 @@ export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: Case
     review.push(...r.review);
   }
   // outings still empty after the change: re-diagnose under the new case row (the binding filter may have moved)
-  await Promise.all(
+  await Promise.allSettled(
     slots.map(async (s) => {
       if (s.card || s.slot.rung === "home" || (s.empty ?? "").startsWith("Qloo unavailable")) return;
       const relax = await diagnoseEmpty(ctx, s.slot);

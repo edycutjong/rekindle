@@ -184,6 +184,12 @@ describe("edge states (D10)", () => {
     expect(coverageRefusal({ cards: [outing], empty_slots: [{ day_name: "sunday", hour: 14, rung: "social", reason: "Qloo unavailable (503) — slot left empty" }] }, caseRow)).toBeNull();
     expect(coverageRefusal({ cards: [outing], empty_slots: [] }, caseRow)).toBeNull();
   });
+  it("QA round 4: a slot whose tool failed says so and is not a coverage refusal (no 'widen the radius' for a code error)", () => {
+    const failed = { day_name: "thursday" as const, hour: 18, rung: "solo" as const, reason: "tool failed (TypeError) — slot left empty" };
+    expect(coverageRefusal({ cards: [outing], empty_slots: [failed] }, caseRow)).toBeNull();
+    expect(coverageRefusal({ cards: [outing], empty_slots: [{ ...failed, reason: "not routed: its tool call did not finish" }] }, caseRow)).toBeNull();
+    expect(isOutage(failed.reason)).toBe(false); // the Qloo-outage banner stays for Qloo outages only
+  });
   it("coverage names the binding filter from the live probe and offers that relaxation beside widening (QA round 2: Cal)", () => {
     const e = (day: "saturday" | "sunday" | "thursday", relax: { quiet?: number; price?: number }) => ({ day_name: day, hour: 14, rung: "solo" as const, reason: "Qloo returned no places for these filters", relax });
     const plan = { cards: [outing], empty_slots: [e("thursday", { quiet: 4, price: 0 }), e("saturday", { quiet: 2, price: 1 }), e("sunday", { quiet: 0, price: 0 })] };

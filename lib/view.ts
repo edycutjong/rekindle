@@ -334,6 +334,8 @@ export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pic
 /* ------------------------------------------------------------------ edge states (D10) */
 
 export const isOutage = (reason: string | null | undefined) => !!reason && reason.startsWith("Qloo unavailable");
+/** a slot whose tool threw or never finished (lib/agent.ts runSlot): it says so, and it is not a coverage refusal */
+export const isToolFailure = (reason: string | null | undefined) => !!reason && /^(tool failed|not routed)/.test(reason);
 
 /** The radius the coverage refusal offers next (the case-strip distance steps), or null at the widest. */
 export function widerRadius(current: number, steps: readonly number[] = DISTANCE_OPTIONS): number | null {
@@ -360,7 +362,7 @@ export interface CoverageRefusal {
  * radius passed the verifier — never filled with an unverified suggestion. Outage-empty slots are not coverage.
  */
 export function coverageRefusal(plan: Pick<PlanDoc, "cards" | "empty_slots">, c: Pick<CaseDoc, "max_meters" | "need_quiet" | "need_wheelchair" | "in_recovery" | "price_max">): CoverageRefusal | null {
-  const empties = plan.empty_slots.filter((e) => e.rung !== "home" && !isOutage(e.reason));
+  const empties = plan.empty_slots.filter((e) => e.rung !== "home" && !isOutage(e.reason) && !isToolFailure(e.reason));
   if (empties.length === 0) return null;
   const outings = plan.cards.filter((x) => x.rung !== "home").length + plan.empty_slots.filter((e) => e.rung !== "home").length;
   const verified = plan.cards.filter((x) => x.rung !== "home").length;

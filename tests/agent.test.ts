@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assembleCoaching, coachingAlcohol, doseConflict, namedMinutes, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
 import { llmChainFromEnv, makeLlm, type LlmHandle } from "../lib/llm";
-import type { QlooParams } from "../lib/qloo";
+import type { InsightsResponse, QlooClient, QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14 } from "../lib/tags";
 import type { Card } from "../lib/plan";
 import { MAYA, replayClient } from "./replay";
@@ -209,6 +209,36 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.slots.every((s) => s.routedBy === "fallback")).toBe(true);
     expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "template")).toBe(true);
   });
+
+  it("QA round 4: a tool that throws outside its Qloo try leaves its day empty with the reason; the week keeps all 7 days", async () => {
+    // the bench pool hook runs inside findOutings after the Qloo try: a throw there reaches the AI SDK, which turns it into
+    // a tool-error part (it used to leave the day `pending` and drop it from the week; the deterministic route threw)
+    const boom = { onPool: () => { throw new Error("pool hook failed"); } };
+    const route = () => scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])]);
+    for (const llms of [[route()], []]) {
+      const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms, toolOptions: boom });
+      expect(plan.slots.map((s) => s.slot.day)).toEqual(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+      expect(plan.slots.filter((s) => s.slot.rung !== "home").every((s) => s.card === null && /tool failed/.test(s.empty ?? ""))).toBe(true);
+    }
+  });
+
+  it("QA round 4: a Qloo 200 without `results` is an empty answer, not a crash (the plan path guards like lib/resolve.ts)", async () => {
+    const base = replayClient();
+    const bare = { insights: async (p: QlooParams) => (p["filter.type"] === "urn:entity:place" || p["filter.type"] === "urn:heatmap" ? ({} as InsightsResponse) : base.insights(p)) } as unknown as QlooClient;
+    const plan = await runAgent({ qloo: bare, case: MAYA, llms: [scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])])] });
+    expect(plan.slots).toHaveLength(7);
+    expect(plan.slots.filter((s) => s.slot.rung !== "home").every((s) => s.card === null && !!s.empty)).toBe(true);
+  });
+
+  it("QA round 4: LLM fallback on a TIMEOUT: a primary that hangs leaves the secondary time to route the week (README: 'on a provider error or timeout')", async () => {
+    const hung = makeLlm("qwen", { QWEN_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
+      new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
+    const groq = scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])], [], "groq");
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [hung, groq], llmBudgetMs: 6000, coachBudgetMs: 1600 });
+    expect(plan.llm?.provider).toBe("groq");
+    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+    expect(plan.llmErrors.map((e) => e.provider)).toEqual(["qwen"]);
+  }, 15_000);
 
   it("Qloo outage: slots are left empty with the reason; the agent never fills them itself", async () => {
     const plan = await runAgent({ qloo: replayClient([], true), case: MAYA, llms: [scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])])] });

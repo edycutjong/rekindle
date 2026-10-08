@@ -96,6 +96,12 @@ const fmtHour = (h: number) => `${String(h).padStart(2, "0")}:00`;
 /** coaching window after the routing budget, and the cap on one provider's coaching attempt inside it */
 export const COACH_BUDGET_MS = 6_000;
 export const COACH_ATTEMPT_MS = 4_000;
+/**
+ * With another provider still to try, one routing attempt may spend at most this share of the routing budget left, so a
+ * primary that hangs cannot starve the fallback (20 s budget → ≤ 12 s primary, ≥ 8 s for the fallback to route).
+ * QA round 4: a hung primary was aborted only at the shared deadline and the fallback never got a routing turn.
+ */
+export const ROUTE_ATTEMPT_SHARE = 0.6;
 
 /** Deterministic dose line, used when the LLM gave none (or its line was dropped). */
 export function templateCoaching(card: Card, homeType?: HomeType): string {
@@ -301,10 +307,17 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const runSlot = async (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, routedBy: RoutedBy) => {
     const t = Date.now();
     let r: ToolResult & { cell?: string };
-    if (toolName === "findAtHome") r = await findAtHome(ctx, slot, slot.homeType!, (params.take as number | undefined) ?? 5);
-    else if (toolName === "findOutings") r = await findOutings(ctx, slot, { narrowMeters: params.narrowMeters as number | undefined });
-    else r = await placeSocial(ctx, slot);
-    pending.delete(slot.day);
+    try {
+      if (toolName === "findAtHome") r = await findAtHome(ctx, slot, slot.homeType!, (params.take as number | undefined) ?? 5);
+      else if (toolName === "findOutings") r = await findOutings(ctx, slot, { narrowMeters: params.narrowMeters as number | undefined });
+      else r = await placeSocial(ctx, slot);
+    } catch (e) {
+      // QA round 4: the AI SDK turns a throwing execute() into a tool-error part and carries on, so a throw here used to
+      // leave the day `pending`, never `filled`, and dropped from the week (the deterministic route threw the whole run)
+      r = { card: null, refusals: [], review: [], returned: 0, empty: `tool failed (${e instanceof Error ? e.name : "error"}) — slot left empty` };
+    } finally {
+      pending.delete(slot.day);
+    }
     return record(slot, toolName, params, r, routedBy, Date.now() - t);
   };
 
@@ -414,6 +427,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     if (!open.length) break;
     const remaining = deadline - Date.now();
     if (remaining < 2000) break;
+    const attemptMs = i < opts.llms.length - 1 ? Math.max(2000, Math.floor(remaining * ROUTE_ATTEMPT_SHARE)) : remaining;
     try {
       const before = { claimed: claimed.size };
       await generateText({
@@ -425,7 +439,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, submittedStop],
         maxRetries: 1,
         temperature: 0.2,
-        abortSignal: AbortSignal.timeout(remaining),
+        abortSignal: AbortSignal.timeout(attemptMs),
         onLanguageModelCallEnd: onCallEnd(llm),
       });
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
@@ -467,16 +481,20 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
 
   // an outing left empty under optional filters: one live probe says which single relaxation would fill it, so the
   // coverage notice can name the binding filter and offer that relaxation (QA round 2: "widen" could not help Cal)
-  await Promise.all(
+  // advisory probes: one that fails must not discard a finished week
+  await Promise.allSettled(
     skeleton.map(async (s) => {
       const f = filled.get(s.day);
-      if (!f || f.card || s.rung === "home" || (f.empty ?? "").startsWith("Qloo unavailable")) return;
+      if (!f || f.card || s.rung === "home" || /^(Qloo unavailable|tool failed)/.test(f.empty ?? "")) return;
       const relax = await diagnoseEmpty(ctx, s);
       if (relax) f.relax = relax;
     }),
   );
 
-  const slots = skeleton.map((s) => filled.get(s.day)!).filter(Boolean);
+  // every ladder day stays on the week, with a reason when it has no card (never dropped silently)
+  const slots: AgentSlot[] = skeleton.map(
+    (s) => filled.get(s.day) ?? { slot: s, card: null, empty: "not routed: its tool call did not finish", routedBy: "fallback", tool: s.rung === "home" ? "findAtHome" : s.rung === "solo" ? "findOutings" : "placeSocial", params: { day: s.day } },
+  );
   for (const s of slots) if (s.card) otherNames.add(s.card.name);
   const dropped = assembleCoaching(slots, submitted, otherNames);
   if (dropped.length) emit({ type: "truth_boundary", dropped });
