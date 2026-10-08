@@ -2,7 +2,11 @@
 """Keep the test and coverage numbers in README.md, JUDGE.md and /judge equal to what the suite measures — never by hand.
 
 Measured (no keys, no network):
-  tests, files      `vitest list --json` (collects every test without running it; < 1 s)
+  tests, files      `vitest list --no-staticParse --json`: imports each test file and collects every test without running
+                    it (~1 s). Not the default static parse: since Vitest 5 `vitest list` reads the source without running
+                    it, so a test declared in a loop (tests/store-contract.test.ts runs 4 tests per store backend) is
+                    listed once, under its literal `${name}` template, and 222 were counted while `npm test` ran 226
+                    (QA round 6). A collected name that still holds `${` fails the measurement.
   property cases    properties in tests/verify.property.test.ts × its RUNS constant
   defect-named      tests whose name cites the defect they pin: a probe (P8+), a bench finding (B5, D9),
                     a QA round, or a COACH-* rule (DEFECT below)
@@ -33,8 +37,11 @@ TOLERANCE = 0.5
 def measure() -> dict:
     with tempfile.TemporaryDirectory() as d:
         out = pathlib.Path(d) / "list.json"
-        subprocess.run(["npx", "vitest", "list", f"--json={out}"], cwd=ROOT, check=True, capture_output=True)
+        subprocess.run(["npx", "vitest", "list", "--no-staticParse", f"--json={out}"], cwd=ROOT, check=True, capture_output=True)
         tests = json.loads(out.read_text())
+    templated = [t["name"] for t in tests if "${" in t["name"]]
+    if templated:
+        raise SystemExit(f"rigor: {len(templated)} test name(s) still hold a template (`${{`), so the list was parsed, not collected: {templated[0][:90]}")
     src = PROPERTY_FILE.read_text()
     runs = int(re.search(r"export const RUNS = ([\d_]+);", src).group(1).replace("_", ""))
     properties = len(re.findall(r"numRuns: RUNS\b", src))
