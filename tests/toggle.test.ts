@@ -199,4 +199,22 @@ describe("receipts (/integrations/qloo)", () => {
     expect(percentile([1, 2, 3, 4, 100], 95)).toBe(100);
     expect(summarise([])).toMatchObject({ calls: 0, non200: 0, p50: null });
   });
+
+  it("QA round 4 (a2a r02): a ?plan= receipts view no longer evicts the shared 'latest' entry (whose miss costs a Blob list(), an advanced op)", async () => {
+    resetReceiptsCache();
+    const store = new MemoryStore();
+    let lists = 0;
+    const counting = new Proxy(store, {
+      get(t, k, r) {
+        const v = Reflect.get(t, k, r);
+        if (k === "listPlanIds") return async (...a: unknown[]) => (lists++, (v as (...x: unknown[]) => unknown).apply(t, a));
+        return typeof v === "function" ? v.bind(t) : v;
+      },
+    });
+    await latestReceipts(counting, { limit: 5 }, 10_000_000);
+    await latestReceipts(counting, { limit: 5, planId: crypto.randomUUID() }, 10_000_001);
+    await latestReceipts(counting, { limit: 5 }, 10_000_002);
+    expect(lists).toBe(1);
+    resetReceiptsCache();
+  });
 });

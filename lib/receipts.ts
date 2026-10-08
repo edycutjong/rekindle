@@ -36,10 +36,16 @@ export function summarise(plans: PlanReceipt[]): Receipts["totals"] {
   return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95), refusals_by_rule, review };
 }
 
-let cache: { at: number; key: string; r: Receipts } | null = null;
+/**
+ * a2a r02: one entry per key. A single shared slot let every `?plan=` view evict the "latest" entry that /judge and
+ * /integrations/qloo share, so the next /judge view paid a Blob list() — an ADVANCED op, of 2,000 a month on Hobby —
+ * plus up to 20 reads. Bounded so distinct `?plan=` ids cannot grow it without limit.
+ */
+const cache = new Map<string, { at: number; r: Receipts }>();
+const CACHE_MAX = 32;
 /** tests: the cache is module state */
 export const resetReceiptsCache = () => {
-  cache = null;
+  cache.clear();
 };
 
 /**
@@ -59,7 +65,8 @@ export function distinctRefusals<R extends Pick<PlanDoc["refusals"][number], "ru
 export async function latestReceipts(store: Store, o: { limit?: number; planId?: string | null } = {}, now = Date.now()): Promise<Receipts> {
   const limit = o.limit ?? 5;
   const key = `${o.planId ?? ""}|${limit}`;
-  if (cache && cache.key === key && now >= cache.at && now - cache.at < 20_000) return cache.r;
+  const hit = cache.get(key);
+  if (hit && now >= hit.at && now - hit.at < 20_000) return hit.r;
   // over-read: weeks a constraint toggle replaced are skipped in the list (their newer version carries their calls too)
   const ids = o.planId ? [o.planId] : await store.listPlanIds(limit * 4);
   const plans: PlanReceipt[] = [];
@@ -76,7 +83,12 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     });
   }
   const r = { plans, totals: summarise(plans) };
-  cache = { at: now, key, r };
+  cache.delete(key);
+  cache.set(key, { at: now, r });
+  for (const k of cache.keys()) {
+    if (cache.size <= CACHE_MAX) break;
+    cache.delete(k); // oldest first (Map keeps insertion order)
+  }
   return r;
 }
 
