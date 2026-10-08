@@ -6,6 +6,10 @@
   --muted: #6f675b;
   --before: #9a968e; /* state: refused / unverified (graphite strike) */
   --after: #c4501a; /* state: rekindled (fires only on re-plan) */
+  /* the ember pressed darker, for small ember TEXT only (thread leads, "← because of …", "↻ kept from last week"):
+     #c4501a is 4.07:1 on --bg and 4.39:1 on --paper, under AA for 13 px; this is 5.30:1 / 5.72:1. Strokes and
+     underlines stay --after (QA round 6). */
+  --after-ink: #a8421a;
   --stamp: #2e5b4f; /* clinician-approved */
   --rule: #dcd2bf;
   --font-display: var(--font-young-serif), "Iowan Old Style", Georgia, serif;
@@ -33,6 +37,8 @@ h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 400;
+  /* Young Serif defaults to old-style figures: "week 1" read as "week ı" (QA round 6); the assets set lining too */
+  font-variant-numeric: lining-nums;
 }
 
 ::selection {

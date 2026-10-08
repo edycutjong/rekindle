@@ -777,16 +777,19 @@
   pointer-events: none;
   overflow: visible;
 }
+/* 2.5, not 1.5: the thread is the one ember moment, and at 1.5 it fell under a pixel in every scaled-down view of the
+   sheet (gallery carousel, social cards; QA round 6) */
 .threads path {
   fill: none;
   stroke: var(--after);
-  stroke-width: 1.5;
+  stroke-width: 2.5;
+  stroke-linecap: round;
 }
 /* the lead sits in the gap above the day column (components/ReplanDiff.tsx), with a halo in the sheet's colour so a
    neighbouring thread passing behind it never reads as a strike through the number */
 .threads text {
   font: 13px var(--font-data);
-  fill: var(--after);
+  fill: var(--after-ink);
   paint-order: stroke;
   stroke: var(--bg);
   stroke-width: 5px;
@@ -800,7 +803,7 @@
 }
 .emberLabel {
   font: 13px/1.4 var(--font-data);
-  color: var(--after);
+  color: var(--after-ink);
   margin-top: 6px;
 }
 /* a rekindled input that only ties: muted ink, never the ember colour (QA round 3) */
