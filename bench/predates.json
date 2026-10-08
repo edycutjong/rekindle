@@ -89,6 +89,21 @@
    "commit": "dc5de31",
    "date": "2026-10-07",
    "subject": "Coaching is a race, not a relay: the providers that did not fail routing each get one forced submitPlan call (own tool, so a loser can …"
+  },
+  {
+   "commit": "e0c048f",
+   "date": "2026-10-08",
+   "subject": "a2a r01 T1: a throwing tool leaves its day empty with a reason instead of dropping it from the week; guard Qloo 200s without results"
+  },
+  {
+   "commit": "d1c3367",
+   "date": "2026-10-08",
+   "subject": "a2a r01 T3: run-scoped Qloo deadline (40 s) so a slow Qloo cannot outlive maxDuration before the week is stored; a call refused before any …"
+  },
+  {
+   "commit": "d5a72cd",
+   "date": "2026-10-08",
+   "subject": "a2a r01 found: the deterministic fallback (the path a hung or failed LLM lands on) routes its slots concurrently instead of one Qloo round …"
   }
  ]
 }
