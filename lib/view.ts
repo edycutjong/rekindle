@@ -117,11 +117,23 @@ export function reviewsByDay(plan: Pick<PlanDoc, "review" | "cards">): Record<Da
   return out;
 }
 
-/** Long rule details (R-ALC can list a dozen tags) are cut to the first two items; the full text goes in a title. */
+/**
+ * A tag as a clinician reads it: "service_type:qloo:bar_service" → "bar_service" (the leaf is the tag's own name; the
+ * namespace path only splits the column mid-token). Anything that is not a tag path (a name token, "closes 18:00 · slot
+ * 18:00", "not an activity: personal_care") is returned unchanged. The full IDs stay in the strike's title.
+ */
+export const tagLeaf = (item: string) => (/^[a-z][a-z_]*(:[a-z0-9_]+){2,}$/.test(item) ? item.slice(item.lastIndexOf(":") + 1) : item);
+
+/** Long rule details (R-ALC can list a dozen tags) show each tag by its leaf, once, cut to the first two; the full text goes in a title. */
 export function shortDetail(detail: string, max = 2): string {
-  const items = detail.split(", ");
-  if (items.length <= max) return detail;
+  const items = [...new Set(detail.split(", ").map(tagLeaf))];
+  if (items.length <= max) return items.join(", ");
   return `${items.slice(0, max).join(", ")} +${items.length - max} more`;
+}
+
+/** The REVIEW box's reason line: each REVIEW check by rule, its tags by leaf ("R-ALC · barstool_seating"). */
+export function reviewReason(checks: readonly { rule: string; verdict: string; detail: string }[]): string {
+  return checks.filter((x) => x.verdict === "REVIEW").map((x) => `${x.rule} · ${shortDetail(x.detail, 3)}`).join(" · ");
 }
 
 /** The reason line under a strike, e.g. `R-ALC · cocktail_bar · struck when a constraint changed`. */
@@ -131,6 +143,21 @@ export function strikeReason(s: Strike): string {
   if (s.movedTo !== null) parts.push(`→ moved to ${fmtHour(s.movedTo)}`);
   if (s.byToggle) parts.push("struck when a constraint changed");
   return parts.join(" · ");
+}
+
+/**
+ * The kind printed on an intake tag chip, from the tag's own namespace: "urn:tag:genre:place:restaurant:bakery" →
+ * "genre", "urn:tag:category:place:bakery" → "category". Qloo names all three top /v2/tags matches for "bakery" just
+ * "Bakery", so "tag" alone gave three identical chips (QA 2026-10-09). When two candidates share a namespace, the next
+ * path segment tells them apart ("genre · restaurant" vs "genre · hotel").
+ */
+export function tagKind(id: string, siblings: readonly string[] = []): string {
+  const path = (x: string) => x.replace(/^urn:tag:/, "").split(":");
+  const parts = path(id);
+  const kind = (parts[0] || "tag").replace(/_/g, " ");
+  if (!siblings.some((o) => o !== id && path(o)[0] === parts[0])) return kind;
+  const extra = parts.slice(1, -1).filter((p) => p !== "place" && p !== "qloo");
+  return extra.length ? `${kind} · ${extra.join(" ").replace(/_/g, " ")}` : kind;
 }
 
 export interface Loved {
@@ -252,6 +279,8 @@ export interface EmberLink {
   margin: number;
   /** that best original-love input, by name */
   runner_up: string | null;
+  /** that love's weight (null when the card has no love input, or a stored diff carries no explainability) */
+  love_score: number | null;
   /** the other rated inputs on the card that also outweigh that love, strongest first (named on the label, never threaded) */
   co: { name: string; score: number }[];
   /** the rated input leads the loves by less than EMBER_MIN_MARGIN: shown as a tie, no thread, no "because of" */
@@ -295,6 +324,7 @@ export function emberThreads(
         rated: rated.get(from_id) ?? null,
         margin: lead.margin,
         runner_up: lead.love ? lead.love.name || lead.love.entity_id : null,
+        love_score: lead.love ? lead.love.score : null,
         co: lead.co.map((w) => ({ name: names.get(w.entity_id) ?? (w.name || w.entity_id), score: w.score })),
         tied: !lead.threads,
       });
@@ -304,7 +334,7 @@ export function emberThreads(
     const best = diff.ember.filter((x) => x.to_id === e.to_id).sort((x, y) => y.score - x.score)[0]!;
     const m = best.margin ?? (best.top ? 0 : -1);
     if (m < 0) continue;
-    out.set(e.to_id, { from: best.from, from_id: best.from_id, to: best.to, to_id: best.to_id, score: best.score, rated: rated.get(best.from_id) ?? null, margin: m, runner_up: null, co: [], tied: m < EMBER_MIN_MARGIN });
+    out.set(e.to_id, { from: best.from, from_id: best.from_id, to: best.to, to_id: best.to_id, score: best.score, rated: rated.get(best.from_id) ?? null, margin: m, runner_up: null, love_score: null, co: [], tied: m < EMBER_MIN_MARGIN });
   }
   return [...out.values()];
 }
@@ -316,9 +346,22 @@ export function emberThreads(
  */
 export function emberLabel(l: EmberLink): string {
   const who = `${l.from}${l.rated !== null ? `, rated ${l.rated}` : ""}`;
-  if (l.tied) return `with ${who} · ${l.runner_up ? `tied with ${l.runner_up} (${l.score.toFixed(3)} vs ${(l.score - l.margin).toFixed(3)})` : `tied (${l.score.toFixed(3)})`}`;
+  if (l.tied) return `with ${who} · ${l.runner_up ? `tied with ${l.runner_up} (${l.score.toFixed(3)} vs ${loveWeight(l).toFixed(3)})` : `tied (${l.score.toFixed(3)})`}`;
   const co = l.co.length ? ` · with ${l.co.map((c) => `${c.name} ${c.score.toFixed(3)}`).join(", ")}` : "";
-  return `← because of ${who} · ${l.score.toFixed(3)}${l.runner_up ? `, +${l.margin.toFixed(3)} over ${l.runner_up} (original love)` : ""}${co}`;
+  return `← because of ${who} · ${l.score.toFixed(3)}${l.runner_up ? `, +${leadShown(l)} over ${l.runner_up} (original love)` : ""}${co}`;
+}
+
+const loveWeight = (l: Pick<EmberLink, "score" | "margin" | "love_score">) => l.love_score ?? l.score - l.margin;
+/** a weight as the card prints it (3 decimals), in thousandths */
+const shownMilli = (n: number) => Math.round(Number(n.toFixed(3)) * 1000);
+
+/**
+ * The lead printed on an ember label and on its thread, taken from the two weights AS PRINTED, so the card's own
+ * arithmetic holds: "0.307 … Phoebe Bridgers 0.234" reads +0.073, never the raw +0.072 (QA, 2026-10-09). Whether a
+ * thread is drawn still follows the unrounded margin (EMBER_MIN_MARGIN, the bench's rule).
+ */
+export function leadShown(l: Pick<EmberLink, "score" | "margin" | "love_score">): string {
+  return ((shownMilli(l.score) - shownMilli(loveWeight(l))) / 1000).toFixed(3);
 }
 
 /** Tooltip on every ember label: what the number is, and what it is not. */

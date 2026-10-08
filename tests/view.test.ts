@@ -5,6 +5,7 @@ import type { WeekPlan } from "../lib/plan";
 import { EMPTY_HISTORY } from "../lib/plan";
 import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
+import { leadShown, reviewReason, shortDetail, tagKind, tagLeaf } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
   id: "c1",
@@ -90,7 +91,8 @@ describe("ledger view helpers (lib/view.ts)", () => {
     const s = strikesByDay({ cards: [], refusals: [r({}), r({ rule: "R-ALC", detail: "offerings:place:alcohol", struck_by_toggle: true }), r({ day_name: "sunday" })] });
     expect(s.saturday).toHaveLength(1);
     expect(s.saturday[0].rule).toBe("R-ALC");
-    expect(strikeReason(s.saturday[0])).toBe("R-ALC · offerings:place:alcohol · also R-OPEN · struck when a constraint changed");
+    // the tag prints by its own name; the namespace path ("offerings:place:") stays in the title (QA 2026-10-09)
+    expect(strikeReason(s.saturday[0])).toBe("R-ALC · alcohol · also R-OPEN · struck when a constraint changed");
     expect(s.sunday).toHaveLength(1);
   });
 
@@ -180,6 +182,39 @@ describe("gate + re-plan view helpers", () => {
     // no original love on the card: the rated input's own weight is the lead; no rated input with weight → null
     expect(emberLead(why([["L", "Lucy Dacus", 0.5]]), new Set(["L"]))).toMatchObject({ love: null, margin: 0.5, threads: true });
     expect(emberLead(why([["F", "Fleabag", 0.5], ["L", "Lucy Dacus", 0]]), new Set(["L"]))).toBeNull();
+  });
+
+  it("QA round 5 (assets QA, 2026-10-09): an ember lead is the difference of the PRINTED weights, a re-planned week prints 3 decimals, refused tags print by leaf, intake tag chips by kind", () => {
+    // live re-plan e0adf88a, Sunday (Bushwick Pita Palace): the raw lead 0.0724 printed "+0.072" beside 0.307 and 0.234
+    const why = [
+      { entity_id: "D", name: "Dun-Well Doughnuts", score: 0.3066466350272131 },
+      { entity_id: "L", name: "Lucy Dacus", score: 0.2386199619456472 },
+      { entity_id: "P", name: "Phoebe Bridgers", score: 0.23424643188330097 },
+      { entity_id: "F", name: "Fleabag", score: 0.2204869711438387 },
+    ];
+    const diff = { from_plan_id: "w1", kept: [], added: [], removed: [], signals: [], kept_check: null, ember: [{ from: "Dun-Well Doughnuts", from_id: "D", to: "Bushwick Pita Palace", to_id: "B", day: "sunday" as const, score: why[0]!.score, top: true }] };
+    const [t] = emberThreads(diff, [{ qloo_entity_id: "D", pleasure: 8 }, { qloo_entity_id: "L", pleasure: 7 }], [{ qloo_entity_id: "B", explain_json: why }], ["D", "L"]);
+    expect(t!.margin).toBeCloseTo(0.0724, 4);
+    expect(t!.love_score).toBe(0.23424643188330097);
+    expect(whyParts(why, 3).map((p) => p.weight)).toEqual(["0.307", "0.239", "0.234"]);
+    expect(leadShown(t!)).toBe("0.073");
+    expect(emberLabel(t!)).toBe("← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239");
+    // Saturday of the same week: printed and raw leads agree (0.296 − 0.252)
+    expect(leadShown({ score: 0.2960061549573592, margin: 0.044086, love_score: 0.251919882986588 })).toBe("0.044");
+    // a stored link without explainability falls back to score − margin
+    expect(leadShown({ score: 0.41, margin: 0.11, love_score: null })).toBe("0.110");
+    // R-ALC lists Qloo tag paths; the sheet prints each tag's own name once, so a line never breaks inside "qloo:bar_service"
+    expect(tagLeaf("service_type:qloo:bar_service")).toBe("bar_service");
+    expect(tagLeaf("genre:place:restaurant:cocktail_bar")).toBe("cocktail_bar");
+    for (const keep of ["craft_beer", "bar", "not an activity: personal_care", "closes 18:00 · slot 18:00", "18:00"]) expect(tagLeaf(keep)).toBe(keep);
+    expect(shortDetail("service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine, amenity:qloo:full_bar")).toBe("bar_service, wine +1 more");
+    expect(reviewReason([{ rule: "R-ALC", verdict: "REVIEW", detail: "offerings:place:happy_hour, offerings:place:ok_to_order_just_drinks" }, { rule: "R-OPEN", verdict: "PASS", detail: "Sun 07:00–21:00 · slot 14:00" }])).toBe("R-ALC · happy_hour, ok_to_order_just_drinks");
+    // Qloo names all three top /v2/tags matches for "bakery" just "Bakery": the chip says which kind of tag each is
+    const bakery = ["urn:tag:genre:place:restaurant:bakery", "urn:tag:category:place:bakery", "urn:tag:offerings:place:bakery"];
+    expect(bakery.map((id) => tagKind(id, bakery))).toEqual(["genre", "category", "offerings"]);
+    const clash = ["urn:tag:genre:place:restaurant:bakery", "urn:tag:genre:place:hotel:bakery"];
+    expect(clash.map((id) => tagKind(id, clash))).toEqual(["genre · restaurant", "genre · hotel"]);
+    expect(tagKind("urn:tag:dining_option:qloo:bakery")).toBe("dining option");
   });
 
   it("diffWeeks marks top only above the margin and stores the margin", () => {

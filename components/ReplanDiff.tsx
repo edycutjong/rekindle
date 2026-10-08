@@ -9,7 +9,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { PlanDoc } from "@/lib/store";
 import { DAYS } from "@/lib/verify";
-import { DAY_SHORT, type EmberLink } from "@/lib/view";
+import { DAY_SHORT, leadShown, type EmberLink } from "@/lib/view";
 import s from "./rekindle.module.css";
 
 export function ReplanStrip({ prev, threads }: { prev: PlanDoc; threads: EmberLink[] }) {
@@ -87,11 +87,39 @@ interface Path {
   d: string;
   x: number;
   y: number;
+  anchor: "start" | "end";
   label: string;
   key: string;
 }
 
-/** SVG overlay drawn between the rated week and the week-2 ledger inside `children`; decorative (labels are inline). */
+/**
+ * Where a thread drops into its day column: the point of the header's free gap (between the day name and the rung)
+ * nearest the card's centre, so the line never crosses "SUN" or "social" at narrow widths. Null when the header has
+ * no gap wide enough: the thread then stops at the column's top edge instead of crossing text.
+ */
+function dropX(col: Element | null, centre: number): number | null {
+  const dh = col?.firstElementChild;
+  if (!dh) return centre;
+  const head = dh.getBoundingClientRect();
+  let lo = head.left;
+  let hi = head.right;
+  const day = dh.firstChild;
+  if (day && day.nodeType === Node.TEXT_NODE) {
+    const r = document.createRange();
+    r.selectNodeContents(day);
+    lo = r.getBoundingClientRect().right + 6;
+  }
+  const rung = dh.querySelector("span");
+  if (rung) hi = rung.getBoundingClientRect().left - 6;
+  return lo <= hi ? Math.min(Math.max(centre, lo), hi) : null;
+}
+
+/**
+ * SVG overlay drawn between the rated week and the week-2 ledger inside `children`; decorative (labels are inline).
+ * Each thread bends inside the gap above the ledger, lands on the top edge of its day column, and drops straight to the
+ * card. Its lead sits in that gap beside the landing point, never on the day header's ink rule (a line through a number
+ * reads as a strike, which on this sheet means refused; QA 2026-10-09); a paper halo keeps another thread off it.
+ */
 export function EmberThreads({ threads, children }: { threads: EmberLink[]; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [paths, setPaths] = useState<Path[]>([]);
@@ -109,12 +137,25 @@ export function EmberThreads({ threads, children }: { threads: EmberLink[]; chil
         if (!a || !b) continue;
         const ra = a.getBoundingClientRect();
         const rb = b.getBoundingClientRect();
+        const col = b.closest("[data-day]");
+        const rc = (col ?? b).getBoundingClientRect();
+        const centre = rb.left + rb.width / 2;
+        const xd = dropX(col, centre);
         const x1 = ra.left + ra.width / 2 - box.left;
         const y1 = ra.bottom - box.top;
-        const x2 = rb.left + rb.width / 2 - box.left;
-        const y2 = rb.top - box.top;
-        const my = (y1 + y2) / 2;
-        out.push({ d: `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`, x: x2 + 4, y: y2 - 6, label: `+${t.margin.toFixed(3)}`, key: t.from_id + t.to_id });
+        const x2 = (xd ?? centre) - box.left;
+        const yc = Math.max(y1, rc.top - box.top); // the day column's top edge: the curve stays in the gap above it
+        const y2 = Math.max(yc, rb.top - box.top);
+        const my = (y1 + yc) / 2;
+        const fromLeft = x1 <= x2; // the label goes on the side away from the incoming curve
+        out.push({
+          d: `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${yc}${xd === null ? "" : ` L${x2},${y2}`}`,
+          x: fromLeft ? x2 + 6 : x2 - 6,
+          y: yc - 7,
+          anchor: fromLeft ? "start" : "end",
+          label: `+${leadShown(t)}`,
+          key: t.from_id + t.to_id,
+        });
       }
       setPaths(out);
     };
@@ -136,7 +177,7 @@ export function EmberThreads({ threads, children }: { threads: EmberLink[]; chil
           {paths.map((p) => (
             <g key={p.key}>
               <path d={p.d} />
-              <text x={p.x} y={p.y}>
+              <text x={p.x} y={p.y} textAnchor={p.anchor}>
                 {p.label}
               </text>
             </g>

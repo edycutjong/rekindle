@@ -1,6 +1,7 @@
+import { Fragment, type ReactNode } from "react";
 import type { CardDoc } from "@/lib/store";
 import type { DayName } from "@/lib/verify";
-import { DAY_SHORT, EMBER_TITLE, emberLabel, fmtHour, keptLabel, hoursCheck, isOutage, passedChecks, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
+import { DAY_SHORT, EMBER_TITLE, emberLabel, fmtHour, keptLabel, hoursCheck, isOutage, passedChecks, reviewReason, rungLabel, strikeReason, typeLabel, whyParts, type EmberLink, type Strike } from "@/lib/view";
 import { CardActions, PMBox, type CardGate } from "./Gate";
 import s from "./rekindle.module.css";
 
@@ -25,6 +26,8 @@ export interface DayView {
   gate?: CardGate | null;
   /** re-planned week only: the rated week-1 activity that is this card's top-weighted input */
   ember?: EmberLink | null;
+  /** a re-planned week: every because-line prints 3 decimals, the precision its ember labels quote (QA 2026-10-09) */
+  precise?: boolean;
 }
 
 const VISIBLE_STRIKES = 3;
@@ -49,7 +52,7 @@ function DayColumn({ d }: { d: DayView }) {
         {d.rung && <span>{d.rung}</span>}
       </div>
       {d.card && !d.recheck && !d.gate?.busy ? (
-        <SlotCard c={d.card} g={d.gate ?? undefined} ember={d.ember ?? null} />
+        <SlotCard c={d.card} g={d.gate ?? undefined} ember={d.ember ?? null} precise={d.precise} />
       ) : d.partial || d.recheck || d.gate?.busy ? (
         <PencilledCard
           name={d.recheck || d.gate?.busy ? (d.card?.name ?? "") : d.partial!.name}
@@ -74,7 +77,9 @@ function DayColumn({ d }: { d: DayView }) {
           <div className={s.rung}>review · clinician decides</div>
           <div className={s.sname}>{r.name}</div>
           {r.address && <div className={s.addr}>{r.address}</div>}
-          <div className={s.reason}>{r.checks.filter((x) => x.verdict === "REVIEW").map((x) => `${x.rule} · ${x.detail}`).join(" · ")}</div>
+          <div className={s.reason} title={r.checks.filter((x) => x.verdict === "REVIEW").map((x) => `${x.rule} · ${x.detail}`).join(" · ")}>
+            {breakable(reviewReason(r.checks))}
+          </div>
         </div>
       ))}
       {shown.map((x) => (
@@ -92,10 +97,11 @@ function DayColumn({ d }: { d: DayView }) {
   );
 }
 
-export function SlotCard({ c, g, ember }: { c: CardDoc; g?: CardGate; ember?: EmberLink | null }) {
+export function SlotCard({ c, g, ember, precise }: { c: CardDoc; g?: CardGate; ember?: EmberLink | null; precise?: boolean }) {
   const h = hoursCheck(c);
-  // a card with an ember label shows 3 decimals, so a "because of" claim is never printed next to a displayed tie
-  const why = whyParts(c.explain_json, ember ? 3 : 2);
+  // a re-planned week (and any card with an ember label) shows 3 decimals, so a "because of" claim is never printed
+  // next to a displayed tie and neighbouring cards never mix 2- and 3-decimal weights
+  const why = whyParts(c.explain_json, ember || precise ? 3 : 2);
   const checks = passedChecks(c);
   const approved = c.clinician_action === "approved";
   return (
@@ -179,9 +185,20 @@ export function StruckCandidate({ x, fresh }: { x: Strike; fresh: boolean }) {
     <div className={`${s.struck} ${fresh ? s.struckFresh : ""}`} data-testid="struck" data-rule={x.rule}>
       <div className={s.sname}>{x.name}</div>
       <div className={s.reason} title={x.detail}>
-        {strikeReason(x)}
+        {breakable(strikeReason(x))}
       </div>
     </div>
+  );
+}
+
+/**
+ * A reason line that wraps between tags, not inside one: a word under 14 characters ("bar_service,") never breaks; a
+ * longer tag may wrap after an "_" or ":" ("barstool_<wbr>seating"), never mid-letter (QA 2026-10-09). A <wbr> in a
+ * short tag would be taken greedily ("bar_ / service").
+ */
+function breakable(text: string): ReactNode {
+  return text.split(/(\s+)/).map((w, i) =>
+    w.length < 14 ? w : <Fragment key={i}>{w.split(/(?<=[_:])/).map((part, j) => (j === 0 ? part : <Fragment key={j}><wbr />{part}</Fragment>))}</Fragment>,
   );
 }
 

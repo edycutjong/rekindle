@@ -328,6 +328,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
               }
             : null,
         ember: card ? (links.find((t) => t.to_id === card.qloo_entity_id) ?? null) : null,
+        precise: !!plan?.diff,
       };
     });
   }, [plan, streamed, phase, fresh, mode, swapping, pending, act, links]);

@@ -9,7 +9,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { screenLoveText, type LoveCandidate, type LoveKind } from "@/lib/resolve";
-import { CONSTRAINT_FLAGS, priceLabel } from "@/lib/view";
+import { CONSTRAINT_FLAGS, priceLabel, tagKind } from "@/lib/view";
 import s from "./rekindle.module.css";
 import i from "./intake.module.css";
 
@@ -188,8 +188,7 @@ export function IntakeForm({ points }: { points: IntakePoint[] }) {
                   onClick={() => update(r.key, { picked: r.picked?.qloo_id === c.qloo_id ? null : c })}
                   data-testid="love-chip"
                 >
-                  <span className={i.chipKind}>{c.qloo_kind === "tag" ? "tag" : (KINDS.find((k) => k.kind === r.kind)?.label ?? r.kind)}</span> {c.name}
-                  {r.picked?.qloo_id === c.qloo_id && " ✓"}
+                  <span className={i.chipKind}>{c.qloo_kind === "tag" ? tagKind(c.qloo_id, r.candidates?.map((x) => x.qloo_id)) : (KINDS.find((k) => k.kind === r.kind)?.label ?? r.kind)}</span> {c.name}
                 </button>
               ))}
             </div>

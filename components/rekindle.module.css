@@ -380,10 +380,12 @@
   color: var(--muted);
 }
 
-/* the signature: refusals stay in the slot, struck in graphite, the rule beneath in data face */
+/* the signature: refusals stay in the slot, struck in graphite, the rule beneath in data face. Lines break between
+   words and at the <wbr> after each "_" / ":" of a tag (WeekLedger.tsx), never mid-token: "anywhere" split
+   "service_type:ql / oo:bar_service" (QA 2026-10-09); break-word stays only as the last resort for one long word */
 .struck,
 .review {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .struck {
   background: transparent;
@@ -780,9 +782,15 @@
   stroke: var(--after);
   stroke-width: 1.5;
 }
+/* the lead sits in the gap above the day column (components/ReplanDiff.tsx), with a halo in the sheet's colour so a
+   neighbouring thread passing behind it never reads as a strike through the number */
 .threads text {
-  font: 12px var(--font-data);
+  font: 13px var(--font-data);
   fill: var(--after);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 5px;
+  stroke-linejoin: round;
 }
 .ember {
   text-decoration: underline;

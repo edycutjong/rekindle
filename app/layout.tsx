@@ -16,12 +16,20 @@ export const metadata: Metadata = {
   title: "Rekindle",
   description:
     "A behavioral-activation planning agent for clinicians: a verified, clinician-approved week of real activities from what a patient used to love, via Qloo.",
-  icons: { icon: "/favicon.svg" },
+  // the SVG for every browser that takes one; /favicon.ico (16 + 32) and the 180 px touch icon for the clients that ask
+  // for those paths by convention (iOS home screen, some unfurlers and feed readers): /favicon.ico was a 404 (QA 2026-10-09)
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Rekindle",
     siteName: "Rekindle",
     description:
-      "Turns what a patient used to love into a clinician-approved week of real, open, nearby places, re-planned from her ratings.",
+      "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from ratings.",
     url: "https://rekindle.edycu.dev",
     images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: OG_ALT }],
     locale: "en_US",
@@ -31,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Rekindle",
     description:
-      "Turns what a patient used to love into a clinician-approved week of real, open, nearby places, re-planned from her ratings.",
+      "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from ratings.",
     images: [{ url: OG_IMAGE, alt: OG_ALT }],
   },
 };
