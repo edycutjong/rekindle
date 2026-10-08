@@ -3,7 +3,7 @@
 
 Rewrites everything between `<!-- generated:start -->` and `<!-- generated:end -->` from:
   - app/**/route.ts        HTTP method exports + the route's doc comment (first sentence)
-  - app/**/page.tsx        pages
+  - app/**/page.tsx        pages, plus the static pages next.config.ts rewrites to public/*.html
   - lib/*.ts               each module's header comment (first sentence) + line count
   - lib/verify.ts          the rule table in its header comment (R-ID … R-HIST)
   - lib/agent.ts           the typed tools offered to the model (`<name>: tool({`)
@@ -67,6 +67,9 @@ def pages() -> list[str]:
         rel = p.relative_to(ROOT / "app").parent.as_posix()
         path = "/" if rel == "." else "/" + re.sub(r"\[(\w+)\]", r":\1", rel)
         rows.append(f"| `{path}` | `{p.relative_to(ROOT).as_posix()}` |")
+    conf = (ROOT / "next.config.ts").read_text()
+    for src, dest in re.findall(r'source:\s*"([^"]+)",\s*destination:\s*"(/[\w.-]+\.html)"', conf):
+        rows.append(f"| `{src}` | `public{dest}` (static; numbers written by `scripts/site.py`) |")
     return rows
 
 

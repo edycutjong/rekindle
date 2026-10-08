@@ -24,7 +24,9 @@
     <a href="JUDGE.md">For judges</a> ·
     <a href="DEMO.md">Demo steps + bench</a> ·
     <a href="DX-REPORT.md">Qloo DX report</a> ·
-    <a href="ARCHITECTURE.md">Architecture</a>
+    <a href="ARCHITECTURE.md">Architecture</a> ·
+    <a href="https://rekindle.edycu.dev/about">The story</a> ·
+    <a href="https://rekindle.edycu.dev/pitch">Pitch deck</a>
   </p>
 </div>
 

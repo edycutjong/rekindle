@@ -5,7 +5,7 @@ const VIEWPORTS = [
   { name: "tablet", width: 768, height: 1024 },
   { name: "desktop", width: 1440, height: 900 },
 ];
-const PAGES = ["/", "/judge", "/cases/new", "/integrations/qloo"];
+const PAGES = ["/", "/judge", "/cases/new", "/integrations/qloo", "/about", "/pitch"];
 
 for (const vp of VIEWPORTS) {
   test.describe(`${vp.name} ${vp.width}px`, () => {

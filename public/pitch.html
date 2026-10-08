@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rekindle · pitch deck</title>
+<meta name="description" content="Rekindle, a behavioral-activation planning agent for clinicians: the schedule that crosses things out and then lights up what she liked. Eleven slides, built for judges reading on their own.">
+<link rel="canonical" href="https://rekindle.edycu.dev/pitch">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rekindle">
+<meta property="og:url" content="https://rekindle.edycu.dev/pitch">
+<meta property="og:title" content="Rekindle · pitch deck">
+<meta property="og:description" content="The schedule that crosses things out and then lights up what she liked: Maya's week, verified with Qloo, approved by a clinician, re-planned from her ratings.">
+<meta property="og:image" content="https://rekindle.edycu.dev/og-image.png?v=qa6">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rekindle: hand-checked, the same LLM got 7 of 17 named venues wrong and Rekindle 0 of 14; beside it, week two re-planned live from a fictional patient's ratings.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F5EFE3">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="site/fonts/young-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+<!--
+  Rekindle — pitch deck (single file, 1920×1080 stage scaled to fit; letterboxes the browser, never the slide)
+  Keys: → / space / PageDown next · ← / PageUp previous · Home / End · ESC overview grid · P presenter (notes, 80/20)
+        · C contrast debug (outlines every text box: check legibility before a projector).
+  Print: Cmd/Ctrl+P → Save as PDF → landscape; @page is 16in × 9in, one slide per page, notes and chrome hidden.
+  Images: every picture is a crop of a capture of the live app (site/*.webp, 8–9 Oct 2026). The QR is generated for
+  https://rekindle.edycu.dev/ at build time. Bench and test numbers are written by scripts/site.py from bench/*.json and
+  docs/rigor.json; the recreated sheets come from site/maya-week.json (the app's own text).
+-->
+<script>
+  (function (d) {
+    d.classList.add("js");
+    try { if (!matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("motion"); } catch (e) {}
+  })(document.documentElement);
+</script>
+<style>
+@font-face { font-family: "Young Serif"; src: url(site/fonts/young-serif-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Young Serif"; src: url(site/fonts/plex-mono-arrows.woff2) format("woff2"); unicode-range: U+2190-2199, U+21BB; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url(site/fonts/atkinson-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url(site/fonts/atkinson-700.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url(site/fonts/plex-mono-arrows.woff2) format("woff2"); unicode-range: U+2190-2199, U+21BB; font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url(site/fonts/plex-mono-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url(site/fonts/plex-mono-500.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+
+/* the design contract, pasted verbatim: the same :root as the story page */
+:root {
+  --bg:      #F5EFE3;  /* photocopied activity-schedule paper, unbleached; the consulting-room daylight scene */
+  --paper:   #FBF8F1;  /* the slot box itself, a shade lighter than the sheet */
+  --ink:     #26221D;  /* printed-sheet black-brown, not pure black, so it is easier on low-energy readers */
+  --muted:   #6F675B;  /* printed instructions / secondary lines */
+  --before:  #9A968E;  /* state: refused or unverified, pencil graphite, used for strike-through and pencilled suggestions */
+  --after:   #C4501A;  /* state: rekindled, a rated ≥7 activity that becomes next week's signal; fires only on the re-plan */
+  --after-ink: #A8421A; /* the ember pressed darker, for small ember TEXT only (thread leads, "← because of …", "↻ kept") */
+  --stamp:   #2E5B4F;  /* clinician-approved stamp ink (the approval gate), used only on approved cards and the approve action */
+  --rule:    #DCD2BF;  /* the faint ruled rows and grid lines of the sheet */
+  --font-display: "Young Serif", "Iowan Old Style", Georgia, serif;
+  --font-body:    "Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  --font-data:    "IBM Plex Mono", ui-monospace, Menlo, monospace;  /* ONLY the sheet's typed record: times, metres, weights, P/M, counts, kinds, rule IDs and reasons, the stamp line, notices, the agent trace */
+}
+:root {
+  --before-firm: color-mix(in srgb, var(--before) 88%, var(--ink));
+  --rule-soft: color-mix(in srgb, var(--rule) 62%, transparent);
+  --lift: 0 2px 0 color-mix(in srgb, var(--ink) 5%, transparent), 0 30px 60px -36px color-mix(in srgb, var(--ink) 45%, transparent);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--ink); overflow: hidden; }
+body { font: 400 26px/1.45 var(--font-body); color: var(--ink); font-variant-numeric: lining-nums; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+::selection { background: var(--rule); color: var(--ink); }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; font-variant-numeric: lining-nums; }
+p { margin: 0; }
+img { display: block; max-width: 100%; height: auto; }
+
+/* the stage: 1920×1080, scaled to fit, letterboxed in ink */
+.deck { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; padding: 84px 104px 96px; background-color: var(--bg);
+  background-image: linear-gradient(to bottom, transparent calc(100% - 1px), var(--rule-soft) calc(100% - 1px)); background-size: 100% 40px;
+  visibility: hidden; opacity: 0; transition: opacity .35s var(--ease), visibility 0s .35s; }
+.slide.on { visibility: visible; opacity: 1; transition: opacity .35s var(--ease); }
+.slide::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: var(--ink); }
+.foot { position: absolute; left: 104px; right: 104px; bottom: 34px; display: flex; justify-content: space-between; align-items: baseline; font: 18px/1 var(--font-data); color: var(--muted); }
+.foot .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 22px/1 var(--font-display); color: var(--ink); }
+.foot .brand img { width: 26px; height: 26px; }
+.foot .n { font-weight: 500; color: var(--ink); letter-spacing: .08em; }
+.lab { display: inline-block; font: 500 20px/1 var(--font-data); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-bottom: 10px; border-bottom: 2px solid var(--ink); margin-bottom: 26px; }
+.hd { font-size: 84px; line-height: 1.02; letter-spacing: -.015em; max-width: 21ch; }
+.hd .x, .hd .k { position: relative; display: inline-block; }
+.hd .x { color: var(--before-firm); }
+.hd .x::after { content: ""; position: absolute; left: -.04em; right: -.04em; top: 52%; height: .07em; background: var(--before); transform-origin: 0 50%; }
+.hd .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -.04em; height: .056em; border-radius: 1em; background: var(--after); transform-origin: 0 50%; }
+.mono { font-family: var(--font-data); }
+.src { font: 19px/1.5 var(--font-data); color: var(--muted); }
+.chip { display: inline-block; padding: 4px 12px; border: 1.5px dashed var(--muted); font: 500 19px/1.35 var(--font-data); background: var(--bg); }
+.chip.e { border-color: var(--after); color: var(--after-ink); }
+
+/* 1 · cover */
+.s1 .top { display: flex; align-items: center; gap: 18px; }
+.s1 .top img { width: 72px; height: 72px; }
+.s1 .top .wm { font: 400 46px/1 var(--font-display); }
+.s1 .top .evt .ver { text-transform: none; letter-spacing: .04em; }
+.s1 .top .evt { margin-left: auto; font: 500 20px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border: 1.5px solid var(--rule); padding: 12px 16px; }
+.s1 .grid { display: grid; grid-template-columns: 1fr 760px; gap: 64px; margin-top: 70px; align-items: start; }
+.s1 h1 { font-size: 108px; line-height: 1.02; letter-spacing: -.018em; }
+.s1 h1 .ln { display: block; white-space: nowrap; }
+.s1 h1 .x, .s1 h1 .k { position: relative; display: inline-block; }
+.s1 h1 .x { color: var(--before-firm); }
+.s1 h1 .x::after { content: ""; position: absolute; left: -.04em; right: -.04em; top: 52%; height: .07em; background: var(--before); transform-origin: 0 50%; }
+.s1 h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -.04em; height: .056em; border-radius: 1em; background: var(--after); transform-origin: 0 50%; }
+.s1 .sub { margin-top: 44px; font-size: 38px; line-height: 1.3; max-width: 24ch; }
+.tcard { background: var(--paper); border: 1.5px solid var(--ink); box-shadow: var(--lift); margin-top: 18px; }
+.tcard .th { display: flex; justify-content: space-between; gap: 12px; padding: 16px 22px; border-bottom: 1.5px solid var(--ink); font: 400 30px/1.1 var(--font-display); }
+.tcard .th span { font: 18px/1.6 var(--font-data); color: var(--muted); }
+.tcard ol { list-style: none; margin: 0; padding: 10px 22px 6px; font: 20px/1.5 var(--font-data); }
+.tcard li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px dotted var(--rule); }
+.tcard li b { font-weight: 500; color: var(--muted); }
+.tcard li.key b { color: var(--after-ink); }
+.tcard .sum { padding: 14px 22px 18px; font: 500 19px/1.45 var(--font-data); color: var(--after-ink); }
+.cur { display: inline-block; width: .55em; height: 1.05em; margin-left: 4px; vertical-align: -3px; background: var(--ink); }
+.motion .s1.on .cur { animation: blink 1s steps(1) 3 1.6s both; }
+@keyframes blink { 50% { opacity: 0; } }
+.s1 .meta { position: absolute; left: 104px; bottom: 84px; font: 19px/1.5 var(--font-data); color: var(--muted); }
+
+/* 2 · the case */
+.s2 .shot { margin-top: 48px; width: 1712px; }
+.s2 .fr img { width: 100%; }
+.fr { border: 1.5px solid var(--rule); background: var(--paper); box-shadow: var(--lift); overflow: hidden; }
+.chrome { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1.5px solid var(--rule); background: var(--bg); font: 18px/1 var(--font-data); color: var(--muted); }
+.chrome .url { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chrome .live { color: var(--ink); font-weight: 500; letter-spacing: .1em; }
+.chrome .live::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--stamp); margin-right: 8px; vertical-align: 1px; }
+.cap { margin-top: 18px; font: 19px/1.5 var(--font-data); color: var(--muted); max-width: 90ch; }
+
+/* 3 · where scheduling breaks */
+.breaks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 84px; border-top: 3px solid var(--ink); }
+.breaks div { padding: 40px 44px 0 0; }
+.breaks div + div { padding-left: 44px; border-left: 1.5px solid var(--rule); }
+.breaks .nb { display: grid; place-items: center; width: 64px; height: 64px; border: 2px solid var(--ink); font: 500 28px/1 var(--font-data); margin-bottom: 30px; }
+.breaks p { font-size: 50px; line-height: 1.16; font-family: var(--font-display); }
+.breaks .walk { color: var(--before-firm); background: linear-gradient(var(--before), var(--before)) no-repeat 0 56% / 100% 4px; }
+.s3 .src { position: absolute; left: 104px; bottom: 96px; }
+
+/* 4 · the loop */
+.loop { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 26px; margin-top: 120px; }
+.node { position: relative; background: var(--paper); border: 1.5px solid var(--rule); padding: 24px 22px 28px; min-height: 300px; }
+.node .k { font: 500 17px/1.3 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.node h3 { margin-top: 12px; font-size: 36px; line-height: 1.08; }
+.node p { margin-top: 12px; font-size: 22px; line-height: 1.35; }
+.node .chip { margin-top: 14px; font-size: 17px; }
+.node:not(.last)::after { content: "→"; position: absolute; right: -24px; top: 50%; transform: translateY(-50%); font: 500 26px/1 var(--font-data); }
+.node.v { border: 2px solid var(--ink); }
+.node .refuse { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 58% / 100% 3px; }
+.node .review { border: 2px dashed var(--ink); padding: 0 6px; }
+.boundary { position: absolute; top: -78px; bottom: -30px; left: calc((100% - 5 * 26px) / 6 * 2 + 26px * 1.5); border-left: 3px dashed var(--ink); }
+.boundary span { position: absolute; top: -8px; left: 14px; width: 560px; font: 500 20px/1.45 var(--font-data); }
+.back { position: absolute; left: calc((100% - 5 * 26px) / 12 * 3 + 26px); right: calc((100% - 5 * 26px) / 12); bottom: -86px; height: 60px; border: 4px solid var(--after); border-top: 0; border-radius: 0 0 20px 20px; }
+.back::before { content: ""; position: absolute; left: -12px; top: -16px; border: 10px solid transparent; border-bottom: 16px solid var(--after); border-top: 0; }
+.back span { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); background: var(--bg); padding: 0 14px; font: 500 22px/1.4 var(--font-data); color: var(--after-ink); white-space: nowrap; }
+.s4 .src { position: absolute; left: 104px; bottom: 96px; }
+
+/* 5 · one outing */
+.s5 .hd { max-width: 30ch; }
+.s5 .grid { display: grid; grid-template-columns: 600px 1fr; gap: 80px; margin-top: 44px; align-items: start; }
+.bigcard { background: var(--paper); border: 2px solid var(--stamp); padding: 24px 28px 26px; box-shadow: var(--lift); }
+.bigcard .sl { font: 20px/1.3 var(--font-data); color: var(--muted); letter-spacing: .05em; }
+.bigcard h3 { margin: 10px 0 2px; font-size: 48px; line-height: 1.05; }
+.bigcard .kd { font: 20px/1 var(--font-data); color: var(--muted); }
+.bigcard .co { margin-top: 18px; font-size: 25px; line-height: 1.4; }
+.bigcard .wy { margin-top: 16px; font-size: 22px; color: var(--muted); }
+.bigcard .wy b { font: 500 22px var(--font-data); color: var(--ink); }
+.bigcard .hr { margin-top: 14px; font: 21px/1.5 var(--font-data); }
+.bigcard .hr span { display: block; color: var(--muted); }
+.bigcard .ok { margin-top: 12px; font: 19px/1.4 var(--font-data); color: var(--muted); }
+.struckcard { margin-top: 18px; padding: 18px 26px; border: 1.5px solid var(--rule); background: color-mix(in srgb, var(--bg) 60%, var(--paper)); }
+.struckcard s { display: block; font: 400 32px/1.15 var(--font-display); color: var(--muted); text-decoration-color: var(--before); text-decoration-thickness: 3px; }
+.struckcard p { margin-top: 6px; font: 19px/1.45 var(--font-data); }
+.notes5 { list-style: none; margin: 10px 0 0; padding: 0; }
+.notes5 li { display: grid; grid-template-columns: 56px 1fr; gap: 18px; padding: 30px 0; border-top: 1.5px solid var(--rule); font-size: 28px; line-height: 1.3; }
+.notes5 li:last-child { border-bottom: 1.5px solid var(--rule); }
+.notes5 .nb { display: grid; place-items: center; width: 48px; height: 48px; border: 2px solid var(--ink); border-radius: 50%; font: 500 22px/1 var(--font-data); }
+.notes5 .t { font: 500 20px/1.4 var(--font-data); color: var(--muted); display: block; margin-bottom: 4px; }
+
+/* 6 · in recovery */
+.s6 .grid { display: grid; grid-template-columns: 1240px 1fr; gap: 56px; margin-top: 34px; align-items: start; }
+.callwrap { position: relative; }
+.pic { position: relative; }
+.s6 .side q { display: block; margin-top: 8px; padding: 12px 16px; border: 1.5px solid var(--ink); background: var(--paper); font: 500 22px/1.4 var(--font-data); quotes: none; }
+.callout { position: absolute; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 500 22px/1 var(--font-data); box-shadow: 0 0 0 6px color-mix(in srgb, var(--bg) 80%, transparent); }
+.ring { position: absolute; border: 3px solid var(--ink); border-radius: 10px; }
+.s6 .side p { font-size: 28px; line-height: 1.32; }
+.s6 .side p + p { margin-top: 26px; }
+.s6 .side .n { font: 500 22px/1.4 var(--font-data); display: block; margin-bottom: 4px; color: var(--muted); }
+.s6 .side b { font-weight: 700; }
+
+/* 7 · the gate */
+.s7 .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 60px; align-items: start; }
+.gcard { background: var(--paper); border: 2px solid var(--stamp); padding: 26px 28px 30px; box-shadow: var(--lift); min-height: 380px; }
+.gcard .sl { font: 19px/1.3 var(--font-data); color: var(--muted); letter-spacing: .04em; }
+.gcard h3 { margin: 10px 0 4px; font-size: 46px; line-height: 1.06; }
+.gcard .co { margin-top: 16px; font-size: 25px; line-height: 1.4; }
+.gcard .kd { font: 19px/1 var(--font-data); color: var(--muted); }
+.gcard .st { margin-top: 18px; display: inline-block; padding: 6px 12px; border: 2.5px solid var(--stamp); color: var(--stamp); font: 500 17px/1.2 var(--font-data); letter-spacing: .12em; text-transform: uppercase; transform: rotate(-2deg); }
+.gcol .struckcard { margin-top: 16px; }
+.gcol .struckcard s { font-size: 28px; }
+.stampline { position: absolute; right: 104px; top: 92px; padding: 14px 22px 12px; border: 4px solid var(--stamp); color: var(--stamp); font: 500 26px/1.2 var(--font-data); letter-spacing: .12em; text-transform: uppercase; transform: rotate(-3deg); }
+.motion .s7.on .stampline { animation: press .45s cubic-bezier(.3, 1.5, .5, 1) .5s both; }
+@keyframes press { from { opacity: 0; transform: rotate(-3deg) scale(1.7); } }
+.s7 .src { position: absolute; left: 104px; bottom: 96px; max-width: 1500px; }
+
+/* 8 · the re-plan (the frozen slide): the story page's recreated sheet, larger */
+.s8 .grid { display: grid; grid-template-columns: 900px 1fr; gap: 64px; align-items: center; height: 860px; }
+.s8 .hd { font-size: 66px; max-width: 14ch; }
+.s8 .fz { margin-top: 30px; padding-top: 22px; border-top: 3px solid var(--ink); font: 400 32px/1.3 var(--font-display); }
+.s8 .fz .u8 { background: linear-gradient(var(--after), var(--after)) no-repeat 0 96% / 100% 4px; }
+.s8 .fz .out { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 58% / 100% 3px; }
+.s8 .rules { margin-top: 26px; font: 20px/1.55 var(--font-data); color: var(--muted); }
+.s8 .rules b { color: var(--after-ink); font-weight: 500; }
+.sheet { position: relative; aspect-ratio: 1000 / 880; container-type: inline-size; overflow: hidden; background: var(--bg); border: 1.5px solid var(--rule); box-shadow: var(--lift);
+  background-image: linear-gradient(to bottom, transparent calc(100% - 1px), var(--rule-soft) calc(100% - 1px)); background-size: 100% 3.4cqw;
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); }
+.sheet::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: .45cqw; background: var(--ink); }
+.sh-head { position: absolute; left: 4cqw; top: 3.4cqw; display: flex; align-items: baseline; gap: 1.6cqw; }
+.sh-head .t { font: 400 3.6cqw/1 var(--font-display); }
+.sh-head .s { font: 2cqw/1 var(--font-data); color: var(--muted); }
+.rated { position: absolute; left: 4cqw; top: 9cqw; width: 92cqw; height: 19.5cqw; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--paper); border: 1px solid var(--rule); }
+.rc { position: relative; padding: 2cqw 2.2cqw; border-right: 1px solid var(--rule); }
+.rc:last-child { border-right: 0; }
+.rc .d { display: block; font: 500 1.9cqw/1 var(--font-data); letter-spacing: .08em; }
+.rc .nm { display: block; margin-top: 1.3cqw; font: 400 3.1cqw/1.25 var(--font-body); }
+.rc .pm { position: absolute; left: 2.2cqw; bottom: 1.8cqw; font: 2.1cqw/1 var(--font-data); color: var(--muted); }
+.rc .pm b { font-weight: 500; color: var(--ink); }
+.u { background: linear-gradient(var(--after), var(--after)) no-repeat 0 100% / 100% .34cqw; padding-bottom: .15cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.xs { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 56% / 100% .28cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.w2 { position: absolute; left: 4cqw; top: 42.5cqw; width: 92cqw; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3cqw; }
+.w2 .dh { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 1cqw; border-bottom: .25cqw solid var(--ink); font: 500 1.9cqw/1 var(--font-data); letter-spacing: .08em; }
+.w2 .dh i { font-style: normal; font-weight: 400; color: var(--muted); letter-spacing: .02em; }
+.cd { margin-top: 1.6cqw; background: var(--paper); border: 1px solid var(--rule); padding: 2cqw 2cqw 3cqw; min-height: 44cqw; }
+.cd .sl { font: 1.85cqw/1.3 var(--font-data); color: var(--muted); letter-spacing: .04em; }
+.cd .cn { margin: .8cqw 0 .3cqw; font: 400 3.4cqw/1.08 var(--font-display); font-variant-numeric: lining-nums; }
+.cd .kd { font: 1.85cqw/1 var(--font-data); color: var(--muted); }
+.cd .wy { margin-top: 1.6cqw; font: 2.1cqw/1.42 var(--font-body); color: var(--muted); }
+.cd .wy b { font: 500 2cqw var(--font-data); color: var(--ink); }
+.cd .ld { margin-top: 1.6cqw; font: 500 1.95cqw/1.42 var(--font-data); color: var(--after-ink); }
+.threads { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.threads path { fill: none; stroke: var(--after); stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
+.threads .halo { stroke: var(--bg); stroke-width: 13; }
+.threads text { font: 500 24px var(--font-data); fill: var(--after-ink); paint-order: stroke; stroke: var(--bg); stroke-width: 7px; stroke-linejoin: round; }
+
+/* 9 · receipts */
+.rgrid { display: grid; grid-template-columns: 1.3fr 1.2fr .9fr 1fr; margin-top: 54px; border: 2px solid var(--ink); background: var(--paper); }
+.rcell { position: relative; padding: 70px 34px 34px; border-right: 1.5px solid var(--rule); min-height: 520px; }
+.rcell:last-child { border-right: 0; }
+.rtag { position: absolute; left: 0; top: 0; padding: 10px 14px; border-right: 1.5px solid var(--rule); border-bottom: 1.5px solid var(--rule); font: 500 17px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; }
+.big { font: 400 92px/1 var(--font-display); font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.big .of { font: 500 32px/1 var(--font-data); color: var(--muted); margin: 0 .35em; vertical-align: .62em; }
+.rtx { margin-top: 18px; font-size: 24px; line-height: 1.35; }
+.rsrc { margin-top: 18px; font: 17px/1.5 var(--font-data); color: var(--muted); }
+.arm { margin-top: 22px; }
+.arm .lb { display: flex; justify-content: space-between; font: 17px/1.3 var(--font-data); color: var(--muted); margin-bottom: 8px; }
+.arm .lb b { color: var(--ink); font-weight: 500; }
+.boxes { display: flex; flex-wrap: wrap; gap: 6px; }
+.bx { position: relative; width: 20px; height: 26px; border: 2px solid var(--ink); background: var(--bg); }
+.bx.q { border-style: dashed; border-color: var(--muted); background: transparent; }
+.bx.x { border-color: var(--before); }
+.bx.x::after { content: ""; position: absolute; left: -5px; right: -5px; top: 50%; height: 3px; background: var(--ink); transform: rotate(-58deg); }
+.bars { margin-top: 24px; display: grid; gap: 14px; }
+.bar .lb { display: flex; justify-content: space-between; gap: 10px; font: 17px/1.3 var(--font-data); color: var(--muted); margin-bottom: 6px; }
+.bar .lb b { color: var(--ink); font-weight: 500; }
+.bar .tr { height: 16px; background: var(--bg); border: 1.5px solid var(--rule); position: relative; }
+.bar .tr i { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); background: var(--before); }
+.bar.zero .tr { border-color: var(--stamp); } .bar.zero .lb b { color: var(--stamp); }
+.motion .s9:not(.on) .bx.x::after { transform: rotate(-58deg) scaleX(0); }
+.motion .s9.on .bx.x::after { transition: transform .32s var(--ease) .4s; }
+.motion .s9:not(.on) .bar .tr i { width: 0; }
+.motion .s9.on .bar .tr i { transition: width 1.1s var(--ease) .5s; }
+.s9 .src { margin-top: 22px; }
+
+/* 10 · limits */
+.lims { display: grid; grid-template-columns: 1fr 1fr; gap: 0 72px; margin-top: 56px; border-top: 3px solid var(--ink); }
+.lims figure { margin: 0; padding: 44px 0 40px; border-bottom: 1.5px solid var(--rule); }
+.lims blockquote { margin: 0; font: 400 56px/1.12 var(--font-display); font-variant-numeric: lining-nums; }
+.lims figcaption { margin-top: 14px; font: 19px/1.4 var(--font-data); color: var(--muted); }
+
+/* 11 · her sheet + the ask */
+.s11 .grid { display: grid; grid-template-columns: 600px 1fr; gap: 90px; align-items: start; margin-top: 0; }
+.s11 .sheetimg { width: 600px; height: 860px; object-fit: cover; object-position: top; border: 1.5px solid var(--rule); box-shadow: var(--lift); background: var(--paper); -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent); mask-image: linear-gradient(to bottom, #000 84%, transparent); }
+.s11 .hd { font-size: 76px; }
+.s11 .ask { margin-top: 34px; display: grid; grid-template-columns: 264px 1fr; gap: 40px; align-items: center; }
+.qr svg { display: block; width: 264px; height: 264px; border: 1.5px solid var(--ink); }
+.s11 .go { font: 400 46px/1.15 var(--font-display); }
+.s11 .go .k { background: linear-gradient(var(--after), var(--after)) no-repeat 0 94% / 100% 4px; }
+.s11 .url { margin-top: 12px; font: 500 28px/1.3 var(--font-data); }
+.s11 .how { margin-top: 18px; font-size: 24px; line-height: 1.4; color: var(--ink); }
+.s11 .links { margin-top: 30px; font: 19px/1.7 var(--font-data); color: var(--muted); }
+
+/* speaker notes: hidden, shown in presenter mode */
+.speaker-notes { display: none; }
+.notes-panel { position: fixed; left: 0; right: 0; bottom: 0; height: 20vh; padding: 18px 28px; background: var(--paper); border-top: 3px solid var(--ink); font: 18px/1.5 var(--font-body); overflow: auto; display: none; }
+.presenter .notes-panel { display: block; }
+.presenter .hint { opacity: .25; }
+.presenter.idle, .presenter.idle * { cursor: none !important; }
+.hint { position: fixed; left: 14px; bottom: 10px; font: 12px/1 var(--font-data); color: color-mix(in srgb, var(--bg) 60%, transparent); }
+/* overview grid (ESC) */
+.overview .deck { transform: none !important; position: static; width: auto; height: auto; display: grid; grid-template-columns: repeat(auto-fill, 464px); gap: 22px; padding: 26px; }
+html.overview, .overview body { overflow: auto; }
+.overview .slide { position: relative; visibility: visible; opacity: 1; transform: scale(.2333); transform-origin: 0 0; width: 1920px; height: 1080px; margin: 0 -1472px -828px 0; cursor: pointer; outline: 6px solid transparent; }
+.overview .slide.on { outline-color: var(--after); }
+/* contrast debug (C) */
+.debug-contrast .slide p, .debug-contrast .slide h1, .debug-contrast .slide h2, .debug-contrast .slide h3, .debug-contrast .slide li, .debug-contrast .slide span { outline: 1px dashed #c4501a; }
+
+/* entry moments, once per visit of a slide */
+@keyframes draw { from { transform: scaleX(0); } }
+@keyframes thread { from { stroke-dashoffset: 1; } }
+@keyframes appear { from { opacity: 0; } }
+.motion .slide.on .x::after { animation: draw .65s var(--ease) .35s both; }
+.motion .slide.on .k1::after { animation: draw .7s var(--ease) 1.1s both; }
+.motion .slide.on .k2::after { animation: draw .75s var(--ease) 1.35s both; }
+.motion .s8.on .threads path { stroke-dasharray: 1; animation: thread 1s cubic-bezier(.45, .05, .25, 1) .6s both; }
+.motion .s8.on .threads path.t2, .motion .s8.on .threads path.h2 { animation-delay: .8s; }
+.motion .s8.on .threads text { animation: appear .4s ease-out 1.5s both; }
+
+@page { size: 16in 9in landscape; margin: 0; }
+@media print {
+  html, body { overflow: visible; height: auto; background: var(--bg); }
+  .deck { position: static; transform: none !important; width: auto; height: auto; }
+  .slide { position: relative; visibility: visible; opacity: 1; zoom: .8; page-break-after: always; break-after: page; break-inside: avoid; }
+  .notes-panel, .hint { display: none !important; }
+  .motion .slide .x::after, .motion .slide .k1::after, .motion .slide .k2::after { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="deck" id="deck" aria-label="Rekindle pitch deck">
+
+<section class="slide s1" aria-label="Slide 1: cover">
+  <div class="top"><img src="favicon.svg" alt=""><span class="wm">Rekindle</span><span class="evt">Built for the Qloo Agentic Hackathon · <span class="ver">v0.2.1</span></span></div>
+  <div class="grid">
+    <div>
+      <h1><span class="ln">The schedule that</span><span class="ln"><span class="x">crosses things out</span></span><span class="ln">and then <span class="k k1">lights up</span></span><span class="ln"><span class="k k2">what she liked.</span></span></h1>
+      <p class="sub">A behavioral-activation planning agent for clinicians, built on Qloo.</p>
+    </div>
+    <div class="tcard">
+      <p class="th">Agent trace <span>plan e0adf88a · re-plan</span></p>
+      <ol>
+        <li><b>1</b><span>start week 2 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b</span></li>
+        <li class="key"><b>2</b><span>findOutings day=thursday kept=true rated=8 → 1 returned → Dun-Well Doughnuts ✓</span></li>
+        <li><b>6</b><span>findOutings day=saturday hour=11 → 25 returned · review 1 → Ceremonia Bakeshop ✓</span></li>
+        <li><b>8</b><span>placeSocial day=sunday hour=14 → 11 returned · refused R-KIND 2 → Bushwick Pita Palace ✓</span></li>
+      </ol>
+      <p class="sum">Week 2: 2 kept · 5 new · 2 rekindled by a rating<span class="cur" aria-hidden="true"></span></p>
+    </div>
+  </div>
+  <p class="meta">Maya is a fictional case · live re-plan of 8 Oct 2026 · rekindle.edycu.dev</p>
+  <aside class="speaker-notes">Rekindle helps a clinician do the one step behavioral activation depends on: scheduling things the patient will actually do. The trace on the right is the real agent run behind week two of Maya's plan. The headline is what the product does on screen: it strikes what fails a rule, and it lights up what she rated well.</aside>
+</section>
+
+<section class="slide s2" aria-label="Slide 2: the case">
+  <p class="lab">Maya · a fictional case</p>
+  <h2 class="hd">She can't name one thing she'd enjoy this week.</h2>
+  <figure class="shot" style="margin:48px 0 0">
+    <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev</span><span class="live">LIVE</span></div><img src="site/maya-case-live.webp" width="1400" height="471" alt="Maya's case card on the live app: six months flat, she can't name one thing she'd enjoy this week; Williamsburg, Brooklyn; energy 1 of 3; within 1.5 km and two price levels; loved Phoebe Bridgers, Fleabag and ramen restaurants."></div>
+    <figcaption class="cap">Her case card on the live app. Her loves resolve to Qloo entities and a tag; her clinician sets place, energy and limits.</figcaption>
+  </figure>
+  <aside class="speaker-notes">Anhedonia is the problem in one sentence: she can't say what she'd enjoy. Her clinician can still say what she loved before: an artist, a show, a food. That is all Rekindle needs to start, and every case in the app is fictional.</aside>
+</section>
+
+<section class="slide s3" aria-label="Slide 3: where scheduling breaks">
+  <p class="lab">Where scheduling breaks</p>
+  <h2 class="hd">Scheduling breaks in three places.</h2>
+  <div class="breaks">
+    <div><p class="nb mono">1</p><p>She can't name anything she would enjoy.</p></div>
+    <div><p class="nb mono">2</p><p>Generic suggestions don't stick: <span class="walk">go for a walk</span>.</p></div>
+    <div><p class="nb mono">3</p><p>Nobody checks the place: open at the hour, near, in budget, alcohol-free in recovery.</p></div>
+  </div>
+  <p class="src">README · The Problem · evidence base for behavioral activation: Richards et al., Lancet 2016 (COBRA)</p>
+  <aside class="speaker-notes">Behavioral activation is a first-line, low-cost treatment for depression, and its core step is activity scheduling. Sessions stall on brainstorming, generic ideas fail, and a real place named in session is rarely checked against the hour, the distance or a recovery plan.</aside>
+</section>
+
+<section class="slide s4" aria-label="Slide 4: the loop">
+  <p class="lab">The truth boundary</p>
+  <h2 class="hd">The model picks where to look. Qloo picks the venue.</h2>
+  <div class="loop">
+    <div class="node"><p class="k">Clinician</p><h3>What she loved</h3><p>3–6 loves, confirmed against Qloo.</p></div>
+    <div class="node"><p class="k">LLM tool loop</p><h3>Where to look</h3><p>Rung, domain, query; one coaching line.</p><span class="chip">qwen3.8-flash</span></div>
+    <div class="node"><p class="k">Qloo</p><h3>The venue</h3><p>Real places, explained by her loves.</p><span class="chip">/v2/insights</span></div>
+    <div class="node v"><p class="k">Verifier</p><h3>What is true</h3><p>PASS, <span class="refuse">REFUSE</span>, <span class="review">REVIEW</span>.</p><span class="chip">R-ID … R-HIST</span></div>
+    <div class="node"><p class="k">Clinician</p><h3>Approve week</h3><p>Nothing reaches her unapproved.</p></div>
+    <div class="node last"><p class="k">Her ratings</p><h3>P and M</h3><p>≥ 7 a signal, ≤ 3 excluded.</p></div>
+    <div class="boundary" aria-hidden="true"><span>Constraints come from the stored case, never from the model.</span></div>
+    <div class="back" aria-hidden="true"><span>↺ her ratings re-plan week two</span></div>
+  </div>
+  <p class="src">19 Qloo parameters to 4 endpoints, counted from the code · ARCHITECTURE.md</p>
+  <aside class="speaker-notes">This is the whole design in one line: the language model only decides where to look and writes the coaching line. Qloo returns the places, and a deterministic verifier with no network access decides what is true. Radius, price, recovery, quiet and wheelchair never come from the model.</aside>
+</section>
+
+<section class="slide s5" aria-label="Slide 5: one outing, checked">
+  <p class="lab">Thursday · one outing</p>
+  <h2 class="hd">Open at the hour, near her, explained by her loves.</h2>
+  <div class="grid">
+    <div>
+      <div class="bigcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="co">Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span><span>222 Montrose Ave Brooklyn, NY 11206</span></p></div>
+      <div class="struckcard" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div>
+    </div>
+    <ol class="notes5">
+      <li><span class="nb">1</span><span><span class="t">feature.explainability</span>Qloo's weights for her loves.</span></li>
+      <li><span class="nb">2</span><span><span class="t">R-OPEN · R-NEAR</span>Open at its slot, inside her radius.</span></li>
+      <li><span class="nb">3</span><span><span class="t">R-ALC</span>What it replaced stays, struck, with its tag.</span></li>
+    </ol>
+  </div>
+  <aside class="speaker-notes">One real card from Maya's week, with In recovery on. Every outing carries the slot, the distance, its opening hours against the slot, and Qloo's explainability weights. The struck card under it is the patisserie Qloo itself tags with bar service.</aside>
+</section>
+
+<section class="slide s6" aria-label="Slide 6: in recovery">
+  <p class="lab">In recovery</p>
+  <h2 class="hd" style="max-width:none">Struck in place. Refilled live.</h2>
+  <div class="grid">
+    <div class="callwrap">
+      <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965</span><span class="live">LIVE</span></div>
+        <div class="pic"><img src="site/recovery-live.webp" width="1800" height="850" alt="The live app one click after In recovery: Maya's week 1 with the notice 3 outings struck in place and 3 slots refilled live · 2.2 s.">
+          <span class="ring" style="left:8.6%;top:21.6%;width:10.4%;height:8.6%"></span><span class="callout" style="left:19.4%;top:21.4%">1</span>
+          <span class="ring" style="left:.6%;top:37.4%;width:40%;height:8%"></span><span class="callout" style="left:41.6%;top:36.2%">2</span></div></div>
+    </div>
+    <div class="side">
+      <p><span class="n">1 · one click</span>Only the affected outings, re-checked live.</p>
+      <p><span class="n">2 · the notice</span><q>3 outings struck in place and 3 slots refilled live · 2.2 s</q></p>
+    </div>
+  </div>
+  <aside class="speaker-notes">This is the live app, not a mock-up. One click on In recovery re-runs only the outing slots it affects. Qloo's own four-tag exclusion still left 17 of the 25 places in her Thursday query alcohol-tagged, which is why the screen exists. The bench measures why the extra screen exists: with it, <span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span> in-recovery outings serve alcohol; with only Qloo's four bar tags excluded, <span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span> do.</aside>
+</section>
+
+<section class="slide s7" aria-label="Slide 7: the clinician gate">
+  <p class="lab">The clinician gate</p>
+  <h2 class="hd">Nothing reaches her until a clinician approves.</h2>
+  <p class="stampline">approved · Thu 8 Oct · 09:34 UTC</p>
+  <div class="row">
+    <div class="gcol"><div class="gcard"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><h3>We Need New Stories</h3><p class="kd">book</p><p class="co">Read ten minutes of We Need New Stories, any page you like.</p><p class="st">approved</p></div><div class="struckcard"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></div>
+    <div class="gcol"><div class="gcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="co">Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.</p><p class="st">approved</p></div><div class="struckcard"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></div>
+    <div class="gcol"><div class="gcard"><p class="sl">SOCIAL · 14:00</p><h3>Juice Generation</h3><p class="kd">place</p><p class="co">Drop by Juice Generation at 14:00; a short visit counts.</p><p class="st">approved</p></div><div class="struckcard"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div></div>
+  </div>
+  <p class="src">Approve, swap or remove each card, then Approve week. A swap re-runs one slot live; the old card stays as a CLINICIAN strike.</p>
+  <aside class="speaker-notes">The clinician stays in charge. Swapping a card re-runs that one slot through the same tool and verifier, and the swapped-out card stays on the clinician's sheet. Only an approved week can be printed for the patient.</aside>
+</section>
+
+<section class="slide s8" aria-label="Slide 8: the re-plan">
+  <div class="grid">
+    <div>
+<div class="sheet" role="img" aria-label="Recreated from the live re-plan e0adf88a: week 1 as rated, Thursday, Saturday and Sunday. Dun-Well Doughnuts, rated P 8 · M 6, is underlined in ember; Juice Generation, rated P 2 · M 3, is struck and excluded. Two ember threads run from Dun-Well Doughnuts to week two's Saturday Ceremonia Bakeshop, +0.044, and Sunday Bushwick Pita Palace, +0.073; Dun-Well Doughnuts is kept on Thursday, re-checked live.">
+          <div class="sh-head"><span class="t">Week 1 as rated</span><span class="s">pleasure · mastery</span></div>
+          <div class="rated">
+            <div class="rc" id="th-cell"><span class="d">THU</span><span class="nm"><span class="u u1" id="th-src">Dun-Well Doughnuts</span></span><span class="pm">P <b class="p8">8</b> · M 6</span></div>
+            <div class="rc"><span class="d">SAT</span><span class="nm">Muz Muz Shop &amp; Cafè</span><span class="pm">P – · M –</span></div>
+            <div class="rc"><span class="d">SUN</span><span class="nm"><span class="xs">Juice Generation</span></span><span class="pm">P 2 · M 3 · excluded</span></div>
+          </div>
+          <div class="w2">
+            <div><div class="dh"><b>THU</b><i>solo</i></div><div class="cd"><p class="sl">SOLO · 15:00</p><p class="cn">Dun-Well Doughnuts</p><p class="kd">place</p><p class="ld kept">↻ kept from last week, rated 8 · re-checked live</p><p class="wy">because Phoebe Bridgers <b>0.539</b> · Fleabag <b>0.461</b></p></div></div>
+            <div><div class="dh" id="th-h1"><b>SAT</b><i>solo</i></div><div class="cd" id="th-t1"><p class="sl">SOLO · 11:00</p><p class="cn">Ceremonia Bakeshop</p><p class="kd">place</p><p class="ld e1">← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)</p></div></div>
+            <div><div class="dh" id="th-h2"><b>SUN</b><i>social</i></div><div class="cd" id="th-t2"><p class="sl">SOCIAL · 14:00</p><p class="cn">Bushwick Pita Palace</p><p class="kd">place</p><p class="ld e2">← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239</p></div></div>
+          </div>
+          <svg class="threads" viewBox="0 0 1000 880" aria-hidden="true"><path class="halo h1" pathLength="1" d="M195 284 C195 393 255 399 348 399 S500 401 500 429 L500 472"/><path class="halo h2" pathLength="1" d="M195 284 C195 393 255 399 506 399 S816 401 816 429 L816 472"/><path class="t1" pathLength="1" d="M195 284 C195 393 255 399 348 399 S500 401 500 429 L500 472"/><path class="t2" pathLength="1" d="M195 284 C195 393 255 399 506 399 S816 401 816 429 L816 472"/><text class="l1" x="512" y="387">+0.044</text><text class="l2" x="828" y="387">+0.073</text></svg>
+        </div>
+      <p class="src" style="margin-top:14px">Recreated from the live re-plan e0adf88a, 8 Oct 2026. Maya is a fictional case. A thread needs a lead of ≥ 0.02 over her best original love; it is Qloo's attribution, not causation.</p>
+    </div>
+    <div>
+      <p class="lab">The re-plan</p>
+      <h2 class="hd">What she enjoyed comes back. What she didn't stays out.</h2>
+      <p class="fz">Maya rated <span class="u8">Dun-Well Doughnuts 8</span>: kept, re-checked live, and threaded to two new outings. <span class="out">Juice Generation</span>, rated 2, stays out.</p>
+    </div>
+  </div>
+  <aside class="speaker-notes">This is the moment Rekindle is built for. Ratings of 7 or more become Qloo signals, 3 or less become exclusions, and the top-rated outing comes back after a live re-check. The threads show Qloo's attribution of each new card to what she rated; they are not a claim about cause.</aside>
+</section>
+
+<section class="slide s9" aria-label="Slide 9: receipts">
+  <p class="lab">Receipts</p>
+  <h2 class="hd">Measured, with the caveats left on.</h2>
+  <div class="rgrid">
+    <div class="rcell">
+      <span class="rtag">Hand check</span>
+      <p class="big"><span data-n="hand.B.wrong">0</span><span class="of">of</span><span data-n="hand.B.checked">14</span></p>
+      <p class="rtx">named venues wrong for Rekindle; the same LLM alone: <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b>.</p>
+      <div class="arm"><p class="lb"><span>LLM alone</span><b><span data-n="hand.A.wrong">7</span> struck</b></p><span class="boxes" data-boxes="A" role="img" aria-label="20 venues sampled: 7 wrong, 10 right, 3 inconclusive"><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
+      <div class="arm"><p class="lb"><span>Rekindle</span><b><span data-n="hand.B.wrong">0</span> struck</b></p><span class="boxes" data-boxes="B" role="img" aria-label="20 venues sampled: 0 wrong, 14 right, 6 inconclusive"><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
+    </div>
+    <div class="rcell">
+      <span class="rtag">In recovery</span>
+      <p class="big"><span data-n="abl.B.leak">0</span><span class="of">of</span><span data-n="abl.B.cards">30</span></p>
+      <p class="rtx">outings serving alcohol, screen on.</p>
+      <div class="bars">
+        <div class="bar"><p class="lb"><span>4 bar tags</span><b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b></p><div class="tr"><i data-w="abl.B-4" style="--w:75.0%"></i></div></div>
+        <div class="bar"><p class="lb"><span>14 tags</span><b><span data-n="abl.B-.leak">3</span> of <span data-n="abl.B-.cards">28</span></b></p><div class="tr"><i data-w="abl.B-" style="--w:10.7%"></i></div></div>
+        <div class="bar zero"><p class="lb"><span>+ screen</span><b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b></p><div class="tr"><i data-w="abl.B" style="--w:0.0%"></i></div></div>
+      </div>
+    </div>
+    <div class="rcell">
+      <span class="rtag">Re-plan</span>
+      <p class="big"><span data-n="replan.passed">16</span><span class="of">/</span><span data-n="replan.N">16</span></p>
+      <p class="rtx">bench re-plans that follow her ≥ 7 ratings.</p>
+    </div>
+    <div class="rcell">
+      <span class="rtag">Verifier</span>
+      <p class="big"><span data-n="rigor.cases">60,000</span></p>
+      <p class="rtx">generated verifier cases; no outing that passes breaks a hard constraint. <b data-n="rigor.tests">227</b> tests.</p>
+    </div>
+  </div>
+  <p class="src"><span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span> Hand check: a random <span data-n="hand.A.sampled">20</span> per arm, not blind.</p>
+  <aside class="speaker-notes">We lead with the hand check because our automated checker leans on Qloo and over-flags the LLM. The ablation isolates the alcohol screen: Qloo's tags alone are not enough. Every number here is generated from the committed bench files, and the bench is labelled with the changes made after it.</aside>
+</section>
+
+<section class="slide s10" aria-label="Slide 10: honest limits">
+  <p class="lab">Honest limits</p>
+  <h2 class="hd">What it does not do.</h2>
+  <div class="lims">
+    <figure><blockquote>“It is not a clinical tool.”</blockquote><figcaption>README · Limitations, 1 · no diagnosis, no efficacy claims, no patient logins</figcaption></figure>
+    <figure><blockquote>“A plan is slow.”</blockquote><figcaption>README · Limitations, 3 · p50 <span data-n="lat.p50">17.43 s</span> on the bench</figcaption></figure>
+    <figure><blockquote>“The alcohol screen is a deny list.”</blockquote><figcaption>README · Limitations, 5 · measured, not complete</figcaption></figure>
+    <figure><blockquote>“The ember thread is Qloo's attribution, not causation.”</blockquote><figcaption>README · Limitations, 6</figcaption></figure>
+  </div>
+  <aside class="speaker-notes">These four lines are quoted from the README as written. It is clinician support, not a clinical tool. A week takes about twenty seconds because the coaching step dominates. The deny list is measured but could miss a venue with no tags, and the threads are attribution only.</aside>
+</section>
+
+<section class="slide s11" aria-label="Slide 11: what a clinician gets">
+  <div class="grid">
+    <img class="sheetimg" src="site/sheet-live.webp" width="900" height="1458" alt="Maya's week 1 as the patient sheet prints it: planned with your clinician, approved; seven rows with the activity, when, where, the coaching line and empty P and M boxes.">
+    <div>
+      <p class="lab">Her sheet</p>
+      <h2 class="hd">What a clinician gets.</h2>
+      <p class="how">Only approved activities, with empty P and M boxes. No weights, rules or strikes reach her.</p>
+      <div class="ask">
+        <div class="qr" role="img" aria-label="QR code for https://rekindle.edycu.dev/"><svg viewBox="0 0 264 264" width="264" height="264" aria-hidden="true" class="segno"><g transform="scale(8)"><path fill="#fbf8f1" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#26221d" d="M2 2.5h7m2 0h1m1 0h2m4 0h2m3 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h1m6 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m5 0h1m1 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m2 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h4m2 0h2m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m1 0h2m1 0h3m-17 1h3m1 0h2m8 0h1m3 0h1m6 0h2m-28 1h2m2 0h1m3 0h3m1 0h2m2 0h4m1 0h2m1 0h2m2 0h1m-29 1h2m1 0h1m1 0h3m1 0h1m2 0h1m4 0h1m2 0h1m1 0h1m2 0h3m-26 1h2m4 0h2m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h4m2 0h2m2 0h2m1 0h5m3 0h1m1 0h1m2 0h3m-28 1h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m-28 1h1m3 0h5m4 0h6m1 0h1m1 0h3m1 0h2m-29 1h1m1 0h1m1 0h1m3 0h3m1 0h2m1 0h1m1 0h3m1 0h2m1 0h2m1 0h2m-29 1h7m1 0h1m1 0h2m3 0h4m2 0h1m2 0h2m1 0h2m-27 1h1m2 0h1m1 0h1m1 0h1m1 0h3m2 0h2m2 0h1m2 0h1m-24 1h1m2 0h6m2 0h1m2 0h4m2 0h1m1 0h2m-22 1h1m1 0h2m1 0h1m2 0h1m2 0h1m3 0h1m3 0h3m1 0h4m-28 1h1m1 0h7m1 0h1m2 0h1m1 0h9m1 0h1m-19 1h1m1 0h1m1 0h1m3 0h1m1 0h3m3 0h2m1 0h2m-29 1h7m3 0h2m1 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h5m1 0h1m3 0h1m1 0h1m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m2 0h1m4 0h1m3 0h1m1 0h7m-27 1h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h4m4 0h1m2 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m3 0h2m1 0h1m-28 1h7m2 0h3m3 0h1m2 0h3m2 0h1m3 0h1"/></g></svg></div>
+        <div><p class="go">Plan Maya's week, <span class="k">live</span>.</p><p class="url">rekindle.edycu.dev</p></div>
+      </div>
+      <p class="links">no login · fictional cases · /judge · /integrations/qloo · /about</p>
+    </div>
+  </div>
+  <aside class="speaker-notes">What a clinician gets is the sheet a patient can take home, with only what was approved on it. The live app needs no login; plan Maya's week, switch on In recovery, approve, rate three cards and re-plan week two. Receipts are on /judge.</aside>
+</section>
+
+</main>
+<div class="notes-panel" id="notes" aria-live="polite"></div>
+<p class="hint">← → navigate · Esc overview · P presenter · C contrast</p>
+<script>
+(function () {
+  "use strict";
+  var d = document, root = d.documentElement, deck = d.getElementById("deck");
+  var slides = [].slice.call(d.querySelectorAll(".slide")), notes = d.getElementById("notes");
+  var N = slides.length, cur = 0, idleT = null;
+  var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+
+  /* every slide gets the same footer: brand, fictional-case line where Maya appears, counter */
+  slides.forEach(function (s, i) {
+    var f = d.createElement("div");
+    f.className = "foot";
+    f.innerHTML = '<span class="brand"><img src="favicon.svg" alt="">Rekindle · <span class="mono" style="font-size:18px;color:var(--muted)">' +
+      (d.querySelector(".ver") ? d.querySelector(".ver").textContent : "") + '</span></span>' +
+      '<span>' + (i === 0 || i === 2 || i === 3 || i === 9 ? "" : "Maya is a fictional case") + '</span>' +
+      '<span class="n">' + pad(i + 1) + " / " + pad(N) + "</span>";
+    s.appendChild(f);
+    s.addEventListener("click", function () { if (root.classList.contains("overview")) { overview(false); go(i); } });
+  });
+
+  /* fit the 1920×1080 stage to the window: scale from the layout viewport (clientWidth/Height), never innerWidth,
+     which a phone reports zoomed out (the 2026-09-26 Shipaton lesson); letterbox the browser, not the slide */
+  function fit() {
+    if (root.classList.contains("overview")) return;
+    var W = root.clientWidth, H = root.clientHeight * (root.classList.contains("presenter") ? 0.8 : 1);
+    var k = Math.min(W / 1920, H / 1080);
+    deck.style.transform = "translate(" + (W - 1920 * k) / 2 + "px," + (H - 1080 * k) / 2 + "px) scale(" + k + ")";
+  }
+  function go(i) {
+    cur = Math.max(0, Math.min(N - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("on", k === cur); s.setAttribute("aria-hidden", k === cur ? "false" : "true"); });
+    var a = slides[cur].querySelector(".speaker-notes");
+    notes.textContent = (cur + 1) + " / " + N + " · " + (a ? a.textContent.trim() : "");
+    if (location.hash !== "#" + (cur + 1)) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function overview(on) {
+    root.classList.toggle("overview", on);
+    if (on) deck.style.transform = "none"; else fit();
+  }
+  addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "ArrowRight" || k === " " || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") go(0);
+    else if (k === "End") go(N - 1);
+    else if (k === "Escape") overview(!root.classList.contains("overview"));
+    else if (k === "p" || k === "P") { root.classList.toggle("presenter"); fit(); }
+    else if (k === "c" || k === "C") root.classList.toggle("debug-contrast");
+  });
+  /* touch: swipe, or tap the right / left third */
+  var x0 = null;
+  addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener("touchend", function (e) {
+    if (x0 === null || root.classList.contains("overview")) return;
+    var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 40) go(cur + (dx < 0 ? 1 : -1));
+  });
+  deck.addEventListener("click", function (e) {
+    if (root.classList.contains("overview") || e.target.closest("a")) return;
+    var x = e.clientX / root.clientWidth;
+    if (x > 0.66) go(cur + 1); else if (x < 0.33) go(cur - 1);
+  });
+  /* presenter: hide the cursor after 2 s idle */
+  addEventListener("mousemove", function () {
+    root.classList.remove("idle"); clearTimeout(idleT);
+    if (root.classList.contains("presenter")) idleT = setTimeout(function () { root.classList.add("idle"); }, 2000);
+  });
+  addEventListener("resize", fit);
+  addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) go(n - 1); });
+  fit();
+  go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+</body>
+</html>

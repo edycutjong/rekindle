@@ -1,0 +1,643 @@
+{
+ "about": "Maya, a fictional case, as Rekindle's live app planned, struck, approved, rated and re-planned her week on 8 Oct 2026. Every string is the app's own text, read from the plan pages and from GET /api/plans/<id>?calls=1 (9 Oct 2026). The landing page (/about) and the pitch deck (/pitch) draw their recreated sheets from this file.",
+ "case": {
+  "name": "Maya",
+  "fictional": true,
+  "hook": "Six months flat. She can't name one thing she'd enjoy this week.",
+  "where": "Williamsburg, Brooklyn",
+  "energy": "1 of 3",
+  "limits": "≤1.5 km · ≤$$",
+  "loved": [
+   [
+    "artist",
+    "Phoebe Bridgers"
+   ],
+   [
+    "TV show",
+    "Fleabag"
+   ],
+   [
+    "tag",
+    "Ramen restaurant"
+   ]
+  ]
+ },
+ "week1": {
+  "plan": "01ded824-82aa-4e9e-b8dc-b4bc079650ec",
+  "url": "https://rekindle.edycu.dev/plans/01ded824-82aa-4e9e-b8dc-b4bc079650ec",
+  "foot": "plan 01ded824 · agent run · 08 Oct 2026 09:31 UTC",
+  "seconds_from_click": 17,
+  "qloo_calls": 9,
+  "routed_by": "qwen:qwen3.8-flash",
+  "plan_time": "12.9 s",
+  "trace": [
+   "start week 1 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b",
+   "qwen:qwen3.8-flash step 1 · 7 tool calls · 5903 ms",
+   "findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓",
+   "findAtHome day=wednesday type=book take=5 → 5 returned → My Name Is Why ✓",
+   "findOutings day=thursday hour=18 → 25 returned → Patisserie Tomoko ✓",
+   "findAtHome day=friday type=tv_show take=3 → 3 returned → High Fidelity ✓",
+   "findOutings day=saturday hour=11 → 25 returned → Brooklyn Ball Factory ✓",
+   "placeSocial day=sunday hour=14 → 3 returned · refused R-KIND 2 → Mozzarella Kosher ✓",
+   "findAtHome day=monday type=artist take=4 → 4 returned → Lucy Dacus ✓",
+   "groq:openai/gpt-oss-120b step 2 · 1 tool call · 3914 ms"
+  ],
+  "days": [
+   {
+    "day": "MON",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Lucy Dacus",
+    "kind": "artist",
+    "coach": "Listen to Lucy Dacus for ten minutes; let a song ease your thoughts.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "TUE",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+    "kind": "podcast",
+    "coach": "Give the Las Culturistas podcast ten minutes tonight; let the humor lift your mood.",
+    "why": "because Fleabag 0.52 · Phoebe Bridgers 0.48",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "WED",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "My Name Is Why",
+    "kind": "book",
+    "coach": "Read My Name Is Why for ten minutes this evening; notice a small spark of curiosity.",
+    "why": "because Fleabag 0.53 · Phoebe Bridgers 0.47",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "THU",
+    "rung": "solo",
+    "slot": "SOLO · 15:00",
+    "name": "Patisserie Tomoko",
+    "kind": "place",
+    "coach": "Spend twenty minutes at Patisserie Tomoko, savor a sweet treat and a quiet pause.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "1161 m · Thu 12:00–18:00 · slot 15:00 ✓",
+     "moved from 18:00 (closed then)"
+    ],
+    "address": "568 Union Ave Brooklyn, NY 11211"
+   },
+   {
+    "day": "FRI",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "High Fidelity",
+    "kind": "TV show",
+    "coach": "Watch High Fidelity for ten minutes tonight; let a scene bring a gentle lift.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "SAT",
+    "rung": "solo",
+    "slot": "SOLO · 11:00",
+    "name": "Brooklyn Ball Factory",
+    "kind": "place",
+    "coach": "Spend twenty minutes at Brooklyn Ball Factory with a friend, enjoy the rhythm together.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "951 m · Sat 08:00–18:00 · slot 11:00 ✓"
+    ],
+    "address": "95 Montrose Ave Brooklyn, NY 11206"
+   },
+   {
+    "day": "SUN",
+    "rung": "social",
+    "slot": "SOCIAL · 14:00",
+    "name": "Mozzarella Kosher",
+    "kind": "place",
+    "coach": "Spend twenty minutes at Mozzarella Kosher, taste a simple bite and breathe.",
+    "why": "because Phoebe Bridgers 0.52 · Fleabag 0.48",
+    "hours": [
+     "961 m · Sun 08:00–19:30 · slot 14:00 ✓",
+     "taste cell dr5rt1p"
+    ],
+    "address": "264 Lee Ave Brooklyn, NY 11206",
+    "struck": [
+     {
+      "name": "CookUnity",
+      "reason": "R-KIND · not an activity: personal_care",
+      "tags": "not an activity: personal_care"
+     }
+    ]
+   }
+  ]
+ },
+ "recovery": {
+  "plan": "ab088de3-3544-4a11-9c4e-033d2cf60965",
+  "url": "https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965",
+  "foot": "plan ab088de3 · constraint change · 08 Oct 2026 09:32 UTC",
+  "notice": "3 outings struck in place and 3 slots refilled live · 2.2 s",
+  "toggle_ms": 2191,
+  "struck": 3,
+  "refilled": 3,
+  "qloo_calls": 16,
+  "routed_by": "qwen:qwen3.8-flash",
+  "last_update": "2.2 s",
+  "trace": [
+   "findAtHome day=monday type=artist take=4 (llm) → Lucy Dacus",
+   "findAtHome day=tuesday type=podcast take=4 (llm) → Las Culturistas with Matt Rogers and Bowen Yang",
+   "findAtHome day=wednesday type=book take=5 (llm) → My Name Is Why",
+   "findOutings day=thursday hour=18 (llm) → Patisserie Tomoko",
+   "findAtHome day=friday type=tv_show take=3 (llm) → High Fidelity",
+   "findOutings day=saturday hour=11 (llm) → Brooklyn Ball Factory",
+   "placeSocial day=sunday hour=14 (llm) → Mozzarella Kosher · refused R-KIND 1",
+   "constraint change in_recovery=true → struck 3 · refilled 3 · 2.2 s"
+  ],
+  "days": [
+   {
+    "day": "MON",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Lucy Dacus",
+    "kind": "artist",
+    "coach": "Listen to Lucy Dacus for ten minutes; let a song ease your thoughts.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "TUE",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+    "kind": "podcast",
+    "coach": "Give the Las Culturistas podcast ten minutes tonight; let the humor lift your mood.",
+    "why": "because Fleabag 0.52 · Phoebe Bridgers 0.48",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "WED",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "My Name Is Why",
+    "kind": "book",
+    "coach": "Read My Name Is Why for ten minutes this evening; notice a small spark of curiosity.",
+    "why": "because Fleabag 0.53 · Phoebe Bridgers 0.47",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "THU",
+    "rung": "solo",
+    "slot": "SOLO · 15:00",
+    "name": "Dun-Well Doughnuts",
+    "kind": "place",
+    "coach": "Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "1421 m · Thu 08:00–18:00 · slot 15:00 ✓",
+     "moved from 18:00 (closed then)"
+    ],
+    "address": "222 Montrose Ave Brooklyn, NY 11206",
+    "struck": [
+     {
+      "name": "Patisserie Tomoko",
+      "reason": "R-ALC · bar_service, wine +3 more · struck when a constraint changed",
+      "tags": "service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"
+     }
+    ]
+   },
+   {
+    "day": "FRI",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "High Fidelity",
+    "kind": "TV show",
+    "coach": "Watch High Fidelity for ten minutes tonight; let a scene bring a gentle lift.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "SAT",
+    "rung": "solo",
+    "slot": "SOLO · 18:00",
+    "name": "Muz Muz Shop & Cafè",
+    "kind": "place",
+    "coach": "Relax at Muz Muz Shop & Cafè, enjoy a soothing sip and let the evening unwind for a brief twenty minutes.",
+    "why": "because Phoebe Bridgers 0.55 · Fleabag 0.45",
+    "hours": [
+     "1228 m · Sat 12:00–21:00 · slot 18:00 ✓",
+     "moved from 11:00 (closed then)"
+    ],
+    "address": "296 Graham Ave Brooklyn, NY 11211",
+    "struck": [
+     {
+      "name": "Brooklyn Ball Factory",
+      "reason": "R-ALC · alcohol, bar_onsite · struck when a constraint changed",
+      "tags": "offerings:place:alcohol, amenities:place:bar_onsite"
+     }
+    ]
+   },
+   {
+    "day": "SUN",
+    "rung": "social",
+    "slot": "SOCIAL · 14:00",
+    "name": "Juice Generation",
+    "kind": "place",
+    "coach": "Drop by Juice Generation at 14:00; a short visit counts.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "1002 m · Sun 08:00–21:00 · slot 14:00 ✓",
+     "taste cell dr5rsuw"
+    ],
+    "address": "210 Bedford Ave Brooklyn, NY 11249",
+    "coaching_template": true,
+    "struck": [
+     {
+      "name": "Mozzarella Kosher",
+      "reason": "R-ALC · full_bar, beer +3 more · struck when a constraint changed",
+      "tags": "beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"
+     },
+     {
+      "name": "CookUnity",
+      "reason": "R-KIND · not an activity: personal_care",
+      "tags": "not an activity: personal_care"
+     },
+     {
+      "name": "Marlow & Daughters",
+      "reason": "R-KIND · not an activity: butcher_shop",
+      "tags": "not an activity: butcher_shop"
+     }
+    ],
+    "review": [
+     {
+      "name": "Van Leeuwen Ice Cream",
+      "address": "204 Wythe Ave Brooklyn, NY 11249",
+      "reason": "R-ALC · barstool_seating"
+     },
+     {
+      "name": "Dunkin'",
+      "address": "182 Bedford Ave Brooklyn, NY 11249",
+      "reason": "R-ALC · happy_hour, ok_to_order_just_drinks"
+     }
+    ]
+   }
+  ],
+  "refill_call": {
+   "n": 10,
+   "of": 17,
+   "path": "/v2/insights",
+   "status": 200,
+   "ms": 231,
+   "results": 25,
+   "at": "2026-10-08T09:32:49.403Z",
+   "params": {
+    "filter.type": "urn:entity:place",
+    "signal.interests.entities": "AFBC71A7-9439-4AB0-AB68-D14B11AAF836,878680F2-2C8D-4D7A-8288-BEA75D38A843",
+    "signal.interests.tags": "urn:tag:genre:place:restaurant:ramen",
+    "filter.hours": "thursday",
+    "filter.price_level.max": "2",
+    "filter.exclude.tags": "urn:tag:category:place:bar,urn:tag:genre:place:restaurant:bar,urn:tag:category:place:night_club,urn:tag:amenity:place:bar,urn:tag:amenity:qloo:bar,urn:tag:amenities:place:bar_onsite,urn:tag:category:place:cocktail_bar,urn:tag:beverage_offering:qloo:full_bar,urn:tag:beverage_offering:qloo:cocktails,urn:tag:beverage_offering:qloo:beer,urn:tag:beverage_offering:qloo:wine,urn:tag:category:place:distillery,urn:tag:category:place:brewery,urn:tag:category:place:wine_bar",
+    "filter.exclude.entities": "B237AF38-DF96-412C-9BFD-6C1CFE83E65D,5CB55122-9BB2-4A34-822C-2385F4DDF318,F3909570-419C-45F1-8AC5-8F4038A29C51",
+    "feature.explainability": "true",
+    "take": "25",
+    "filter.location": "POINT(-73.9571 40.7081)",
+    "filter.location.radius": "1500"
+   },
+   "names": {
+    "AFBC71A7-9439-4AB0-AB68-D14B11AAF836": "Phoebe Bridgers",
+    "878680F2-2C8D-4D7A-8288-BEA75D38A843": "Fleabag",
+    "B237AF38-DF96-412C-9BFD-6C1CFE83E65D": "Patisserie Tomoko",
+    "5CB55122-9BB2-4A34-822C-2385F4DDF318": "Brooklyn Ball Factory",
+    "F3909570-419C-45F1-8AC5-8F4038A29C51": "Mozzarella Kosher"
+   }
+  }
+ },
+ "approved": {
+  "plan": "ab088de3-3544-4a11-9c4e-033d2cf60965",
+  "stamp": "approved · Thu 8 Oct · 09:34 UTC",
+  "notice": "Week approved: 7 activities stamped. After each one, rate pleasure (P) and mastery (M) from 0 to 10.",
+  "swap": {
+   "day": "wednesday",
+   "swapped_out": "My Name Is Why",
+   "notice": "Swapped My Name Is Why for We Need New Stories, verified the same way (1 Qloo call · 0.6 s)."
+  },
+  "trace_last": "swap wednesday My Name Is Why → We Need New Stories · 1 Qloo call",
+  "trace": [
+   "constraint change in_recovery=true → struck 3 · refilled 3 · 2.2 s",
+   "findAtHome day=monday type=artist take=4 (llm) → Lucy Dacus",
+   "findAtHome day=tuesday type=podcast take=4 (llm) → Las Culturistas with Matt Rogers and Bowen Yang",
+   "findAtHome day=wednesday type=book take=5 (llm) → My Name Is Why",
+   "findOutings day=thursday (toggle) → Dun-Well Doughnuts · refused R-ALC 1",
+   "findAtHome day=friday type=tv_show take=3 (llm) → High Fidelity",
+   "findOutings day=saturday (toggle) → Muz Muz Shop & Cafè · refused R-ALC 1",
+   "placeSocial day=sunday (toggle) → Juice Generation · refused R-ALC 1, R-KIND 2",
+   "swap wednesday My Name Is Why → We Need New Stories · 1 Qloo call"
+  ],
+  "days": [
+   {
+    "day": "MON",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Lucy Dacus",
+    "kind": "artist",
+    "coach": "Listen to Lucy Dacus for ten minutes; let a song ease your thoughts.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "TUE",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+    "kind": "podcast",
+    "coach": "Give the Las Culturistas podcast ten minutes tonight; let the humor lift your mood.",
+    "why": "because Fleabag 0.52 · Phoebe Bridgers 0.48",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "WED",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00 · SWAPPED IN",
+    "name": "We Need New Stories",
+    "kind": "book",
+    "coach": "Read ten minutes of We Need New Stories, any page you like.",
+    "why": "because Fleabag 0.54 · Phoebe Bridgers 0.46",
+    "hours": [],
+    "address": "",
+    "coaching_template": true,
+    "struck": [
+     {
+      "name": "My Name Is Why",
+      "reason": "CLINICIAN · swapped out by the clinician",
+      "tags": "swapped out by the clinician"
+     }
+    ]
+   },
+   {
+    "day": "THU",
+    "rung": "solo",
+    "slot": "SOLO · 15:00",
+    "name": "Dun-Well Doughnuts",
+    "kind": "place",
+    "coach": "Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "1421 m · Thu 08:00–18:00 · slot 15:00 ✓",
+     "moved from 18:00 (closed then)"
+    ],
+    "address": "222 Montrose Ave Brooklyn, NY 11206",
+    "struck": [
+     {
+      "name": "Patisserie Tomoko",
+      "reason": "R-ALC · bar_service, wine +3 more · struck when a constraint changed",
+      "tags": "service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"
+     }
+    ]
+   },
+   {
+    "day": "FRI",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "High Fidelity",
+    "kind": "TV show",
+    "coach": "Watch High Fidelity for ten minutes tonight; let a scene bring a gentle lift.",
+    "why": "because Phoebe Bridgers 0.51 · Fleabag 0.49",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "SAT",
+    "rung": "solo",
+    "slot": "SOLO · 18:00",
+    "name": "Muz Muz Shop & Cafè",
+    "kind": "place",
+    "coach": "Relax at Muz Muz Shop & Cafè, enjoy a soothing sip and let the evening unwind for a brief twenty minutes.",
+    "why": "because Phoebe Bridgers 0.55 · Fleabag 0.45",
+    "hours": [
+     "1228 m · Sat 12:00–21:00 · slot 18:00 ✓",
+     "moved from 11:00 (closed then)"
+    ],
+    "address": "296 Graham Ave Brooklyn, NY 11211",
+    "struck": [
+     {
+      "name": "Brooklyn Ball Factory",
+      "reason": "R-ALC · alcohol, bar_onsite · struck when a constraint changed",
+      "tags": "offerings:place:alcohol, amenities:place:bar_onsite"
+     }
+    ]
+   },
+   {
+    "day": "SUN",
+    "rung": "social",
+    "slot": "SOCIAL · 14:00",
+    "name": "Juice Generation",
+    "kind": "place",
+    "coach": "Drop by Juice Generation at 14:00; a short visit counts.",
+    "why": "because Phoebe Bridgers 0.54 · Fleabag 0.46",
+    "hours": [
+     "1002 m · Sun 08:00–21:00 · slot 14:00 ✓",
+     "taste cell dr5rsuw"
+    ],
+    "address": "210 Bedford Ave Brooklyn, NY 11249",
+    "coaching_template": true,
+    "struck": [
+     {
+      "name": "Mozzarella Kosher",
+      "reason": "R-ALC · full_bar, beer +3 more · struck when a constraint changed",
+      "tags": "beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"
+     },
+     {
+      "name": "CookUnity",
+      "reason": "R-KIND · not an activity: personal_care",
+      "tags": "not an activity: personal_care"
+     },
+     {
+      "name": "Marlow & Daughters",
+      "reason": "R-KIND · not an activity: butcher_shop",
+      "tags": "not an activity: butcher_shop"
+     }
+    ],
+    "review": [
+     {
+      "name": "Van Leeuwen Ice Cream",
+      "address": "204 Wythe Ave Brooklyn, NY 11249",
+      "reason": "R-ALC · barstool_seating"
+     },
+     {
+      "name": "Dunkin'",
+      "address": "182 Bedford Ave Brooklyn, NY 11249",
+      "reason": "R-ALC · happy_hour, ok_to_order_just_drinks"
+     }
+    ]
+   }
+  ]
+ },
+ "rated": {
+  "plan": "ab088de3-3544-4a11-9c4e-033d2cf60965",
+  "notice": "3 activities rated.",
+  "ratings": [
+   {
+    "name": "Dun-Well Doughnuts",
+    "p": 8,
+    "m": 6
+   },
+   {
+    "name": "Lucy Dacus",
+    "p": 7,
+    "m": 5
+   },
+   {
+    "name": "Juice Generation",
+    "p": 2,
+    "m": 3
+   }
+  ]
+ },
+ "week2": {
+  "plan": "e0adf88a-6274-4b7e-a0af-428e3af9973e",
+  "url": "https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e",
+  "foot": "plan e0adf88a · re-planned from week 1 · 08 Oct 2026 09:45 UTC",
+  "seconds_from_click": 16.1,
+  "qloo_calls": 10,
+  "routed_by": "qwen:qwen3.8-flash",
+  "re-plan_time": "11.6 s",
+  "threads": 2,
+  "ember_labels": [
+   "← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)",
+   "← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239"
+  ],
+  "ties": [
+   "with Lucy Dacus, rated 7 · tied with Fleabag (0.266 vs 0.264)",
+   "with Lucy Dacus, rated 7 · tied with Fleabag (0.260 vs 0.252)"
+  ],
+  "summary": "Week 2: 2 kept · 5 new · 2 rekindled by a rating (Qloo's attribution, not causation)",
+  "trace": [
+   "start week 2 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b",
+   "findOutings day=thursday kept=true rated=8 → 1 returned → Dun-Well Doughnuts ✓",
+   "qwen:qwen3.8-flash step 1 · 6 tool calls · 5260 ms",
+   "findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓",
+   "findAtHome day=wednesday type=book take=4 → 4 returned → A Little Devil in America: Notes in Praise of Black Performance ✓",
+   "findOutings day=saturday hour=11 → 25 returned · review 1 → Ceremonia Bakeshop ✓",
+   "findAtHome day=friday type=tv_show take=4 → 4 returned → Shrill ✓",
+   "placeSocial day=sunday hour=14 → 11 returned · refused R-KIND 2 → Bushwick Pita Palace ✓",
+   "findAtHome day=monday type=artist take=4 → 4 returned → Big Thief ✓",
+   "groq:openai/gpt-oss-120b step 2 · 1 tool call · 3090 ms"
+  ],
+  "days": [
+   {
+    "day": "MON",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Big Thief",
+    "kind": "artist",
+    "coach": "Listen to a ten‑minute song or set that feels resonant.",
+    "why": "because Lucy Dacus 0.266 · Fleabag 0.264 · Phoebe Bridgers 0.264",
+    "hours": [],
+    "address": "",
+    "tied": "with Lucy Dacus, rated 7 · tied with Fleabag (0.266 vs 0.264)"
+   },
+   {
+    "day": "TUE",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Las Culturistas with Matt Rogers and Bowen Yang",
+    "kind": "podcast",
+    "coach": "Give yourself ten minutes to listen and smile at their banter.",
+    "why": "because Lucy Dacus 0.260 · Dun-Well Doughnuts 0.259 · Fleabag 0.252",
+    "hours": [],
+    "address": "",
+    "tied": "with Lucy Dacus, rated 7 · tied with Fleabag (0.260 vs 0.252)"
+   },
+   {
+    "day": "WED",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "A Little Devil in America: Notes in Praise of Black Performance",
+    "kind": "book",
+    "coach": "Spend ten minutes reading a passage that sparks curiosity.",
+    "why": "because Phoebe Bridgers 0.281 · Lucy Dacus 0.279 · Dun-Well Doughnuts 0.253",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "THU",
+    "rung": "solo",
+    "slot": "SOLO · 15:00",
+    "name": "Dun-Well Doughnuts",
+    "kind": "place",
+    "coach": "Enjoy a quick treat there; twenty minutes is enough to savor a bite.",
+    "why": "because Phoebe Bridgers 0.539 · Fleabag 0.461",
+    "hours": [
+     "1421 m · Thu 08:00–18:00 · slot 15:00 ✓",
+     "moved from 18:00 (closed then)"
+    ],
+    "address": "222 Montrose Ave Brooklyn, NY 11206",
+    "kept": "↻ kept from last week, rated 8 · re-checked live"
+   },
+   {
+    "day": "FRI",
+    "rung": "home",
+    "slot": "HOME · 10 MIN · 19:00",
+    "name": "Shrill",
+    "kind": "TV show",
+    "coach": "Watch a ten‑minute clip or episode segment that lifts your mood.",
+    "why": "because Phoebe Bridgers 0.257 · Dun-Well Doughnuts 0.256 · Lucy Dacus 0.251",
+    "hours": [],
+    "address": ""
+   },
+   {
+    "day": "SAT",
+    "rung": "solo",
+    "slot": "SOLO · 11:00",
+    "name": "Ceremonia Bakeshop",
+    "kind": "place",
+    "coach": "Stop by for a brief sweet pause; twenty minutes lets you enjoy a treat.",
+    "why": "because Dun-Well Doughnuts 0.296 · Phoebe Bridgers 0.252 · Lucy Dacus 0.241",
+    "hours": [
+     "563 m · Sat 09:00–15:00 · slot 11:00 ✓"
+    ],
+    "address": "743 Driggs Ave Brooklyn, NY 11211",
+    "ember": "← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)",
+    "review": [
+     {
+      "name": "Van Leeuwen Ice Cream",
+      "address": "204 Wythe Ave Brooklyn, NY 11249",
+      "reason": "R-ALC · barstool_seating"
+     }
+    ]
+   },
+   {
+    "day": "SUN",
+    "rung": "social",
+    "slot": "SOCIAL · 14:00",
+    "name": "Bushwick Pita Palace",
+    "kind": "place",
+    "coach": "Drop in for a quick bite; twenty minutes gives you a tasty break.",
+    "why": "because Dun-Well Doughnuts 0.307 · Lucy Dacus 0.239 · Phoebe Bridgers 0.234",
+    "hours": [
+     "1473 m · Sun 11:00–01:00 · slot 14:00 ✓",
+     "taste cell dr5rt6v"
+    ],
+    "address": "243 Bushwick Ave Brooklyn, NY 11206",
+    "ember": "← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239",
+    "struck": [
+     {
+      "name": "CookUnity",
+      "reason": "R-KIND · not an activity: personal_care",
+      "tags": "not an activity: personal_care"
+     }
+    ]
+   }
+  ]
+ }
+}
