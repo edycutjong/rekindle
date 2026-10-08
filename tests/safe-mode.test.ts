@@ -3,6 +3,7 @@ import { errorResponse } from "../lib/http";
 import { RateLimiter, type DailyCounter } from "../lib/ratelimit";
 import { readDoc } from "../lib/reads";
 import { caseFromSeed } from "../lib/service";
+import { latestReceipts, resetReceiptsCache } from "../lib/receipts";
 import { BlobStore, CIRCUIT_MS, CorruptDocument, FailoverStore, MemoryStore, RedisStore, resetFailover, storeDegraded, storeFromEnv, StoreUnavailable, toStoreError } from "../lib/store";
 import { FakeRedis } from "./fake-redis";
 
@@ -144,5 +145,36 @@ describe("QA round 4 (a2a r06): safe mode (lib/store.ts FailoverStore, lib/http.
     expect(miss.status).toBe(503);
     expect(miss.headers.get("retry-after")).toBe("60");
     vi.restoreAllMocks();
+  });
+
+  it("QA round 4 (a2a r07): while degraded, the latest-plans list is unavailable — never one instance's memory shown (and cached) as the deployment's latest plans", async () => {
+    let now = 2_000_000;
+    const r = new FakeRedis();
+    const f = new FailoverStore(new RedisStore(r, "", ""), new MemoryStore(), () => now);
+    r.fail = new Error("fetch failed");
+    await f.putCase(caseFromSeed("maya")!); // opens the circuit
+    expect(f.degraded()).toBe(true);
+    await expect(f.listPlanIds(5)).rejects.toBeInstanceOf(StoreUnavailable);
+    resetReceiptsCache();
+    await expect(latestReceipts(f, { limit: 5 }, 9_000_000)).rejects.toBeInstanceOf(StoreUnavailable);
+    r.fail = null;
+    now += CIRCUIT_MS + 1;
+    expect(Array.isArray(await f.listPlanIds(5))).toBe(true); // recovered: lists the real store again
+    resetReceiptsCache();
+  });
+
+  it("QA round 4 (a2a r07): /api/health is 503 while this instance is in safe mode, even when Qloo and the LLM answer", async () => {
+    vi.doMock("../lib/health", async (orig) => ({ ...(await orig<typeof import("../lib/health")>()), checkHealth: async () => ({ ok: true, at: "x", qloo: { ok: true, ms: 1, detail: "x" }, llm: { ok: true, ms: 1, detail: "x", provider: "qwen", model: "m" }, store: "memory", storeProbe: { ok: true, ms: 0, detail: "x" }, cached: false }) }));
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("VERCEL", "");
+    vi.stubEnv("STORE_FAULT", "unavailable");
+    const s = storeFromEnv();
+    await s.putCase(caseFromSeed("maya")!); // the fault store refuses → this instance's circuit opens
+    expect(storeDegraded()).toBe(true);
+    const { GET } = await import("../app/api/health/route");
+    const res = await GET(new Request("http://x/api/health", { headers: { "x-forwarded-for": "4.4.4.4" } }));
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { ok: boolean; storeDegraded: boolean })).toMatchObject({ ok: false, storeDegraded: true });
+    vi.doUnmock("../lib/health");
   });
 });

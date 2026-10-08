@@ -774,7 +774,13 @@ export class FailoverStore implements Store {
   getRun = (id: string) => this.r((s) => s.getRun(id), false);
   getReplanRun = (id: string) => this.r((s) => s.getReplanRun(id), false);
   claimRun = (d: RunDocIn, f: (c: RunDoc) => boolean) => this.w((s) => s.claimRun(d, f));
-  listPlanIds = (limit?: number) => this.w((s) => s.listPlanIds(limit));
+  /** a2a r07: a list from one instance's memory is not "the latest plans on this deployment" (and unstable_cache would
+   *  share it across instances for RECEIPTS_TTL_S), so while degraded the latest-plans view is unavailable, not empty */
+  listPlanIds = async (limit?: number) => {
+    const ids = await this.w((s) => s.listPlanIds(limit));
+    if (this.degraded()) throw new StoreUnavailable();
+    return ids;
+  };
 }
 
 /** STORE_FAULT=unavailable (never honoured on production): every backend call fails, to exercise safe mode end to end */

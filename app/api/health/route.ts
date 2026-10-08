@@ -28,6 +28,9 @@ export async function GET(req: Request) {
   const deep = new URL(req.url).searchParams.get("deep") === "1";
   const st = storeProbe();
   const h = await checkHealth({ qloo: () => qlooFromEnv(), llms: () => llmChainFromEnv(), store: st.kind, ...(deep ? { probeStore: st.probe } : {}) });
-  // a2a r06: `storeDegraded` = this instance is in safe mode (its store refused; new weeks live in its memory)
-  return json({ ...h, storeDegraded: storeDegraded() }, h.ok ? 200 : 503, g.headers);
+  // a2a r06: `storeDegraded` = this instance is in safe mode (its store refused; new weeks live in its memory).
+  // a2a r07: safe mode is not healthy — a status-code-only uptime monitor must see it as a 503
+  const degraded = storeDegraded();
+  const ok = h.ok && !degraded;
+  return json({ ...h, ok, storeDegraded: degraded }, ok ? 200 : 503, g.headers);
 }

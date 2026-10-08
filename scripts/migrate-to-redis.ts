@@ -6,7 +6,7 @@
  *
  *   BLOB_READ_WRITE_TOKEN=… KV_REST_API_URL=… KV_REST_API_TOKEN=… tsx scripts/migrate-to-redis.ts <plan-id> [<plan-id> …]
  */
-import { BlobStore, envKeyPrefix, redisFromEnv, RedisStore, type Store } from "../lib/store";
+import { BlobStore, redisFromEnv, RedisStore, type Store } from "../lib/store";
 
 const MAX_WEEKS = 50;
 
@@ -55,7 +55,11 @@ async function main() {
   if (!token) throw new Error("BLOB_READ_WRITE_TOKEN is not set (the source)");
   const redis = redisFromEnv();
   if (!redis) throw new Error("KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_*) are not set (the target), or STORE_BACKEND=blob");
-  const out = await migrate(new BlobStore(token), new RedisStore(redis, "", envKeyPrefix()), ids);
+  // a2a r07: production keys unless asked — a shell with a non-production VERCEL_ENV (e.g. from `vercel env pull`) used
+  // to land the copy under preview/, where production never reads it
+  const target = process.argv.includes("--preview") ? "preview/" : "";
+  console.log(`target: ${target ? "preview keys" : "production keys"}`);
+  const out = await migrate(new BlobStore(token), new RedisStore(redis, "", target), ids);
   console.log(JSON.stringify(out));
   if (out.missing.length) process.exitCode = 1;
 }
