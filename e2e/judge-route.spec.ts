@@ -10,7 +10,7 @@ test("/judge is 200 with no credentials and no session, and shows the receipts",
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Receipts: what the agent did, and how often a plan was wrong");
   await expect(page.getByText("No login. Every case is fictional.")).toBeVisible();
   // the claim, path, reproduce, limitations and links JUDGE.md promises are on the page itself
-  await expect(page.getByTestId("claim")).toContainText("Rekindle is a behavioural-activation planning agent for clinicians.");
+  await expect(page.getByTestId("claim")).toContainText("Rekindle is a behavioral-activation planning agent for clinicians.");
   await expect(page.getByTestId("click-path").getByRole("listitem")).toHaveCount(3);
   await expect(page.getByTestId("receipt-line")).toContainText(/\d+ Vitest tests in \d+ files/);
   await expect(page.getByTestId("reproduce")).toContainText("scripts/ui_smoke.py https://rekindle.edycu.dev");
