@@ -56,4 +56,21 @@ describe("/api/health (lib/health.ts)", () => {
     expect(h.ok).toBe(false);
     resetHealthCache();
   });
+
+  it("QA round 4 (a2a r02): the Blob probe runs only on a deep check, and a deep result never answers a shallow one", async () => {
+    resetHealthCache();
+    let probes = 0;
+    const deps = { qloo: () => ({ tags: async () => ({ results: { tags: [{}] } }) }) as never, llms: () => [], store: "blob" };
+    const deepDeps = { ...deps, probeStore: async () => (probes++, { ok: true, ms: 1, detail: "blob store reachable" }) };
+    const shallow = await checkHealth(deps, 9_000_000);
+    expect(probes).toBe(0);
+    expect(shallow.storeProbe.detail).toMatch(/not probed/);
+    const deep = await checkHealth(deepDeps, 9_000_001);
+    expect(probes).toBe(1);
+    expect(deep.cached).toBe(false);
+    const again = await checkHealth(deps, 9_000_002);
+    expect(again.storeProbe.detail).toMatch(/not probed/); // the deep entry did not answer
+    expect(probes).toBe(1);
+    resetHealthCache();
+  });
 });

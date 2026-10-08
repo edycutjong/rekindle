@@ -89,7 +89,7 @@ The Qloo friction we hit, with repro commands, is in [DX-REPORT.md](DX-REPORT.md
   - **bench:** `x-bench-token`.
   - Counters are in memory, plus a Blob-backed daily counter. Defaults and overrides are in [`.env.example`](.env.example).
 - **Receipts:** every Qloo request of a plan is stored without the key (path, params, status, ms, result count). It is shown on `/integrations/qloo` and summarised on `/judge`.
-- **Health:** `GET /api/health` makes one Qloo `/v2/tags` call and one LLM ping. It is cached for 60 s and returns 503 when either is down.
+- **Health:** `GET /api/health` makes one Qloo `/v2/tags` call and one LLM ping; `?deep=1` adds one Blob `head()` (a billed simple op on Vercel Hobby, so only an hourly monitor should use it). Each depth is cached for 60 s per instance, and the endpoint returns 503 when any probe is down.
 
 ## Failure and edge states
 

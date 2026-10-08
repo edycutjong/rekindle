@@ -1,5 +1,6 @@
 /**
- * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call, one tiny LLM ping and one Blob `head()` (a simple op).
+ * Liveness (`GET /api/health`): one cheap Qloo `/v2/tags` call and one tiny LLM ping. `?deep=1` adds one Blob `head()`
+ * (a billed simple op on Hobby): point an hourly monitor at the deep check, never the frequent one.
  * Reports status and latency for each and never a key. Results are cached per instance for 60 s so an uptime pinger or
  * a refresh loop cannot turn the endpoint into a key-spending loop.
  */
@@ -69,10 +70,12 @@ export async function probeStore(token: string | undefined, head?: (path: string
   }
 }
 
-let cache: { at: number; h: Health } | null = null;
+let cache: { at: number; deep: boolean; h: Health } | null = null;
 
 export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => LlmHandle[]; store: string; probeStore?: () => Promise<Probe> }, now = Date.now(), ttlMs = 60_000): Promise<Health> {
-  if (cache && now - cache.at < ttlMs) return { ...cache.h, cached: true };
+  // a2a r02: keyed by depth, so a deep result never answers a shallow request or the reverse
+  const deep = !!deps.probeStore;
+  if (cache && cache.deep === deep && now >= cache.at && now - cache.at < ttlMs) return { ...cache.h, cached: true };
   let qlooProbe: Probe;
   try {
     qlooProbe = await probeQloo(deps.qloo());
@@ -80,9 +83,9 @@ export async function checkHealth(deps: { qloo: () => QlooClient; llms: () => Ll
     qlooProbe = { ok: false, ms: 0, detail: short(e) };
   }
   const llm = await probeLlm(deps.llms());
-  const storeProbe = deps.probeStore ? await deps.probeStore() : { ok: true, ms: 0, detail: "not probed" };
+  const storeProbe = deps.probeStore ? await deps.probeStore() : { ok: true, ms: 0, detail: "not probed (?deep=1 adds one Blob head())" };
   const h: Health = { ok: qlooProbe.ok && llm.ok && storeProbe.ok, at: new Date(now).toISOString(), qloo: qlooProbe, llm, store: deps.store, storeProbe, cached: false };
-  cache = { at: now, h };
+  cache = { at: now, deep, h };
   return h;
 }
 
