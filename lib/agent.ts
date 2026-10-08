@@ -453,12 +453,17 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   }
 
   // Deterministic fallback for any slot the LLM never routed: same tools, same verifier, never the model's own text.
-  for (const slot of skeleton) {
-    if (claimed.has(slot.day)) continue;
-    claimed.add(slot.day);
-    const toolName: ToolName = slot.rung === "home" ? "findAtHome" : slot.rung === "solo" ? "findOutings" : "placeSocial";
-    await runSlot(slot, toolName, { day: slot.day, ...(slot.homeType ? { type: slot.homeType } : {}) }, "fallback");
-  }
+  // a2a r01: run in parallel like the LLM's own tool calls (the Qloo client's gate bounds concurrency, and ctx.used is
+  // checked and claimed synchronously after each response). Sequentially, this path (the one a hung or failed LLM lands
+  // on) paid every slot's Qloo latency back to back after the routing budget was already spent.
+  const unrouted = skeleton.filter((slot) => !claimed.has(slot.day));
+  for (const slot of unrouted) claimed.add(slot.day);
+  await Promise.all(
+    unrouted.map((slot) => {
+      const toolName: ToolName = slot.rung === "home" ? "findAtHome" : slot.rung === "solo" ? "findOutings" : "placeSocial";
+      return runSlot(slot, toolName, { day: slot.day, ...(slot.homeType ? { type: slot.homeType } : {}) }, "fallback");
+    }),
+  );
 
   // The coaching hand-off: the providers that did not fail above RACE one forced submitPlan call each inside the
   // coaching window; the first valid call wins and the others are aborted. QA round 3: sequentially, Qwen timed out on

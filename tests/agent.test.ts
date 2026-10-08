@@ -240,6 +240,30 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.llmErrors.map((e) => e.provider)).toEqual(["qwen"]);
   }, 15_000);
 
+  it("QA round 4 (a2a r01): the deterministic fallback routes its slots concurrently, not one Qloo call after another", async () => {
+    const base = replayClient();
+    let inFlight = 0;
+    let peak = 0;
+    const slow = {
+      async insights(p: QlooParams) {
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((r) => setTimeout(r, 30));
+        try {
+          return await base.insights(p);
+        } finally {
+          inFlight--;
+        }
+      },
+    } as unknown as typeof base;
+    const plan = await runAgent({ qloo: slow, case: MAYA, llms: [failingLlm("qwen"), failingLlm("groq", 500)] });
+    expect(plan.slots).toHaveLength(7);
+    expect(plan.slots.every((s) => s.routedBy === "fallback")).toBe(true);
+    expect(peak).toBeGreaterThan(1);
+    const ids = plan.slots.filter((s) => s.card).map((s) => s.card!.entity_id);
+    expect(new Set(ids).size).toBe(ids.length); // no venue placed twice when slots race
+  });
+
   it("Qloo outage: slots are left empty with the reason; the agent never fills them itself", async () => {
     const plan = await runAgent({ qloo: replayClient([], true), case: MAYA, llms: [scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])])] });
     const outings = plan.slots.filter((s) => s.slot.rung !== "home");
