@@ -1,8 +1,8 @@
 {
  "generated_by": "scripts/rigor.py",
- "tests": 188,
- "files": 14,
- "defect_named": 46,
+ "tests": 192,
+ "files": 15,
+ "defect_named": 50,
  "properties": 3,
  "runs_per_property": 20000,
  "property_cases": 60000
