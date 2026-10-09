@@ -88,6 +88,12 @@ b, strong { font-weight: 700; }
 code, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gut); }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* the skip link: the first Tab stop shows itself as a printed form box */
+a.vh:focus, a.vh:focus-visible { position: fixed; left: 16px; top: 12px; z-index: 70; width: auto; height: auto; overflow: visible; clip: auto;
+  padding: 8px 12px; background: var(--paper); border: 1.5px solid var(--ink); font: 700 15px/1.2 var(--font-body); text-decoration: none; }
+/* every live capture links to its full-size file (tap to zoom on a phone) */
+a.zoom { display: block; cursor: zoom-in; text-decoration: none; }
+a.zoom:focus-visible { outline-offset: -3px; }
 
 /* ── the top strip ───────────────────────────────────────────────────── */
 .top { position: sticky; top: 0; z-index: 40; background: var(--bg); border-bottom: 1px solid transparent; transition: border-color .25s; }
@@ -96,6 +102,7 @@ code, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums;
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 23px/1 var(--font-display); color: var(--ink); text-decoration: none; }
 .brand img { width: 30px; height: 30px; }
 .nav { display: flex; align-items: center; gap: 22px; margin-left: auto; font-size: 15px; }
+.nav a { white-space: nowrap; }
 .nav a:not(.btn) { text-decoration-color: transparent; }
 .nav a:not(.btn):hover { text-decoration-color: var(--ink); }
 
@@ -114,32 +121,36 @@ code, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums;
 .day::after { content: ""; flex: 1; height: 1px; background: var(--rule); transform: translateY(-4px); }
 .h2 { font-size: clamp(34px, 4.6vw, 60px); line-height: 1.04; letter-spacing: -.012em; max-width: 19ch; }
 .dek { margin-top: 18px; max-width: 40em; font-size: 19px; color: var(--ink); }
-.src { margin-top: 14px; font: 12.5px/1.55 var(--font-data); color: var(--muted); }
+/* provenance and captions are prose: the body face in muted ink; only IDs, paths and the app's own strings sit in <code> */
+.src { margin-top: 14px; font: 14.5px/1.5 var(--font-body); color: var(--muted); }
 .src a { text-decoration-color: var(--rule); }
+.src code, figcaption code, .rnote code, .proof code, .rp-sum code, .rsrc code { font: 13px/1 var(--font-data); color: var(--ink); }
 
 /* ── hero ────────────────────────────────────────────────────────────── */
 .hero { position: relative; padding: clamp(26px, 4vw, 54px) 0 0; }
 .formline { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 22px; font: 500 12px/1.4 var(--font-data); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .formline span { padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
 .formline b { color: var(--ink); font-weight: 500; }
-h1 { font-size: clamp(34px, 4.55vw, 66px); line-height: 1.04; letter-spacing: -.016em; margin: 0; }
+/* the headline is the page's loudest thing: three printed lines, the strike in the middle one, the ember on the last */
+h1 { font-size: clamp(34px, 6.1vw, 88px); line-height: 1.02; letter-spacing: -.02em; margin: 0; }
 h1 .ln { display: block; white-space: nowrap; }
 h1 .x, h1 .k { position: relative; display: inline-block; }
 h1 .x { color: var(--before-firm); }
 h1 .x::after { content: ""; position: absolute; left: -.04em; right: -.04em; top: 52%; height: .07em; background: var(--before); transform-origin: 0 50%; }
 h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -.04em; height: .056em; border-radius: 1em; background: var(--after); transform-origin: 0 50%; }
-.hero-row { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(28px, 4vw, 64px); margin-top: clamp(26px, 3.2vw, 44px); align-items: start; }
-.lede { font-size: clamp(17px, 1.32vw, 19px); line-height: 1.62; }
+.hero-row { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(28px, 4vw, 64px); margin-top: clamp(24px, 2.8vw, 40px); align-items: start; }
+.lede { font-size: clamp(17px, 1.32vw, 19px); line-height: 1.6; max-width: 34em; }
 .lede b { font-weight: 700; }
+.lede .cv { color: var(--muted); }
 .ctas { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 28px; }
 .ctas .tl { font-weight: 700; font-size: 16px; }
-.proof { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--rule); font: 12.5px/1.6 var(--font-data); color: var(--muted); }
+.proof { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--rule); font: 14.5px/1.55 var(--font-body); color: var(--muted); max-width: 40em; }
 
 /* the recreated sheet fragment: a fixed-aspect drawing in container units, so the static threads land wherever it is drawn */
 .frag { margin: 0; position: relative; }
 .sheet { position: relative; aspect-ratio: 1000 / 880; container-type: inline-size; overflow: hidden; background: var(--bg); border: 1px solid var(--rule); box-shadow: var(--lift);
   background-image: linear-gradient(to bottom, transparent calc(100% - 1px), var(--rule-soft) calc(100% - 1px)); background-size: 100% 3.4cqw;
-  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); }
+  -webkit-mask-image: linear-gradient(to bottom, #000 95%, transparent 100%); mask-image: linear-gradient(to bottom, #000 95%, transparent 100%); }
 .sheet::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: .45cqw; background: var(--ink); }
 .sh-head { position: absolute; left: 4cqw; top: 3.4cqw; display: flex; align-items: baseline; gap: 1.6cqw; }
 .sh-head .t { font: 400 3.6cqw/1 var(--font-display); }
@@ -154,9 +165,10 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .u { background: linear-gradient(var(--after), var(--after)) no-repeat 0 100% / 100% .34cqw; padding-bottom: .15cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .xs { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 56% / 100% .28cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .w2 { position: absolute; left: 4cqw; top: 42.5cqw; width: 92cqw; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3cqw; }
+.w2 > div { display: flex; flex-direction: column; }   /* the three slot boxes end level, at the longest lead, above the sheet's fade */
 .w2 .dh { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 1cqw; border-bottom: .25cqw solid var(--ink); font: 500 1.9cqw/1 var(--font-data); letter-spacing: .08em; }
 .w2 .dh i { font-style: normal; font-weight: 400; color: var(--muted); letter-spacing: .02em; }
-.cd { margin-top: 1.6cqw; background: var(--paper); border: 1px solid var(--rule); padding: 2cqw 2cqw 3cqw; min-height: 44cqw; }
+.cd { flex: 1; margin-top: 1.6cqw; background: var(--paper); border: 1px solid var(--rule); padding: 2cqw 2cqw 2.2cqw; }
 .cd .sl { font: 1.85cqw/1.3 var(--font-data); color: var(--muted); letter-spacing: .04em; }
 .cd .cn { margin: .8cqw 0 .3cqw; font: 400 3.4cqw/1.08 var(--font-display); }
 .cd .kd { font: 1.85cqw/1 var(--font-data); color: var(--muted); }
@@ -168,7 +180,8 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .threads .halo { stroke: var(--bg); stroke-width: 13; }
 .threads text { font: 500 24px var(--font-data); fill: var(--after-ink); paint-order: stroke; stroke: var(--bg); stroke-width: 7px; stroke-linejoin: round; }
 .capline { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-top: 12px; }
-.frag figcaption { font: 12.5px/1.55 var(--font-data); color: var(--muted); max-width: 64ch; }
+.frag figcaption { font: 14.5px/1.5 var(--font-body); color: var(--muted); max-width: 62ch; }
+.frag figcaption .do { color: var(--ink); }
 .replay { flex: none; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); font: 500 12px/1 var(--font-data); padding: 8px 11px; cursor: pointer; letter-spacing: .04em; display: none; }
 .replay:hover { border-color: var(--ink); }
 .js .replay { display: inline-block; }
@@ -218,7 +231,8 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .big { font: 400 clamp(42px, 4.1vw, 58px)/1 var(--font-display); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.01em; white-space: nowrap; }
 .big .of { font-size: .5em; color: var(--muted); letter-spacing: .02em; margin: 0 .3em; vertical-align: .32em; font-family: var(--font-data); }
 .rtx { margin-top: 12px; font-size: 15.5px; line-height: 1.45; }
-.rsrc { margin-top: 14px; font: 12px/1.5 var(--font-data); color: var(--muted); word-break: break-word; }
+.rsrc { margin-top: 14px; font: 14px/1.45 var(--font-body); color: var(--muted); overflow-wrap: anywhere; }
+.rsrc code { font-size: 12.5px; }
 .arm { margin-top: 16px; }
 .arm + .arm { margin-top: 10px; }
 .arm .lab { display: flex; justify-content: space-between; gap: 8px; font: 12px/1.3 var(--font-data); color: var(--muted); margin-bottom: 6px; }
@@ -233,9 +247,9 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .bar .lab b { color: var(--ink); font-weight: 500; white-space: nowrap; }
 .bar .tr { height: 10px; background: var(--bg); border: 1px solid var(--rule); position: relative; }
 .bar .tr i { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); background: var(--before); }
-.bar.zero .tr { border-color: var(--stamp); }
-.bar.zero .lab b { color: var(--stamp); }
-.rnote { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: space-between; font: 12.5px/1.55 var(--font-data); color: var(--muted); }
+.bar.zero .tr { border-color: var(--ink); }
+.bar.zero .lab b { color: var(--ink); }
+.rnote { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: space-between; font: 14.5px/1.5 var(--font-body); color: var(--muted); }
 .motion .rcpt:not(.in) .bx.x::after { transform: rotate(-58deg) scaleX(0); }
 .motion .rcpt.in .bx.x::after { transition: transform .32s var(--ease); }
 .motion .rcpt.in .bx.x:nth-child(2)::after { transition-delay: .12s; } .motion .rcpt.in .bx.x:nth-child(3)::after { transition-delay: .24s; }
@@ -245,14 +259,14 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .motion .rcpt.in .bar .tr i { transition: width 1.1s var(--ease) .2s; }
 
 /* ── MON · the case ─────────────────────────────────────────────────── */
-.case { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); margin-top: 40px; align-items: start; }
+.case { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); margin-top: 40px; align-items: start; }
 .shot { margin: 0; }
 .shot .fr { border: 1px solid var(--rule); background: var(--paper); box-shadow: var(--lift); overflow: hidden; }
 .shot .chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--rule); background: var(--bg); font: 12px/1 var(--font-data); color: var(--muted); }
 .shot .chrome .url { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shot .chrome .live { color: var(--ink); font-weight: 500; letter-spacing: .1em; }
-.shot .chrome .live::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--stamp); margin-right: 6px; vertical-align: 1px; }
-.shot figcaption { margin-top: 12px; font: 12.5px/1.55 var(--font-data); color: var(--muted); }
+.shot .chrome .live::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); margin-right: 6px; vertical-align: 1px; }
+.shot figcaption { margin-top: 12px; font: 14.5px/1.5 var(--font-body); color: var(--muted); }
 .breaks { list-style: none; margin: 22px 0 0; padding: 0; counter-reset: b; }
 .breaks li { counter-increment: b; position: relative; padding: 18px 0 18px 46px; border-top: 1px solid var(--rule); }
 .breaks li:last-child { border-bottom: 1px solid var(--rule); }
@@ -267,12 +281,14 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .node h3 { margin-top: 8px; font-size: 21px; line-height: 1.15; }
 .node p { margin-top: 8px; font-size: 14.5px; line-height: 1.45; }
 .node .chip { margin-top: 10px; }
-.node:not(.last)::after { content: "→"; position: absolute; right: -16px; top: 50%; transform: translateY(-50%); font: 500 16px/1 var(--font-data); color: var(--ink); z-index: 1; }
+/* the arrow between two nodes sits on a paper halo, so the truth boundary's dashed line breaks around it instead of piercing it */
+.node:not(.last)::after { content: "→"; position: absolute; right: -16px; top: 50%; transform: translateY(-50%); font: 500 16px/1 var(--font-data); color: var(--ink); z-index: 2; background: var(--bg); padding: 5px 0; }
 .node.v { border-color: var(--ink); }
 .node.v .refuse { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 58% / 100% 2px; }
 .node.v .review { border: 1.5px dashed var(--ink); padding: 0 4px; }
 .boundary { position: absolute; top: -18px; bottom: 52px; left: calc((100% - 5 * 18px) / 6 * 2 + 18px * 1.5); width: 0; border-left: 2px dashed var(--ink); }
-.boundary span { position: absolute; top: -54px; left: -12px; width: max-content; max-width: 360px; font: 500 12.5px/1.45 var(--font-data); background: var(--bg); padding: 2px 6px; }
+.boundary span { position: absolute; top: -58px; left: -12px; width: max-content; max-width: 380px; font: 400 14.5px/1.4 var(--font-body); background: var(--bg); padding: 2px 6px; }
+.boundary span b { font-weight: 700; }
 .back { position: absolute; left: calc((100% - 5 * 18px) / 12 * 3 + 18px); right: calc((100% - 5 * 18px) / 12); bottom: 18px; height: 34px; border: 2.5px solid var(--after); border-top: 0; border-radius: 0 0 14px 14px; }
 .back::before { content: ""; position: absolute; left: -8px; top: -10px; border: 7px solid transparent; border-bottom: 11px solid var(--after); border-top: 0; }
 .back span { position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); background: var(--bg); padding: 0 10px; font: 500 12.5px/1.4 var(--font-data); color: var(--after-ink); white-space: nowrap; }
@@ -284,22 +300,29 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .cell h3 { font-size: 24px; line-height: 1.15; margin-bottom: 10px; }
 .cell p { font-size: 15.5px; line-height: 1.5; }
 .cell .chips { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
-.c-req { grid-column: span 7; grid-row: span 2; border-color: var(--ink); }
+.c-req { grid-column: span 7; grid-row: span 2; border-color: var(--ink); display: flex; flex-direction: column; }
+.c-req .src { margin-top: auto; padding-top: 14px; }
 .c-rules { grid-column: span 5; }
 .c-why { grid-column: span 5; }
-.c-cell { grid-column: span 5; }
-.c-calls { grid-column: span 7; display: grid; grid-template-columns: 1fr 1.1fr; gap: 20px; align-items: center; }
+.c-why p + p { margin-top: 10px; }
+/* the live call log, at a size its rows can be read: the totals and the plan's line, then row 10 (the refill above) */
+.c-calls { grid-column: span 12; margin: 0; }
+.c-calls .head { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.5fr); gap: 6px 32px; align-items: start; margin-bottom: 18px; }
+.c-calls .head h3 { margin-bottom: 0; }
+.c-calls .head .chips { margin-top: 10px; }
+.c-calls .gap { margin: 0; padding: 7px 14px; border-top: 1px dashed var(--rule); border-bottom: 1px dashed var(--rule); background: var(--bg); font: 12.5px/1.4 var(--font-data); color: var(--muted); }
 .req { margin-top: 14px; font: 13px/1.62 var(--font-data); background: var(--bg); border: 1px solid var(--rule); padding: 14px 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .req .m { font-weight: 500; }
 .req .p { display: block; padding-left: 16px; text-indent: -16px; color: var(--muted); }
 .req .p b { font-weight: 500; color: var(--ink); }
 .req .ex { color: var(--ink); }
-.req .ok { display: block; margin-top: 8px; color: var(--stamp); font-weight: 500; }
+.req .ok { display: block; margin-top: 8px; color: var(--ink); font-weight: 500; }
+.req .got { display: block; margin-top: 2px; padding-left: 16px; text-indent: -16px; color: var(--ink); }
+.c-req .req { flex: 1; }
 .rules { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14.5px; line-height: 1.4; }
 .rules dt { font: 500 12.5px/1.6 var(--font-data); }
 .rules dd { margin: 0; color: var(--ink); }
-.c-calls img { border: 1px solid var(--rule); }
-.loop-note { display: none; margin-top: 16px; font: 12.5px/1.6 var(--font-data); color: var(--muted); max-width: 70ch; }
+.loop-note { display: none; margin-top: 16px; font: 15px/1.55 var(--font-body); color: var(--muted); max-width: 70ch; }
 .loop-note b { color: var(--after-ink); font-weight: 500; }
 
 /* ── WED · the week, replayed ───────────────────────────────────────── */
@@ -315,9 +338,12 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .js .rp-play { display: inline-block; }
 .rp-notice { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; padding: 12px 16px; border-top: 3px solid var(--ink); border-bottom: 1px solid var(--rule); background: var(--paper); font: 13.5px/1.5 var(--font-data); }
 .rp-notice a { white-space: nowrap; }
-.rp-box { position: relative; display: grid; }
+.rp-notice .k { font-style: normal; color: var(--muted); margin-right: 10px; }
+.rp-box { position: relative; display: grid; align-items: start; }
 .rp-box > .rp-state { grid-area: 1 / 1; }
-.rp-state[hidden] { display: none; }
+/* every step stays in the one grid cell, so the box keeps the tallest step's height and nothing below it moves when the
+   step changes; an inactive step is invisible, unfocusable and out of the accessibility tree (visibility, not display) */
+.rp-state[hidden] { display: block; visibility: hidden; }
 .rp-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 16px 0 10px; border: 1px solid var(--rule); background: var(--paper); }
 .rp-strip > div { padding: 10px 10px 12px; border-right: 1px solid var(--rule); min-width: 0; }
 .rp-strip > div:last-child { border-right: 0; }
@@ -358,7 +384,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .rp-threads path { fill: none; stroke: var(--after); stroke-width: 2.5; stroke-linecap: round; }
 .rp-threads text { font: 500 13px var(--font-data); fill: var(--after-ink); paint-order: stroke; stroke: var(--bg); stroke-width: 5px; }
 .rp-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 24px; margin-top: 20px; align-items: start; }
-.rp-sum { font: 13px/1.6 var(--font-data); color: var(--ink); }
+.rp-sum { font: 15px/1.55 var(--font-body); color: var(--ink); }
 .rp-sum p + p { margin-top: 8px; }
 .rp-sum .m { color: var(--muted); }
 .trace { border: 1px solid var(--rule); background: var(--paper); }
@@ -369,12 +395,14 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .trace li::marker { color: var(--muted); }
 .trace li.key { color: var(--ink); font-weight: 500; }
 .trace li.key::marker { color: var(--after-ink); font-weight: 500; }
-.rp-trace[hidden] { display: none; }
 @keyframes inkin { from { opacity: 0; filter: blur(2px); } }
 @keyframes strikein { from { text-decoration-color: transparent; } }
-.motion .rp-state .ch { animation: inkin .6s var(--ease) both; }
-.motion .rp-state s.ch, .motion .rp-state .ch s { animation: strikein .6s var(--ease) .15s both; }
-.motion .rp-trace li { animation: typed .38s steps(30) both; animation-delay: calc(var(--i, 0) * 170ms); }
+/* a step's changes ink in when the step is shown (.play is set by the script on a tab or the Play button) */
+.motion .rp-state.play .ch { animation: inkin .6s var(--ease) both; }
+.motion .rp-state.play s.ch, .motion .rp-state.play .ch s { animation: strikein .6s var(--ease) .15s both; }
+/* the terminal replay: the step's agent trace types out line by line, when the step is shown and when the trace first
+   scrolls into view (.typing); without motion, or before either, every line rests fully printed */
+.motion .rp-state .trace.typing li { animation: typed .38s steps(30) both; animation-delay: calc(var(--i, 0) * 170ms); }
 .motion .rp-threads path { stroke-dasharray: 1; animation: thread 1s cubic-bezier(.45, .05, .25, 1) .4s both; }
 .motion .rp-threads text { animation: appear .4s ease-out 1.2s both; }
 
@@ -388,7 +416,9 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .notes .tag.e { color: var(--after-ink); }
 .notes .tag.g { color: var(--muted); }
 .shot.wide { margin-top: 40px; }
-.trio { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(22px, 3vw, 44px); margin-top: 30px; align-items: start; }
+/* the strikes at a readable size (0.72x of the app), with the three notes and the measured reason beside them */
+.thu-row { display: grid; grid-template-columns: minmax(0, 456px) minmax(0, 1fr); gap: clamp(24px, 3.5vw, 56px); margin-top: 34px; align-items: start; }
+.thu-row .finding { margin-top: 24px; }
 .side .shot .fr { box-shadow: none; }
 .finding { padding: 18px 20px; border: 1.5px solid var(--ink); background: var(--paper); }
 .finding .k { font: 500 12px/1.3 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -396,7 +426,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .frozen { margin-top: 30px; padding: 22px 0 0; border-top: 3px solid var(--ink); font: 400 clamp(22px, 2.3vw, 30px)/1.3 var(--font-display); max-width: 34em; }
 .frozen .u8 { background: linear-gradient(var(--after), var(--after)) no-repeat 0 96% / 100% 3px; }
 .frozen .out { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 58% / 100% 2px; }
-.sheetpair { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 64px); margin-top: 40px; align-items: start; }
+.sheetpair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); margin-top: 40px; align-items: start; }
 .paperstack { position: relative; }
 .paperstack img.sheetimg { border: 1px solid var(--rule); box-shadow: var(--lift); background: var(--paper); }
 @keyframes press { from { opacity: 0; transform: rotate(-4deg) scale(1.6); } }
@@ -407,7 +437,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .quotes figure + figure { padding-left: 26px; }
 .quotes figure:last-child { border-right: 0; }
 .quotes blockquote { margin: 0; font: 400 clamp(20px, 1.9vw, 25px)/1.32 var(--font-display); }
-.quotes figcaption { margin-top: 14px; font: 12.5px/1.5 var(--font-data); color: var(--muted); }
+.quotes figcaption { margin-top: 14px; font: 14px/1.5 var(--font-body); color: var(--muted); }
 .wrong { margin-top: 44px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .wrong div { padding: 18px 20px; border: 1px solid var(--rule); background: var(--paper); }
 .wrong h3 { font-size: 19px; line-height: 1.2; }
@@ -421,7 +451,10 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .faq summary::-webkit-details-marker { display: none; }
 .faq summary::after { content: "+"; font: 400 22px/1 var(--font-data); color: var(--muted); transition: transform .25s var(--ease); }
 .faq details[open] summary::after { transform: rotate(45deg); }
-.faq summary:hover { color: var(--ink); }
+/* hover and focus answer back: the question takes a pencil underline and its "+" turns to ink */
+.faq summary .q { text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 1.5px; text-underline-offset: .22em; transition: text-decoration-color .2s; }
+.faq summary:hover .q, .faq summary:focus-visible .q { text-decoration-color: var(--before); }
+.faq summary:hover::after, .faq summary:focus-visible::after, .faq details[open] summary::after { color: var(--ink); }
 .faq .a { padding: 0 0 22px; max-width: 46em; font-size: 16.5px; line-height: 1.6; }
 .faq .a p + p { margin-top: 10px; }
 
@@ -430,7 +463,8 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 .close .big2 { font: 400 clamp(38px, 5.4vw, 78px)/1.02 var(--font-display); letter-spacing: -.015em; max-width: 14ch; }
 .close .big2 .k { background: linear-gradient(var(--after), var(--after)) no-repeat 0 94% / 100% .06em; }
 .close .row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-.foot { padding: 26px 0 40px; border-top: 1px solid var(--rule); font: 12.5px/1.7 var(--font-data); color: var(--muted); }
+.foot { padding: 26px 0 40px; border-top: 1px solid var(--rule); font: 14px/1.65 var(--font-body); color: var(--muted); }
+.foot .ver { font: 12.5px/1 var(--font-data); }
 .foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 28px; }
 .foot nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 
@@ -448,20 +482,23 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
   .boundary, .back { display: none; }
   .loop-note { display: block !important; }
   .rp-days { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-@media (max-width: 980px) {
-  .hero-row, .case, .pair, .pair.rev, .sheetpair, .c-calls, .trio { grid-template-columns: minmax(0, 1fr); }
+  /* one column under the headline, so the sheet keeps its full drawing size (680 px: no line under 12.5 px) */
+  .hero-row { grid-template-columns: minmax(0, 1fr); }
   .frag { max-width: 680px; }
+}
+@media (max-width: 1100px) { .nav .tx { display: none; } }
+@media (max-width: 980px) {
+  .case, .pair, .pair.rev, .sheetpair, .thu-row, .c-calls .head { grid-template-columns: minmax(0, 1fr); }
   .bento > * { grid-column: span 12 !important; grid-row: auto !important; }
   .quotes, .wrong { grid-template-columns: minmax(0, 1fr); }
   .quotes figure, .quotes figure + figure { padding: 22px 0; border-right: 0; border-bottom: 1px solid var(--rule); }
   .rp-foot { grid-template-columns: minmax(0, 1fr); }
-  .nav .tx { display: none; }
 }
 @media (max-width: 760px) {
   body { font-size: 17px; }
   .sheet { display: none; } .replay { display: none !important; }
-  h1 .ln { white-space: normal; } h1 .ph { display: block; white-space: nowrap; }
+  h1 .ln { display: inline; white-space: normal; } h1 .ph { white-space: nowrap; }
+  .c-calls .fr, .c-calls .gap, .c-calls figcaption { display: none; }     /* the call log is linked instead: its rows cannot be read at phone width */
   .ledger { display: block; }
   .rgrid { grid-template-columns: minmax(0, 1fr); }
   .rcell { border-right: 0 !important; border-bottom: 1px solid var(--rule); }
@@ -480,6 +517,9 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
   .rp-day { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 12px; }
   .rp-day > * { grid-column: 2; }
   .rp-day > .rp-dh { grid-column: 1; grid-row: 1 / span 4; flex-direction: column; justify-content: flex-start; gap: 6px; border-bottom: 0; border-right: 2px solid var(--ink); padding: 2px 8px 0 0; align-self: stretch; }
+  /* on a phone the steps differ by up to ~700 px of single-column cards, so a step takes its own height there (it only
+     changes on a tap or Play, and Play stops once the replay leaves the screen) instead of leaving a blank page under step 1 */
+  .rp-state[hidden] { display: none; }
   .rp-card { margin-top: 0; }
   .nav .btn:not(.ink) { display: none; }
   .brand span.wm { display: none; }
@@ -514,10 +554,10 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
 <section class="hero run" aria-labelledby="hero-h">
   <div class="wrap">
     <p class="formline"><span>Weekly activity schedule</span><span>name <b>Maya</b> · a fictional case</span><span>week 1 → 2</span></p>
-    <h1 id="hero-h"><span class="ln"><span class="ph">The schedule that</span> <span class="ph"><span class="x">crosses things out</span></span></span><span class="ln"><span class="ph">and then <span class="k k1">lights up</span></span> <span class="ph"><span class="k k2">what she liked.</span></span></span></h1>
+    <h1 id="hero-h"><span class="ln"><span class="ph">The schedule that</span></span> <span class="ln"><span class="ph"><span class="x">crosses things out</span></span> <span class="ph">and then</span></span> <span class="ln"><span class="ph"><span class="k k1">lights up</span></span> <span class="ph"><span class="k k2">what she liked.</span></span></span></h1>
     <div class="hero-row">
-      <div>
-        <p class="lede">Maya can't name one thing she'd enjoy this week. Her clinician types what she loved before: Phoebe Bridgers, Fleabag, ramen. Rekindle plans a week of real, open, nearby activities with Qloo, strikes every venue that fails a rule, and re-plans week two from her own ratings. Hand-checked, the same LLM alone got <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b> named venues wrong. Rekindle: <b><span data-n="hand.B.wrong">0</span> of <span data-n="hand.B.checked">14</span></b> (a random <span data-n="hand.A.sampled">20</span> per arm, not blind).</p>
+      <div class="hero-copy">
+        <p class="lede">Maya can't name one thing she'd enjoy this week. Her clinician types what she loved before: Phoebe Bridgers, Fleabag, ramen. Hand-checked, the same LLM alone got <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b> named venues wrong; Rekindle, <b><span data-n="hand.B.wrong">0</span> of <span data-n="hand.B.checked">14</span></b> <span class="cv">(a random <span data-n="hand.A.sampled">20</span> per arm, not blind)</span>.</p>
         <div class="ctas">
           <a class="btn ink" href="https://rekindle.edycu.dev/">Plan Maya's week, live <span class="ar" aria-hidden="true">→</span></a>
           <a class="btn" href="/pitch">Pitch deck</a>
@@ -547,7 +587,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
           <li class="dot"><p class="k">Week 2 · Sat · solo · 11:00</p><p class="nm">Ceremonia Bakeshop</p><p class="tx">← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)</p></li>
           <li class="dot"><p class="k">Week 2 · Sun · social · 14:00</p><p class="nm">Bushwick Pita Palace</p><p class="tx">← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love)</p></li>
         </ol>
-        <div class="capline"><figcaption>Recreated from the live re-plan <a href="https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e">e0adf88a</a> (8 Oct 2026), in the app's own words and weights. Maya is a fictional case. The threads are Qloo's attribution, not causation.</figcaption><button class="replay" type="button">↻ replay</button></div>
+        <div class="capline"><figcaption><span class="do">Rekindle plans a week of real, open, nearby activities with Qloo, strikes every venue that fails a rule, and re-plans week two from her own ratings.</span> Recreated from the live re-plan <a href="https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e"><code>e0adf88a</code></a> (8 Oct 2026) in the app's own words and weights. Maya is a fictional case. The threads are Qloo's attribution, not causation.</figcaption><button class="replay" type="button">↻ replay</button></div>
       </figure>
     </div>
   </div>
@@ -562,7 +602,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
       <p class="rtx">named venues wrong for Rekindle, checked by hand against public listings. The same LLM alone, asked for named places: <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b>.</p>
       <div class="arm"><p class="lab"><span>the same LLM alone</span><b><span data-n="hand.A.wrong">7</span> struck · <span data-n="hand.A.inconclusive">3</span> dashed</b></p><span class="boxes" data-boxes="A" role="img" aria-label="20 venues sampled: 7 wrong, 10 right, 3 inconclusive"><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
       <div class="arm"><p class="lab"><span>Rekindle</span><b><span data-n="hand.B.wrong">0</span> struck · <span data-n="hand.B.inconclusive">6</span> dashed</b></p><span class="boxes" data-boxes="B" role="img" aria-label="20 venues sampled: 0 wrong, 14 right, 6 inconclusive"><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
-      <p class="rsrc">a random <span data-n="hand.A.sampled">20</span> per arm · struck = wrong, dashed = inconclusive · not blind · bench/audit.json</p>
+      <p class="rsrc">a random <span data-n="hand.A.sampled">20</span> per arm · struck = wrong, dashed = inconclusive · not blind · <code>bench/audit.json</code></p>
     </div>
     <div class="rcell">
       <span class="rtag">In recovery</span>
@@ -573,19 +613,19 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
         <div class="bar"><p class="lab"><span>Qloo, 14 tags excluded</span><b><span data-n="abl.B-.leak">3</span> of <span data-n="abl.B-.cards">28</span></b></p><div class="tr"><i data-w="abl.B-" style="--w:10.7%"></i></div></div>
         <div class="bar zero"><p class="lab"><span>+ Rekindle's screen</span><b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b></p><div class="tr"><i data-w="abl.B" style="--w:0.0%"></i></div></div>
       </div>
-      <p class="rsrc">bench/results.json · ablation_in_recovery</p>
+      <p class="rsrc"><code>bench/results.json</code> · <code>ablation_in_recovery</code></p>
     </div>
     <div class="rcell">
       <span class="rtag">Re-plan</span>
       <p class="big"><span class="cu" data-n="replan.passed">16</span><span class="of">/</span><span data-n="replan.N">16</span></p>
       <p class="rtx">bench re-plans whose week two follows the ≥ 7 ratings. Entities rated ≤ 3 that came back: <b data-n="replan.low_back">0</b>.</p>
-      <p class="rsrc">bench/replan.json</p>
+      <p class="rsrc"><code>bench/replan.json</code></p>
     </div>
     <div class="rcell">
       <span class="rtag">Verifier</span>
       <p class="big"><span class="cu" data-n="rigor.cases">60,000</span></p>
       <p class="rtx">generated cases: no outing that passes ever breaks a hard constraint. <b data-n="rigor.tests">227</b> tests in all, none needing a key.</p>
-      <p class="rsrc">tests/verify.property.test.ts · docs/rigor.json</p>
+      <p class="rsrc"><code>tests/verify.property.test.ts</code> · <code>docs/rigor.json</code></p>
     </div>
   </div>
   <p class="rnote"><span>Bench: <span data-n="bench.profiles">20</span> fictional profiles, finished <span data-n="bench.utc">2026-10-07 13:11 UTC</span>. <span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span> The hand check was done by the build agent, so it was not blind.</span><a href="/judge">Every receipt, with its script, on /judge →</a></p>
@@ -598,7 +638,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     <div class="case">
       <figure class="shot">
         <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev</span><span class="live">LIVE</span></div>
-          <img src="site/maya-case-live.webp" width="1400" height="471" loading="lazy" decoding="async" alt="Maya's case card on Rekindle's home page: fictional case; six months flat, she can't name one thing she'd enjoy this week; where Williamsburg, Brooklyn; energy 1 of 3; limits within 1.5 km and two price levels; loved Phoebe Bridgers, Fleabag and ramen restaurants; a button, Plan Maya's week, live."></div>
+          <a class="zoom" href="site/maya-case-live.webp"><img src="site/maya-case-live.webp" width="1960" height="660" loading="lazy" decoding="async" alt="Maya's case card on Rekindle's home page: fictional case; six months flat, she can't name one thing she'd enjoy this week; where Williamsburg, Brooklyn; energy 1 of 3; limits within 1.5 km and two price levels; loved Phoebe Bridgers, Fleabag and ramen restaurants; a button, Plan Maya's week, live."><span class="vh"> (opens the full-size capture)</span></a></div>
         <figcaption>Her case card on the live app's home page, 8 Oct 2026. Maya is a fictional case; her loves resolve to real Qloo entities and a tag.</figcaption>
       </figure>
       <div>
@@ -626,7 +666,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
       <div class="node v" role="listitem"><p class="k">Verifier · no I/O</p><h3>What is true</h3><p>PASS, <span class="refuse">REFUSE</span> with its rule, or <span class="review">REVIEW</span> for the clinician.</p><span class="chip">R-ID … R-HIST</span></div>
       <div class="node" role="listitem"><p class="k">Clinician gate</p><h3>Approve week</h3><p>Approve, swap or remove each card. Nothing reaches her unapproved.</p></div>
       <div class="node last" role="listitem"><p class="k">Her ratings</p><h3>Pleasure, mastery</h3><p>≥ 7 becomes a Qloo signal, ≤ 3 an exclusion.</p><span class="chip e">re-plan week 2</span></div>
-      <div class="boundary" aria-hidden="true"><span>Truth boundary: radius, price, recovery, quiet and wheelchair come from the stored case, never from the model.</span></div>
+      <div class="boundary" aria-hidden="true"><span><b>Truth boundary:</b> radius, price, recovery, quiet and wheelchair come from the stored case, never from the model.</span></div>
       <div class="back" aria-hidden="true"><span>↺ her ratings re-plan week two</span></div>
     </div>
     <p class="loop-note">Truth boundary between the model and Qloo: radius, price, recovery, quiet and wheelchair come from the stored case, never from the model. <b>↺ Her ratings re-plan week two.</b></p>
@@ -636,8 +676,8 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
         <h3>The refill, as Qloo was asked for it</h3>
         <p>When In recovery went on, Rekindle asked Qloo again for Thursday: 14 alcohol tags excluded, the three struck places left out, her loves as the signal. This is that request from the plan's own call log, without the key.</p>
 <pre class="req"><span class="m">GET /v2/insights</span>
-<span class="p">filter.type=urn:entity:place</span><span class="p">signal.interests.entities=<b>&lt;Phoebe Bridgers&gt;,&lt;Fleabag&gt;</b></span><span class="p">signal.interests.tags=urn:tag:genre:place:restaurant:ramen</span><span class="p">filter.hours=thursday · filter.price_level.max=2</span><span class="p">filter.location=POINT(-73.9571 40.7081) · filter.location.radius=1500</span><span class="p">filter.exclude.tags=<span class="ex">bar, night_club, cocktail_bar, full_bar, cocktails, beer, wine, distillery, brewery, wine_bar …</span> <b>(14)</b></span><span class="p">filter.exclude.entities=<b>&lt;Patisserie Tomoko&gt;,&lt;Brooklyn Ball Factory&gt;,&lt;Mozzarella Kosher&gt;</b></span><span class="p">feature.explainability=true · take=25</span><span class="ok">→ 200 · 25 places · 231 ms</span></pre>
-        <p class="src">Call 10 of 17 behind plan ab088de3, 8 Oct 2026 09:32 UTC · listed on /integrations/qloo?plan=ab088de3-3544-4a11-9c4e-033d2cf60965</p>
+<span class="p">filter.type=urn:entity:place</span><span class="p">signal.interests.entities=<b>&lt;Phoebe Bridgers&gt;,&lt;Fleabag&gt;</b></span><span class="p">signal.interests.tags=urn:tag:genre:place:restaurant:ramen</span><span class="p">filter.hours=thursday · filter.price_level.max=2</span><span class="p">filter.location=POINT(-73.9571 40.7081) · filter.location.radius=1500</span><span class="p">filter.exclude.tags=<span class="ex">bar, night_club, cocktail_bar, full_bar, cocktails, beer, wine, distillery, brewery, wine_bar …</span> <b>(14)</b></span><span class="p">filter.exclude.entities=<b>&lt;Patisserie Tomoko&gt;,&lt;Brooklyn Ball Factory&gt;,&lt;Mozzarella Kosher&gt;</b></span><span class="p">feature.explainability=true · take=25</span><span class="ok">→ 200 · 25 places · 231 ms</span><span class="got">→ Thursday's refill: Dun-Well Doughnuts · 1421 m · Thu 08:00–18:00 · slot 15:00 ✓ · moved from 18:00 (closed then)</span></pre>
+        <p class="src">Call 10 of 17 behind plan <code>ab088de3</code>, 8 Oct 2026 09:32 UTC; the live call log below prints it as row 10.</p>
       </div>
       <div class="cell c-rules">
         <h3>Every outing is checked</h3>
@@ -654,17 +694,18 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
       <div class="cell c-why">
         <h3>Explained by her own loves</h3>
         <p>Every card says why, in Qloo's weights: <span class="mono">because Phoebe Bridgers 0.54 · Fleabag 0.46</span>. Tag loves such as ramen change the ranking, but Qloo doesn't attribute tag signals, and the card doesn't pretend it does.</p>
-        <div class="chips"><span class="chip">feature.explainability</span></div>
+        <p>The one social outing a week goes where her taste gathers: the top-affinity cell near her on a Qloo heatmap. Sunday's Juice Generation sits in cell <span class="mono">dr5rsuw</span>.</p>
+        <div class="chips"><span class="chip">feature.explainability</span><span class="chip">urn:heatmap · geohash</span></div>
       </div>
-      <div class="cell c-cell">
-        <h3>The social outing goes where her taste gathers</h3>
-        <p>One outing a week is social, placed in the top-affinity taste cell near her from a Qloo heatmap: Sunday's Juice Generation sits in cell <span class="mono">dr5rsuw</span>.</p>
-        <div class="chips"><span class="chip">urn:heatmap · geohash</span></div>
-      </div>
-      <div class="cell c-calls">
-        <div><h3>Every Qloo request, in the open</h3><p>/integrations/qloo lists the requests behind the latest plans: path, parameters, status, milliseconds, results. 19 Qloo parameters to 4 endpoints in all, counted from the code.</p><div class="chips"><span class="chip">/integrations/qloo</span></div></div>
-        <img src="site/calls-live.webp" width="1600" height="1000" loading="lazy" decoding="async" alt="Rekindle's Qloo calls page for plan ab088de3, as the agent made them: the request count, the endpoints, the latency and the distinct parameters, then each request with its parameters, status, milliseconds and result count.">
-      </div>
+      <figure class="cell c-calls shot">
+        <div class="head"><h3>Every Qloo request, in the open</h3><div><p><a href="/integrations/qloo?plan=ab088de3-3544-4a11-9c4e-033d2cf60965">/integrations/qloo</a> lists the requests behind the latest plans: path, parameters, status, milliseconds, results. 19 Qloo parameters to 4 endpoints in all, counted from the code.</p><div class="chips"><span class="chip">/integrations/qloo</span></div></div></div>
+        <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/integrations/qloo?plan=ab088de3-3544-4a11-9c4e-033d2cf60965</span><span class="live">LIVE</span></div>
+          <a class="zoom" href="site/calls-summary-live.webp"><img src="site/calls-summary-live.webp" width="2824" height="522" loading="lazy" decoding="async" alt="The live call log of plan ab088de3: requests 17, non-200 0, endpoints /v2/insights, latency p50 231 ms, 12 distinct parameters; then week 1 · constraint change · plan ab088de3, 17 Qloo requests, 7 cards, 6 refusals, qwen:qwen3.8-flash, 2.2 s."><span class="vh"> (opens the full-size capture)</span></a>
+          <p class="gap">⋮ rows 1 to 9</p>
+          <a class="zoom" href="site/calls-row10-live.webp"><img src="site/calls-row10-live.webp" width="2816" height="558" loading="lazy" decoding="async" alt="Row 10 of the same log: /v2/insights with filter.type place, her loves as signal entities and the ramen tag, filter.hours thursday, price level at most 2, 14 alcohol tags excluded, the three struck places excluded by entity, explainability on, take 25, her point and a 1500 m radius; status 200, 231 ms, 25 results."><span class="vh"> (opens the full-size capture)</span></a>
+        </div>
+        <figcaption>The plan's call log on the live app, reloaded 9 Oct 2026: the totals, then row 10, the refill request above.</figcaption>
+      </figure>
     </div>
   </div>
 </section>
@@ -673,7 +714,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
   <div class="wrap">
     <p class="day"><b>Wed</b>her week, replayed</p>
     <h2 class="h2" id="week-h">Planned, struck, stamped, rated, re-planned.</h2>
-    <p class="dek">Maya's real week from 8 Oct 2026, one step at a time: three stored plans, recreated from the app's own text, names, weights and trace. Each step shows only what changed. Every step opens live.</p>
+    <p class="dek">Maya's week as the live app planned it on 8 Oct 2026 (a fictional case): three stored plans, recreated from the app's own text, names, weights and trace. Each step shows only what changed and links to the live record: steps 2 to 5 open their plan, and step 1 opens its Qloo call log, because its plan page now opens the In-recovery version that replaced it.</p>
   </div>
   <div class="rp" id="replay">
     <div class="rp-bar">
@@ -686,7 +727,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
       </div>
       <button class="rp-play" type="button">Play the week</button>
     </div>
-<div class="rp-box"><div class="rp-state" data-s="0" hidden><div class="rp-notice"><span>week 1 planned live · 17 s from click · 9 Qloo calls</span><span>plan 01ded824 · agent run · 08 Oct 2026 09:31 UTC · <a href="https://rekindle.edycu.dev/plans/01ded824-82aa-4e9e-b8dc-b4bc079650ec">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">My Name Is Why</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.53</b> · Phoebe Bridgers <b>0.47</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Patisserie Tomoko</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1161 m · Thu 12:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 11:00</p><p class="nm">Brooklyn Ball Factory</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">951 m · Sat 08:00–18:00 · slot 11:00 ✓</p></article></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch"><p class="sl">SOCIAL · 14:00</p><p class="nm">Mozzarella Kosher</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.52</b> · Fleabag <b>0.48</b></p><p class="hr">961 m · Sun 08:00–19:30 · slot 14:00 ✓<span>taste cell dr5rt1p</span></p></article><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Seven cards, Monday to Sunday: at-home doses first, then solo outings, then one social outing in her taste cell. Each card says why, in Qloo's weights for her loves.</p><p class="m">Refused by the verifier and left on the sheet, struck: CookUnity, R-KIND, not an activity: personal_care.</p></div><div class="trace"><h3>Agent trace <span>plan 01ded824</span></h3><ol><li style="--i:0">start week 1 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b</li><li class="key" style="--i:1">qwen:qwen3.8-flash step 1 · 7 tool calls · 5903 ms</li><li style="--i:2">findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓</li><li style="--i:3">findAtHome day=wednesday type=book take=5 → 5 returned → My Name Is Why ✓</li><li style="--i:4">findOutings day=thursday hour=18 → 25 returned → Patisserie Tomoko ✓</li><li style="--i:5">findAtHome day=friday type=tv_show take=3 → 3 returned → High Fidelity ✓</li><li style="--i:6">findOutings day=saturday hour=11 → 25 returned → Brooklyn Ball Factory ✓</li><li style="--i:7">placeSocial day=sunday hour=14 → 3 returned · refused R-KIND 2 → Mozzarella Kosher ✓</li><li style="--i:8">findAtHome day=monday type=artist take=4 → 4 returned → Lucy Dacus ✓</li><li class="key" style="--i:9">groq:openai/gpt-oss-120b step 2 · 1 tool call · 3914 ms</li></ol></div></div></div><div class="rp-state" data-s="1" hidden><div class="rp-notice"><span>3 outings struck in place and 3 slots refilled live · 2.2 s</span><span>plan ab088de3 · constraint change · 08 Oct 2026 09:32 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">My Name Is Why</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.53</b> · Phoebe Bridgers <b>0.47</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article><div class="rp-struck ch" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p></article><div class="rp-struck ch" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p></article><div class="rp-struck ch" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Only the affected outing slots are checked again, live. Venues that serve alcohol are struck where they stood, with the tag that refused them, and each slot is refilled; ambiguous places go to the clinician as REVIEW.</p></div><div class="trace"><h3>Agent trace <span>plan ab088de3 · constraint change</span></h3><ol><li class="key" style="--i:0">constraint change in_recovery=true → struck 3 · refilled 3 · 2.2 s</li><li style="--i:1">findOutings day=thursday (toggle) → Dun-Well Doughnuts · refused R-ALC 1</li><li style="--i:2">findOutings day=saturday (toggle) → Muz Muz Shop &amp; Cafè · refused R-ALC 1</li><li style="--i:3">placeSocial day=sunday (toggle) → Juice Generation · refused R-ALC 1, R-KIND 2</li></ol></div></div></div><div class="rp-state" data-s="2" hidden><div class="rp-notice"><span>Week approved: 7 activities stamped. After each one, rate pleasure (P) and mastery (M) from 0 to 10.</span><span>approved · Thu 8 Oct · 09:34 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch ok"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><p class="nm">We Need New Stories</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.54</b> · Phoebe Bridgers <b>0.46</b></p><p class="stamp">approved</p></article><div class="rp-struck ch" title="swapped out by the clinician"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ok"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Swapped My Name Is Why for We Need New Stories, verified the same way (1 Qloo call · 0.6 s). The old card stays as a CLINICIAN strike.</p><p>Approve week stamps every card left on the sheet; nothing reaches her before it.</p></div><div class="trace"><h3>Agent trace <span>plan ab088de3 · swap</span></h3><ol><li class="key" style="--i:0">swap wednesday My Name Is Why → We Need New Stories · 1 Qloo call</li></ol></div></div></div><div class="rp-state" data-s="3" hidden><div class="rp-notice"><span>3 activities rated. 3 rated · ready to re-plan</span><span>approved · Thu 8 Oct · 09:34 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="pm"><span class="hot"><i>P</i>7</span><span><i>M</i>5</span></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><p class="nm">We Need New Stories</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.54</b> · Phoebe Bridgers <b>0.46</b></p><p class="stamp">approved</p></article><div class="rp-struck" title="swapped out by the clinician"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch ok"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p><p class="pm"><span class="hot"><i>P</i>8</span><span><i>M</i>6</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch ok"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p><p class="pm"><span><i>P</i>2</span><span><i>M</i>3</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Pleasure (P) and mastery (M), 0 to 10, after each activity. A food outing 8, the at-home song 7, one other 2: the ratings DEMO.md step 6 uses to show the ember thread.</p></div><div class="trace"><h3>Agent trace <span>no agent call</span></h3><ol><li style="--i:0">ratings are the clinician's input; nothing is sent until Re-plan week 2</li></ol></div></div></div><div class="rp-state" data-s="4"><div class="rp-notice"><span>Week 2: 2 kept · 5 new · 2 rekindled by a rating (Qloo&#x27;s attribution, not causation)</span><span>plan e0adf88a · re-planned from week 1 · 08 Oct 2026 09:45 UTC · <a href="https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e">open it live →</a></span></div><p class="mono" style="margin-top:16px;font-size:12.5px;color:var(--muted)">WEEK 1 AS RATED · PLEASURE · MASTERY</p><div class="rp-strip"><div class="hot"><p class="d">MON</p><p class="n"><span>Lucy Dacus</span></p><p class="pm">P 7 · M 5</p></div><div><p class="d">TUE</p><p class="n"><span>Las Culturistas with Matt Rogers and Bowen Yang</span></p><p class="pm">P – · M –</p></div><div><p class="d">WED</p><p class="n"><span>We Need New Stories</span></p><p class="pm">P – · M –</p></div><div class="hot" data-th-src=""><p class="d">THU</p><p class="n"><span>Dun-Well Doughnuts</span></p><p class="pm">P 8 · M 6</p></div><div><p class="d">FRI</p><p class="n"><span>High Fidelity</span></p><p class="pm">P – · M –</p></div><div><p class="d">SAT</p><p class="n"><span>Muz Muz Shop &amp; Cafè</span></p><p class="pm">P – · M –</p></div><div class="cold"><p class="d">SUN</p><p class="n"><span>Juice Generation</span></p><p class="pm">P 2 · M 3 · excluded</p></div></div><div class="rp-w2"><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Big Thief</p><p class="kd">artist</p><p class="tie">with Lucy Dacus, rated 7 · tied with Fleabag (0.266 vs 0.264)</p><p class="wy">because Lucy Dacus <b>0.266</b> · Fleabag <b>0.264</b> · Phoebe Bridgers <b>0.264</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="tie">with Lucy Dacus, rated 7 · tied with Fleabag (0.260 vs 0.252)</p><p class="wy">because Lucy Dacus <b>0.260</b> · Dun-Well Doughnuts <b>0.259</b> · Fleabag <b>0.252</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">A Little Devil in America: Notes in Praise of Black Performance</p><p class="kd">book</p><p class="wy">because Phoebe Bridgers <b>0.281</b> · Lucy Dacus <b>0.279</b> · Dun-Well Doughnuts <b>0.253</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="ld">↻ kept from last week, rated 8 · re-checked live</p><p class="wy">because Phoebe Bridgers <b>0.539</b> · Fleabag <b>0.461</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Shrill</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.257</b> · Dun-Well Doughnuts <b>0.256</b> · Lucy Dacus <b>0.251</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch" data-th-to="+0.044"><p class="sl">SOLO · 11:00</p><p class="nm">Ceremonia Bakeshop</p><p class="kd">place</p><p class="ld">← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)</p><p class="wy">because Dun-Well Doughnuts <b>0.296</b> · Phoebe Bridgers <b>0.252</b> · Lucy Dacus <b>0.241</b></p><p class="hr">563 m · Sat 09:00–15:00 · slot 11:00 ✓</p></article><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch" data-th-to="+0.073"><p class="sl">SOCIAL · 14:00</p><p class="nm">Bushwick Pita Palace</p><p class="kd">place</p><p class="ld">← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239</p><p class="wy">because Dun-Well Doughnuts <b>0.307</b> · Lucy Dacus <b>0.239</b> · Phoebe Bridgers <b>0.234</b></p><p class="hr">1473 m · Sun 11:00–01:00 · slot 14:00 ✓<span>taste cell dr5rt6v</span></p></article><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div></li></ol><svg class="rp-threads" aria-hidden="true"></svg></div><div class="rp-foot"><div class="rp-sum"><p>Kept: Dun-Well Doughnuts, rated 8, re-checked live with Qloo /entities. Lucy Dacus, rated 7, is now a Qloo signal. Juice Generation, rated 2, is excluded.</p><p class="m">The threads are Qloo's attribution, not causation; Monday and Tuesday are labelled ties.</p></div><div class="trace"><h3>Agent trace <span>plan e0adf88a · re-plan</span></h3><ol><li style="--i:0">start week 2 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b</li><li class="key" style="--i:1">findOutings day=thursday kept=true rated=8 → 1 returned → Dun-Well Doughnuts ✓</li><li style="--i:2">qwen:qwen3.8-flash step 1 · 6 tool calls · 5260 ms</li><li style="--i:3">findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓</li><li style="--i:4">findAtHome day=wednesday type=book take=4 → 4 returned → A Little Devil in America: Notes in Praise of Black Performance ✓</li><li style="--i:5">findOutings day=saturday hour=11 → 25 returned · review 1 → Ceremonia Bakeshop ✓</li><li style="--i:6">findAtHome day=friday type=tv_show take=4 → 4 returned → Shrill ✓</li><li style="--i:7">placeSocial day=sunday hour=14 → 11 returned · refused R-KIND 2 → Bushwick Pita Palace ✓</li><li style="--i:8">findAtHome day=monday type=artist take=4 → 4 returned → Big Thief ✓</li><li style="--i:9">groq:openai/gpt-oss-120b step 2 · 1 tool call · 3090 ms</li></ol></div></div></div></div>
+<div class="rp-box"><div class="rp-state" data-s="0" hidden aria-hidden="true"><div class="rp-notice"><span><i class="k">its trace</i>Qloo calls 9 · plan time 12.9 s</span><span>plan 01ded824 · agent run · 08 Oct 2026 09:31 UTC · <a href="https://rekindle.edycu.dev/integrations/qloo?plan=01ded824-82aa-4e9e-b8dc-b4bc079650ec">its Qloo calls →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">My Name Is Why</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.53</b> · Phoebe Bridgers <b>0.47</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Patisserie Tomoko</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1161 m · Thu 12:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 11:00</p><p class="nm">Brooklyn Ball Factory</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">951 m · Sat 08:00–18:00 · slot 11:00 ✓</p></article></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch"><p class="sl">SOCIAL · 14:00</p><p class="nm">Mozzarella Kosher</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.52</b> · Fleabag <b>0.48</b></p><p class="hr">961 m · Sun 08:00–19:30 · slot 14:00 ✓<span>taste cell dr5rt1p</span></p></article><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Seven cards, Monday to Sunday: at-home doses first, then solo outings, then one social outing in her taste cell. Each card says why, in Qloo's weights for her loves.</p><p class="m">Refused by the verifier and left on the sheet, struck: CookUnity (<code>R-KIND</code>, not an activity: <code>personal_care</code>).</p><p class="m">Its plan page now opens the In-recovery version, <code>ab088de3</code>, which replaced it; the call log keeps this plan's own requests.</p></div><div class="trace"><h3>Agent trace <span>plan 01ded824</span></h3><ol><li style="--i:0">start week 1 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b</li><li class="key" style="--i:1">qwen:qwen3.8-flash step 1 · 7 tool calls · 5903 ms</li><li style="--i:2">findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓</li><li style="--i:3">findAtHome day=wednesday type=book take=5 → 5 returned → My Name Is Why ✓</li><li style="--i:4">findOutings day=thursday hour=18 → 25 returned → Patisserie Tomoko ✓</li><li style="--i:5">findAtHome day=friday type=tv_show take=3 → 3 returned → High Fidelity ✓</li><li style="--i:6">findOutings day=saturday hour=11 → 25 returned → Brooklyn Ball Factory ✓</li><li style="--i:7">placeSocial day=sunday hour=14 → 3 returned · refused R-KIND 2 → Mozzarella Kosher ✓</li><li style="--i:8">findAtHome day=monday type=artist take=4 → 4 returned → Lucy Dacus ✓</li><li class="key" style="--i:9">groq:openai/gpt-oss-120b step 2 · 1 tool call · 3914 ms</li></ol></div></div></div><div class="rp-state" data-s="1" hidden aria-hidden="true"><div class="rp-notice"><span>3 outings struck in place and 3 slots refilled live · 2.2 s</span><span>plan ab088de3 · constraint change · 08 Oct 2026 09:32 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">My Name Is Why</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.53</b> · Phoebe Bridgers <b>0.47</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article><div class="rp-struck ch" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p></article><div class="rp-struck ch" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p></article><div class="rp-struck ch" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Only the affected outing slots are checked again, live. Venues that serve alcohol are struck where they stood, with the tag that refused them, and each slot is refilled; ambiguous places go to the clinician as REVIEW.</p></div><div class="trace"><h3>Agent trace <span>plan ab088de3 · constraint change</span></h3><ol><li class="key" style="--i:0">constraint change in_recovery=true → struck 3 · refilled 3 · 2.2 s</li><li style="--i:1">findOutings day=thursday (toggle) → Dun-Well Doughnuts · refused R-ALC 1</li><li style="--i:2">findOutings day=saturday (toggle) → Muz Muz Shop &amp; Cafè · refused R-ALC 1</li><li style="--i:3">placeSocial day=sunday (toggle) → Juice Generation · refused R-ALC 1, R-KIND 2</li></ol></div></div></div><div class="rp-state" data-s="2" hidden aria-hidden="true"><div class="rp-notice"><span>Week approved: 7 activities stamped. After each one, rate pleasure (P) and mastery (M) from 0 to 10.</span><span>approved · Thu 8 Oct · 09:34 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch ok"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><p class="nm">We Need New Stories</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.54</b> · Phoebe Bridgers <b>0.46</b></p><p class="stamp">approved</p></article><div class="rp-struck ch" title="swapped out by the clinician"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ok"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Swapped My Name Is Why for We Need New Stories, verified the same way (1 Qloo call · 0.6 s). The old card stays as a CLINICIAN strike.</p><p>Approve week stamps every card left on the sheet; nothing reaches her before it.</p></div><div class="trace"><h3>Agent trace <span>plan ab088de3 · swap</span></h3><ol><li class="key" style="--i:0">swap wednesday My Name Is Why → We Need New Stories · 1 Qloo call</li></ol></div></div></div><div class="rp-state" data-s="3" hidden aria-hidden="true"><div class="rp-notice"><span>3 activities rated. 3 rated · ready to re-plan</span><span>approved · Thu 8 Oct · 09:34 UTC · <a href="https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">open it live →</a></span></div><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Lucy Dacus</p><p class="kd">artist</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="pm"><span class="hot"><i>P</i>7</span><span><i>M</i>5</span></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="wy">because Fleabag <b>0.52</b> · Phoebe Bridgers <b>0.48</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><p class="nm">We Need New Stories</p><p class="kd">book</p><p class="wy">because Fleabag <b>0.54</b> · Phoebe Bridgers <b>0.46</b></p><p class="stamp">approved</p></article><div class="rp-struck" title="swapped out by the clinician"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch ok"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p><p class="pm"><span class="hot"><i>P</i>8</span><span><i>M</i>6</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ok"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">High Fidelity</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.51</b> · Fleabag <b>0.49</b></p><p class="stamp">approved</p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ok"><p class="sl">SOLO · 18:00</p><p class="nm">Muz Muz Shop &amp; Cafè</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.55</b> · Fleabag <b>0.45</b></p><p class="hr">1228 m · Sat 12:00–21:00 · slot 18:00 ✓<span>moved from 11:00 (closed then)</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="offerings:place:alcohol, amenities:place:bar_onsite"><s>Brooklyn Ball Factory</s><p>R-ALC · alcohol, bar_onsite · struck when a constraint changed</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch ok"><p class="sl">SOCIAL · 14:00</p><p class="nm">Juice Generation</p><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1002 m · Sun 08:00–21:00 · slot 14:00 ✓<span>taste cell dr5rsuw</span></p><p class="pm"><span><i>P</i>2</span><span><i>M</i>3</span></p><p class="stamp">approved</p></article><div class="rp-struck" title="beverage_offering:qloo:full_bar, beverage_offering:qloo:beer, beverage_offering:qloo:cocktails, beverage_offering:qloo:spirits, beverage_offering:qloo:wine"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div><div class="rp-struck" title="not an activity: butcher_shop"><s>Marlow &amp; Daughters</s><p>R-KIND · not an activity: butcher_shop</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div><div class="rp-review"><p class="lb">REVIEW · clinician decides</p><p class="rn">Dunkin&#x27;</p><p>182 Bedford Ave Brooklyn, NY 11249</p><p>R-ALC · happy_hour, ok_to_order_just_drinks</p></div></li></ol><div class="rp-foot"><div class="rp-sum"><p>Pleasure (P) and mastery (M), 0 to 10, after each activity. A food outing 8, the at-home song 7, one other 2: the ratings <code>DEMO.md</code> step 6 uses to show the ember thread.</p></div><div class="trace"><h3>Agent trace <span>no agent call</span></h3><ol><li style="--i:0">ratings are the clinician's input; nothing is sent until Re-plan week 2</li></ol></div></div></div><div class="rp-state" data-s="4" aria-hidden="false"><div class="rp-notice"><span>Week 2: 2 kept · 5 new · 2 rekindled by a rating (Qloo&#x27;s attribution, not causation)</span><span>plan e0adf88a · re-planned from week 1 · 08 Oct 2026 09:45 UTC · <a href="https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e">open it live →</a></span></div><p class="mono" style="margin-top:16px;font-size:12.5px;color:var(--muted)">WEEK 1 AS RATED · PLEASURE · MASTERY</p><div class="rp-strip"><div class="hot"><p class="d">MON</p><p class="n"><span>Lucy Dacus</span></p><p class="pm">P 7 · M 5</p></div><div><p class="d">TUE</p><p class="n"><span>Las Culturistas with Matt Rogers and Bowen Yang</span></p><p class="pm">P – · M –</p></div><div><p class="d">WED</p><p class="n"><span>We Need New Stories</span></p><p class="pm">P – · M –</p></div><div class="hot" data-th-src=""><p class="d">THU</p><p class="n"><span>Dun-Well Doughnuts</span></p><p class="pm">P 8 · M 6</p></div><div><p class="d">FRI</p><p class="n"><span>High Fidelity</span></p><p class="pm">P – · M –</p></div><div><p class="d">SAT</p><p class="n"><span>Muz Muz Shop &amp; Cafè</span></p><p class="pm">P – · M –</p></div><div class="cold"><p class="d">SUN</p><p class="n"><span>Juice Generation</span></p><p class="pm">P 2 · M 3 · excluded</p></div></div><div class="rp-w2"><ol class="rp-days"><li class="rp-day"><div class="rp-dh"><b>MON</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Big Thief</p><p class="kd">artist</p><p class="tie">with Lucy Dacus, rated 7 · tied with Fleabag (0.266 vs 0.264)</p><p class="wy">because Lucy Dacus <b>0.266</b> · Fleabag <b>0.264</b> · Phoebe Bridgers <b>0.264</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>TUE</b><i>home</i></div><article class="rp-card"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Las Culturistas with Matt Rogers and Bowen Yang</p><p class="kd">podcast</p><p class="tie">with Lucy Dacus, rated 7 · tied with Fleabag (0.260 vs 0.252)</p><p class="wy">because Lucy Dacus <b>0.260</b> · Dun-Well Doughnuts <b>0.259</b> · Fleabag <b>0.252</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>WED</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">A Little Devil in America: Notes in Praise of Black Performance</p><p class="kd">book</p><p class="wy">because Phoebe Bridgers <b>0.281</b> · Lucy Dacus <b>0.279</b> · Dun-Well Doughnuts <b>0.253</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>THU</b><i>solo</i></div><article class="rp-card ch"><p class="sl">SOLO · 15:00</p><p class="nm">Dun-Well Doughnuts</p><p class="kd">place</p><p class="ld">↻ kept from last week, rated 8 · re-checked live</p><p class="wy">because Phoebe Bridgers <b>0.539</b> · Fleabag <b>0.461</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span></p></article></li><li class="rp-day"><div class="rp-dh"><b>FRI</b><i>home</i></div><article class="rp-card ch"><p class="sl">HOME · 10 MIN · 19:00</p><p class="nm">Shrill</p><p class="kd">TV show</p><p class="wy">because Phoebe Bridgers <b>0.257</b> · Dun-Well Doughnuts <b>0.256</b> · Lucy Dacus <b>0.251</b></p></article></li><li class="rp-day"><div class="rp-dh"><b>SAT</b><i>solo</i></div><article class="rp-card ch" data-th-to="+0.044"><p class="sl">SOLO · 11:00</p><p class="nm">Ceremonia Bakeshop</p><p class="kd">place</p><p class="ld">← because of Dun-Well Doughnuts, rated 8 · 0.296, +0.044 over Phoebe Bridgers (original love)</p><p class="wy">because Dun-Well Doughnuts <b>0.296</b> · Phoebe Bridgers <b>0.252</b> · Lucy Dacus <b>0.241</b></p><p class="hr">563 m · Sat 09:00–15:00 · slot 11:00 ✓</p></article><div class="rp-review ch"><p class="lb">REVIEW · clinician decides</p><p class="rn">Van Leeuwen Ice Cream</p><p>204 Wythe Ave Brooklyn, NY 11249</p><p>R-ALC · barstool_seating</p></div></li><li class="rp-day"><div class="rp-dh"><b>SUN</b><i>social</i></div><article class="rp-card ch" data-th-to="+0.073"><p class="sl">SOCIAL · 14:00</p><p class="nm">Bushwick Pita Palace</p><p class="kd">place</p><p class="ld">← because of Dun-Well Doughnuts, rated 8 · 0.307, +0.073 over Phoebe Bridgers (original love) · with Lucy Dacus 0.239</p><p class="wy">because Dun-Well Doughnuts <b>0.307</b> · Lucy Dacus <b>0.239</b> · Phoebe Bridgers <b>0.234</b></p><p class="hr">1473 m · Sun 11:00–01:00 · slot 14:00 ✓<span>taste cell dr5rt6v</span></p></article><div class="rp-struck" title="not an activity: personal_care"><s>CookUnity</s><p>R-KIND · not an activity: personal_care</p></div></li></ol><svg class="rp-threads" aria-hidden="true"></svg></div><div class="rp-foot"><div class="rp-sum"><p>Kept: Dun-Well Doughnuts, rated 8, re-checked live with Qloo <code>/entities</code>. Lucy Dacus, rated 7, is now a Qloo signal. Juice Generation, rated 2, is excluded.</p><p class="m">The threads are Qloo's attribution, not causation; Monday and Tuesday are labelled ties.</p></div><div class="trace"><h3>Agent trace <span>plan e0adf88a · re-plan</span></h3><ol><li style="--i:0">start week 2 · 7 slots · LLM qwen:qwen3.8-flash → groq:openai/gpt-oss-120b</li><li class="key" style="--i:1">findOutings day=thursday kept=true rated=8 → 1 returned → Dun-Well Doughnuts ✓</li><li style="--i:2">qwen:qwen3.8-flash step 1 · 6 tool calls · 5260 ms</li><li style="--i:3">findAtHome day=tuesday type=podcast take=4 → 4 returned → Las Culturistas with Matt Rogers and Bowen Yang ✓</li><li style="--i:4">findAtHome day=wednesday type=book take=4 → 4 returned → A Little Devil in America: Notes in Praise of Black Performance ✓</li><li style="--i:5">findOutings day=saturday hour=11 → 25 returned · review 1 → Ceremonia Bakeshop ✓</li><li style="--i:6">findAtHome day=friday type=tv_show take=4 → 4 returned → Shrill ✓</li><li style="--i:7">placeSocial day=sunday hour=14 → 11 returned · refused R-KIND 2 → Bushwick Pita Palace ✓</li><li style="--i:8">findAtHome day=monday type=artist take=4 → 4 returned → Big Thief ✓</li><li style="--i:9">groq:openai/gpt-oss-120b step 2 · 1 tool call · 3090 ms</li></ol></div></div></div></div>
   </div>
 </section>
 
@@ -696,23 +737,25 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     <h2 class="h2" id="rec-h">Struck in place. Refilled live.</h2>
     <figure class="shot wide">
       <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965</span><span class="live">LIVE</span></div>
-        <img src="site/recovery-live.webp" width="1800" height="850" loading="lazy" decoding="async" alt="The live app one click after In recovery: week 1 for Maya, a fictional case, with In recovery ticked and the notice 3 outings struck in place and 3 slots refilled live · 2.2 s; Thursday is now Dun-Well Doughnuts, Saturday Muz Muz Shop and Cafè, Sunday Juice Generation; the agent trace on the right ends with the constraint change."></div>
+        <a class="zoom" href="site/recovery-live.webp"><img src="site/recovery-live.webp" width="2880" height="1360" loading="lazy" decoding="async" alt="The live app one click after In recovery, for Maya, a fictional case: In recovery ticked, her loves Phoebe Bridgers, Fleabag and Ramen restaurant, and the notice 3 outings struck in place and 3 slots refilled live · 2.2 s; below it the week, where Thursday is now Dun-Well Doughnuts, Saturday Muz Muz Shop and Cafè and Sunday Juice Generation, each with approve, swap and remove; the agent trace runs down the right."><span class="vh"> (opens the full-size capture)</span></a></div>
       <figcaption>The live app on 8 Oct 2026, one click after In recovery. Maya is a fictional case.</figcaption>
     </figure>
-    <div class="trio">
+    <div class="thu-row">
       <figure class="shot">
-        <div class="fr"><img src="site/strikes-live.webp" width="840" height="1195" loading="lazy" decoding="async" alt="Thursday to Sunday of the same week after approval: each refill card above the venue it replaced, struck in place with its rule: Patisserie Tomoko, R-ALC bar_service, wine and 3 more; Brooklyn Ball Factory, R-ALC alcohol, bar_onsite; on Sunday two REVIEW boxes, Van Leeuwen Ice Cream for barstool seating and Dunkin' for happy hour."></div>
-        <figcaption>Each refusal stays under the card that replaced it, with the tag that refused it. Reloaded 9 Oct.</figcaption>
+        <div class="fr"><a class="zoom" href="site/strikes-live.webp"><img src="site/strikes-live.webp" width="1258" height="2144" loading="lazy" decoding="async" alt="Thursday to Sunday of the same week after approval: each refill card above the venue it replaced, struck in place with its rule: Patisserie Tomoko, R-ALC bar_service, wine and 3 more; Brooklyn Ball Factory, R-ALC alcohol, bar_onsite; on Sunday two REVIEW boxes, Van Leeuwen Ice Cream for barstool seating and Dunkin' for happy hour."><span class="vh"> (opens the full-size capture)</span></a></div>
+        <figcaption>Thursday to Sunday, reloaded 9 Oct: each refusal stays under the card that replaced it, with the tag that refused it.</figcaption>
       </figure>
-      <ul class="notes">
-        <li><span class="tag">R-ALC · bar_service, wine +3 more</span><br>Qloo itself tags Patisserie Tomoko with bar service. Struck where it stood; Dun-Well Doughnuts is written above it, open at 15:00, 1421 m away.</li>
-        <li><span class="tag">R-ALC · alcohol, bar_onsite</span><br>Brooklyn Ball Factory is struck; Saturday becomes Muz Muz Shop &amp; Cafè, moved from 11:00 (closed then).</li>
-        <li><span class="tag">REVIEW · barstool_seating · happy_hour</span><br>Van Leeuwen Ice Cream and Dunkin' go to the clinician in dashed boxes: ambiguous, not refused, never placed without her clinician.</li>
-      </ul>
-      <div class="finding">
-        <p class="k">Why a screen on top of Qloo's filter</p>
-        <p>With four bar tags excluded, 17 of the 25 places Qloo returned for Maya's Thursday query still carried alcohol tags. Rekindle excludes 14 tags and screens every tag and token on top: <b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b> in-recovery outings serve alcohol, against <b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b> with the four bar tags alone.</p>
-        <p class="src">DX-REPORT §2 · bench/results.json</p>
+      <div>
+        <ul class="notes">
+          <li><span class="tag">R-ALC · bar_service, wine +3 more</span><br>Qloo itself tags Patisserie Tomoko with bar service. Struck where it stood; Dun-Well Doughnuts is written above it, open at 15:00, 1421 m away.</li>
+          <li><span class="tag">R-ALC · alcohol, bar_onsite</span><br>Brooklyn Ball Factory is struck; Saturday becomes Muz Muz Shop &amp; Cafè, moved from 11:00 (closed then).</li>
+          <li><span class="tag">REVIEW · barstool_seating · happy_hour</span><br>Van Leeuwen Ice Cream and Dunkin' go to the clinician in dashed boxes: ambiguous, not refused, never placed without her clinician.</li>
+        </ul>
+        <div class="finding">
+          <p class="k">Why a screen on top of Qloo's filter</p>
+          <p>With four bar tags excluded, 17 of the 25 places Qloo returned for Maya's Thursday query still carried alcohol tags. Rekindle excludes 14 tags and screens every tag and token on top: <b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b> in-recovery outings serve alcohol, against <b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b> with the four bar tags alone.</p>
+          <p class="src">DX-REPORT §2 · <code>bench/results.json</code></p>
+        </div>
       </div>
     </div>
   </div>
@@ -731,8 +774,8 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
       </ul>
       <figure class="shot">
         <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e</span><span class="live">LIVE</span></div>
-          <img src="site/week2-live.webp" width="1480" height="1147" loading="lazy" decoding="async" alt="Week 2 on the live app: above it, week 1 as rated, Lucy Dacus P 7 and Dun-Well Doughnuts P 8 underlined in ember, Juice Generation P 2 struck as excluded; two ember threads run from Dun-Well Doughnuts to Saturday's Ceremonia Bakeshop, +0.044, and Sunday's Bushwick Pita Palace, +0.073; Dun-Well Doughnuts is kept on Thursday; Monday and Tuesday carry tie labels."></div>
-        <figcaption>Week 2 on the live app (plan e0adf88a, re-planned 8 Oct 2026, reloaded 9 Oct). The threads are Qloo's attribution, not causation.</figcaption>
+          <a class="zoom" href="site/week2-live.webp"><img src="site/week2-live.webp" width="1280" height="1528" loading="lazy" decoding="async" alt="Week 2 on the live app, Thursday to Sunday: above it, week 1 as rated, Dun-Well Doughnuts P 8 · M 6 underlined in ember and Juice Generation P 2 · M 3 struck as excluded; two ember threads run from Dun-Well Doughnuts to Saturday's Ceremonia Bakeshop, +0.044, and Sunday's Bushwick Pita Palace, +0.073, each lead printed on its card; Dun-Well Doughnuts is kept on Thursday, re-checked live."><span class="vh"> (opens the full-size capture)</span></a></div>
+        <figcaption>Week 2 on the live app (plan <code>e0adf88a</code>, re-planned 8 Oct 2026, reloaded 9 Oct), Thursday to Sunday. The threads are Qloo's attribution, not causation.</figcaption>
       </figure>
     </div>
     <p class="frozen">Maya rated <span class="u8">Dun-Well Doughnuts 8</span>: kept, re-checked live, and threaded to two new outings. <span class="out">Juice Generation</span>, rated 2, stays out.</p>
@@ -745,7 +788,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     <h2 class="h2" id="sh-h">Nothing reaches her until a clinician approves.</h2>
     <div class="sheetpair">
       <div class="paperstack">
-        <img class="sheetimg" src="site/sheet-live.webp" width="900" height="1458" loading="lazy" decoding="async" alt="Maya's week 1 as the patient sheet prints it: planned with your clinician, approved Thu 8 Oct 09:34 UTC; seven rows, Monday to Sunday, each with the activity, when, where, its coaching line and empty P and M boxes; a footnote: fictional case, clinician support, no diagnosis, no medical advice.">
+        <a class="zoom" href="site/sheet-live.webp"><img class="sheetimg" src="site/sheet-live.webp" width="1200" height="1944" loading="lazy" decoding="async" alt="Maya's week 1 as the patient sheet prints it: planned with your clinician, approved Thu 8 Oct 09:34 UTC; seven rows, Monday to Sunday, each with the activity, when, where, its coaching line and empty P and M boxes; a footnote: fictional case, clinician support, no diagnosis, no medical advice."><span class="vh"> (opens the full-size capture)</span></a>
       </div>
       <div>
         <ul class="notes">
@@ -758,7 +801,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
           <p class="k">What Qloo learns about her</p>
           <p>Taste entities and tags, a map point and constraint filters; never the case name. Ratings travel only as taste: what she rated 7 or more becomes a signal, 3 or less an exclusion. The alcohol-tag exclusions an in-recovery case adds could be read as a proxy for that flag, and the README says so.</p>
         </div>
-        <p class="src">The real print view of plan ab088de3 (8 Oct 2026; reloaded 9 Oct).</p>
+        <p class="src">The real print view of plan <code>ab088de3</code> (8 Oct 2026; reloaded 9 Oct).</p>
       </div>
     </div>
   </div>
@@ -856,11 +899,28 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     })(t0);
   }
 
-  /* the five-step replay of Maya's week */
+  /* the five-step replay of Maya's week. It opens on step 5 (the re-plan) and moves only when asked: a tab, or
+     "Play the week" (one step every 9 s; any tab click stops it, and so does scrolling the replay off the screen).
+     Every step stays in the box's one grid cell (an inactive one is visibility:hidden), so the box keeps the tallest
+     step's height and nothing below it moves. A step's changes ink in when it is shown, and its agent trace types out
+     line by line when it is shown and when it scrolls into view (the terminal replay). */
   var rp = d.getElementById("replay");
   var states = rp ? $$(".rp-state", rp) : [], tabs = rp ? $$(".rp-tab", rp) : [];
   var play = rp ? rp.querySelector(".rp-play") : null;
-  var cur = states.length - 1, timer = null, autoplayed = false, NS = "http://www.w3.org/2000/svg";
+  var cur = states.length - 1, timer = null, typedFor = -1, NS = "http://www.w3.org/2000/svg", STEP_MS = 9000;
+
+  function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+  function visibleShare(el) {
+    var b = el.getBoundingClientRect(), h = innerHeight || d.documentElement.clientHeight;
+    var seen = Math.min(b.bottom, h) - Math.max(b.top, 0);
+    return b.height ? Math.max(0, seen) / Math.min(b.height, h) : 0;
+  }
+  function typeTrace(i) {
+    var t = states[i] && states[i].querySelector(".trace");
+    if (!t || !motion()) return;
+    restart(t, "typing");
+    typedFor = i;
+  }
 
   function drawThreads(state) {
     if (!state) return;
@@ -890,30 +950,63 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     });
   }
 
-  function show(i) {
+  function show(i, animate) {
     cur = i;
-    states.forEach(function (s, k) { s.hidden = k !== i; });
+    typedFor = -1;
+    states.forEach(function (s, k) {
+      var on = k === i;
+      s.hidden = !on;
+      s.setAttribute("aria-hidden", on ? "false" : "true");
+      if (!on) {
+        s.classList.remove("play");
+        var t = s.querySelector(".trace");
+        if (t) t.classList.remove("typing");
+      }
+    });
     tabs.forEach(function (t, k) { if (k === i) t.setAttribute("aria-current", "step"); else t.removeAttribute("aria-current"); });
+    if (animate && motion()) {
+      restart(states[i], "play");
+      var tr = states[i].querySelector(".trace");
+      if (tr && visibleShare(tr) >= 0.5) typeTrace(i);
+    }
     requestAnimationFrame(function () { drawThreads(states[i]); });
   }
   function stop() { clearInterval(timer); timer = null; if (play) play.textContent = "Play the week"; }
   function start(from) {
     stop();
-    show(from);
+    show(from, true);
     if (play) play.textContent = "Pause";
     timer = setInterval(function () {
       if (cur >= states.length - 1) { stop(); return; }
-      show(cur + 1);
-    }, 4800);
+      show(cur + 1, true);
+    }, STEP_MS);
   }
-  tabs.forEach(function (t) { t.addEventListener("click", function () { stop(); show(+t.getAttribute("data-go")); }); });
+  tabs.forEach(function (t) { t.addEventListener("click", function () { stop(); show(+t.getAttribute("data-go"), true); }); });
   if (play) play.addEventListener("click", function () {
-    if (timer) stop(); else { root.classList.add("motion"); start(cur >= states.length - 1 ? 0 : cur); }
+    if (timer) stop(); else start(cur >= states.length - 1 ? 0 : cur);
   });
   var rz;
   addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(function () { drawThreads(states[cur]); }, 120); });
-  if (states.length) show(cur);
+  if (states.length) show(cur, false);
   if (d.fonts && d.fonts.ready) d.fonts.ready.then(function () { drawThreads(states[cur]); });
+  if (rp && "IntersectionObserver" in window) {
+    /* the shown step's trace types out the first time at least half of it is on screen */
+    var tio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting || e.intersectionRatio < 0.5) return;
+        var i = states.indexOf(e.target.closest(".rp-state"));
+        if (i === cur && typedFor !== cur) typeTrace(i);
+      });
+    }, { threshold: [0.5] });
+    states.forEach(function (s) { var t = s.querySelector(".trace"); if (t) tio.observe(t); });
+    /* the re-plan's threads draw themselves when the week-2 grid first comes into view */
+    var w2 = states[states.length - 1].querySelector(".rp-w2"), drawn = false;
+    if (w2) new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting && !drawn && cur === states.length - 1) { drawn = true; drawThreads(states[cur]); } });
+    }, { threshold: 0.35 }).observe(w2);
+    /* playing stops once the replay is off the screen */
+    new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting && timer) stop(); }); }, { threshold: 0 }).observe(rp);
+  }
 
   /* moments that play once, when they come into view */
   function inView(el, fn, th) {
@@ -926,7 +1019,6 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
   }
   inView(d.getElementById("receipts"), function (el) { el.classList.add("in"); $$(".cu", el).forEach(countUp); }, 0.35);
   inView(d.querySelector(".paperstack"), function (el) { el.classList.add("in"); }, 0.4);
-  inView(rp, function () { if (!autoplayed && motion()) { autoplayed = true; start(0); } }, 0.3);
 })();
 </script>
 </body>

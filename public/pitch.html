@@ -23,7 +23,8 @@
   Rekindle — pitch deck (single file, 1920×1080 stage scaled to fit; letterboxes the browser, never the slide)
   Keys: → / space / PageDown next · ← / PageUp previous · Home / End · ESC overview grid · P presenter (notes, 80/20)
         · C contrast debug (outlines every text box: check legibility before a projector).
-  Print: Cmd/Ctrl+P → Save as PDF → landscape; @page is 16in × 9in, one slide per page, notes and chrome hidden.
+  Print: Cmd/Ctrl+P → Save as PDF; @page is 16in × 9in (no orientation keyword: a length pair cannot take one), one slide
+  per page, every slide in its final state, notes and chrome hidden. A ready 11-page PDF is exported from this page.
   Images: every picture is a crop of a capture of the live app (site/*.webp, 8–9 Oct 2026). The QR is generated for
   https://rekindle.edycu.dev/ at build time. Bench and test numbers are written by scripts/site.py from bench/*.json and
   docs/rigor.json; the recreated sheets come from site/maya-week.json (the app's own text).
@@ -91,7 +92,8 @@ img { display: block; max-width: 100%; height: auto; }
 .hd .x::after { content: ""; position: absolute; left: -.04em; right: -.04em; top: 52%; height: .07em; background: var(--before); transform-origin: 0 50%; }
 .hd .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -.04em; height: .056em; border-radius: 1em; background: var(--after); transform-origin: 0 50%; }
 .mono { font-family: var(--font-data); }
-.src { font: 19px/1.5 var(--font-data); color: var(--muted); }
+.src { font: 22px/1.45 var(--font-body); color: var(--muted); }
+.src code, .cap code { font: 19px/1 var(--font-data); color: var(--ink); }
 .chip { display: inline-block; padding: 4px 12px; border: 1.5px dashed var(--muted); font: 500 19px/1.35 var(--font-data); background: var(--bg); }
 .chip.e { border-color: var(--after); color: var(--after-ink); }
 
@@ -101,8 +103,8 @@ img { display: block; max-width: 100%; height: auto; }
 .s1 .top .wm { font: 400 46px/1 var(--font-display); }
 .s1 .top .evt .ver { text-transform: none; letter-spacing: .04em; }
 .s1 .top .evt { margin-left: auto; font: 500 20px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border: 1.5px solid var(--rule); padding: 12px 16px; }
-.s1 .grid { display: grid; grid-template-columns: 1fr 760px; gap: 64px; margin-top: 70px; align-items: start; }
-.s1 h1 { font-size: 108px; line-height: 1.02; letter-spacing: -.018em; }
+.s1 .grid { display: grid; grid-template-columns: minmax(0, 1fr) 760px; gap: 64px; margin-top: 70px; align-items: start; }
+.s1 h1 { font-size: 100px; line-height: 1.02; letter-spacing: -.018em; }   /* "crosses things out" fits the 888 px column, so the trace card keeps the right margin */
 .s1 h1 .ln { display: block; white-space: nowrap; }
 .s1 h1 .x, .s1 h1 .k { position: relative; display: inline-block; }
 .s1 h1 .x { color: var(--before-firm); }
@@ -123,14 +125,14 @@ img { display: block; max-width: 100%; height: auto; }
 .s1 .meta { position: absolute; left: 104px; bottom: 84px; font: 19px/1.5 var(--font-data); color: var(--muted); }
 
 /* 2 · the case */
-.s2 .shot { margin-top: 48px; width: 1712px; }
+.s2 .shot { margin: 48px 0 0; width: 1480px; }   /* figure ends near 915 px, its caption near 990: clear of the footer at 1017 */
 .s2 .fr img { width: 100%; }
 .fr { border: 1.5px solid var(--rule); background: var(--paper); box-shadow: var(--lift); overflow: hidden; }
 .chrome { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1.5px solid var(--rule); background: var(--bg); font: 18px/1 var(--font-data); color: var(--muted); }
 .chrome .url { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chrome .live { color: var(--ink); font-weight: 500; letter-spacing: .1em; }
-.chrome .live::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--stamp); margin-right: 8px; vertical-align: 1px; }
-.cap { margin-top: 18px; font: 19px/1.5 var(--font-data); color: var(--muted); max-width: 90ch; }
+.chrome .live::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); margin-right: 8px; vertical-align: 1px; }
+.cap { margin-top: 16px; font: 22px/1.4 var(--font-body); color: var(--muted); }
 
 /* 3 · where scheduling breaks */
 .breaks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 84px; border-top: 3px solid var(--ink); }
@@ -148,12 +150,12 @@ img { display: block; max-width: 100%; height: auto; }
 .node h3 { margin-top: 12px; font-size: 36px; line-height: 1.08; }
 .node p { margin-top: 12px; font-size: 22px; line-height: 1.35; }
 .node .chip { margin-top: 14px; font-size: 17px; }
-.node:not(.last)::after { content: "→"; position: absolute; right: -24px; top: 50%; transform: translateY(-50%); font: 500 26px/1 var(--font-data); }
+.node:not(.last)::after { content: "→"; position: absolute; right: -24px; top: 50%; transform: translateY(-50%); font: 500 26px/1 var(--font-data); z-index: 2; background: var(--bg); padding: 8px 0; }
 .node.v { border: 2px solid var(--ink); }
 .node .refuse { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 58% / 100% 3px; }
 .node .review { border: 2px dashed var(--ink); padding: 0 6px; }
 .boundary { position: absolute; top: -78px; bottom: -30px; left: calc((100% - 5 * 26px) / 6 * 2 + 26px * 1.5); border-left: 3px dashed var(--ink); }
-.boundary span { position: absolute; top: -8px; left: 14px; width: 560px; font: 500 20px/1.45 var(--font-data); }
+.boundary span { position: absolute; top: -8px; left: 14px; width: 560px; font: 400 24px/1.4 var(--font-body); }
 .back { position: absolute; left: calc((100% - 5 * 26px) / 12 * 3 + 26px); right: calc((100% - 5 * 26px) / 12); bottom: -86px; height: 60px; border: 4px solid var(--after); border-top: 0; border-radius: 0 0 20px 20px; }
 .back::before { content: ""; position: absolute; left: -12px; top: -16px; border: 10px solid transparent; border-bottom: 16px solid var(--after); border-top: 0; }
 .back span { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); background: var(--bg); padding: 0 14px; font: 500 22px/1.4 var(--font-data); color: var(--after-ink); white-space: nowrap; }
@@ -162,7 +164,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* 5 · one outing */
 .s5 .hd { max-width: 30ch; }
 .s5 .grid { display: grid; grid-template-columns: 600px 1fr; gap: 80px; margin-top: 44px; align-items: start; }
-.bigcard { background: var(--paper); border: 2px solid var(--stamp); padding: 24px 28px 26px; box-shadow: var(--lift); }
+.bigcard { background: var(--paper); border: 2px solid var(--ink); padding: 24px 28px 26px; box-shadow: var(--lift); }
 .bigcard .sl { font: 20px/1.3 var(--font-data); color: var(--muted); letter-spacing: .05em; }
 .bigcard h3 { margin: 10px 0 2px; font-size: 48px; line-height: 1.05; }
 .bigcard .kd { font: 20px/1 var(--font-data); color: var(--muted); }
@@ -194,8 +196,8 @@ img { display: block; max-width: 100%; height: auto; }
 .s6 .side b { font-weight: 700; }
 
 /* 7 · the gate */
-.s7 .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 60px; align-items: start; }
-.gcard { background: var(--paper); border: 2px solid var(--stamp); padding: 26px 28px 30px; box-shadow: var(--lift); min-height: 380px; }
+.s7 .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 96px; align-items: start; }
+.gcard { background: var(--paper); border: 2px solid var(--stamp); padding: 30px 32px 34px; box-shadow: var(--lift); min-height: 300px; }
 .gcard .sl { font: 19px/1.3 var(--font-data); color: var(--muted); letter-spacing: .04em; }
 .gcard h3 { margin: 10px 0 4px; font-size: 46px; line-height: 1.06; }
 .gcard .co { margin-top: 16px; font-size: 25px; line-height: 1.4; }
@@ -218,7 +220,7 @@ img { display: block; max-width: 100%; height: auto; }
 .s8 .rules b { color: var(--after-ink); font-weight: 500; }
 .sheet { position: relative; aspect-ratio: 1000 / 880; container-type: inline-size; overflow: hidden; background: var(--bg); border: 1.5px solid var(--rule); box-shadow: var(--lift);
   background-image: linear-gradient(to bottom, transparent calc(100% - 1px), var(--rule-soft) calc(100% - 1px)); background-size: 100% 3.4cqw;
-  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); mask-image: linear-gradient(to bottom, #000 80%, transparent 99%); }
+  -webkit-mask-image: linear-gradient(to bottom, #000 95%, transparent 100%); mask-image: linear-gradient(to bottom, #000 95%, transparent 100%); }
 .sheet::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: .45cqw; background: var(--ink); }
 .sh-head { position: absolute; left: 4cqw; top: 3.4cqw; display: flex; align-items: baseline; gap: 1.6cqw; }
 .sh-head .t { font: 400 3.6cqw/1 var(--font-display); }
@@ -233,9 +235,10 @@ img { display: block; max-width: 100%; height: auto; }
 .u { background: linear-gradient(var(--after), var(--after)) no-repeat 0 100% / 100% .34cqw; padding-bottom: .15cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .xs { color: var(--muted); background: linear-gradient(var(--before), var(--before)) no-repeat 0 56% / 100% .28cqw; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .w2 { position: absolute; left: 4cqw; top: 42.5cqw; width: 92cqw; display: grid; grid-template-columns: repeat(3, 1fr); gap: 3cqw; }
+.w2 > div { display: flex; flex-direction: column; }
 .w2 .dh { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 1cqw; border-bottom: .25cqw solid var(--ink); font: 500 1.9cqw/1 var(--font-data); letter-spacing: .08em; }
 .w2 .dh i { font-style: normal; font-weight: 400; color: var(--muted); letter-spacing: .02em; }
-.cd { margin-top: 1.6cqw; background: var(--paper); border: 1px solid var(--rule); padding: 2cqw 2cqw 3cqw; min-height: 44cqw; }
+.cd { flex: 1; margin-top: 1.6cqw; background: var(--paper); border: 1px solid var(--rule); padding: 2cqw 2cqw 2.2cqw; }
 .cd .sl { font: 1.85cqw/1.3 var(--font-data); color: var(--muted); letter-spacing: .04em; }
 .cd .cn { margin: .8cqw 0 .3cqw; font: 400 3.4cqw/1.08 var(--font-display); font-variant-numeric: lining-nums; }
 .cd .kd { font: 1.85cqw/1 var(--font-data); color: var(--muted); }
@@ -269,7 +272,7 @@ img { display: block; max-width: 100%; height: auto; }
 .bar .lb b { color: var(--ink); font-weight: 500; }
 .bar .tr { height: 16px; background: var(--bg); border: 1.5px solid var(--rule); position: relative; }
 .bar .tr i { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); background: var(--before); }
-.bar.zero .tr { border-color: var(--stamp); } .bar.zero .lb b { color: var(--stamp); }
+.bar.zero .tr { border-color: var(--ink); } .bar.zero .lb b { color: var(--ink); }
 .motion .s9:not(.on) .bx.x::after { transform: rotate(-58deg) scaleX(0); }
 .motion .s9.on .bx.x::after { transition: transform .32s var(--ease) .4s; }
 .motion .s9:not(.on) .bar .tr i { width: 0; }
@@ -280,7 +283,7 @@ img { display: block; max-width: 100%; height: auto; }
 .lims { display: grid; grid-template-columns: 1fr 1fr; gap: 0 72px; margin-top: 56px; border-top: 3px solid var(--ink); }
 .lims figure { margin: 0; padding: 44px 0 40px; border-bottom: 1.5px solid var(--rule); }
 .lims blockquote { margin: 0; font: 400 56px/1.12 var(--font-display); font-variant-numeric: lining-nums; }
-.lims figcaption { margin-top: 14px; font: 19px/1.4 var(--font-data); color: var(--muted); }
+.lims figcaption { margin-top: 14px; font: 22px/1.4 var(--font-body); color: var(--muted); }
 
 /* 11 · her sheet + the ask */
 .s11 .grid { display: grid; grid-template-columns: 600px 1fr; gap: 90px; align-items: start; margin-top: 0; }
@@ -291,8 +294,13 @@ img { display: block; max-width: 100%; height: auto; }
 .s11 .go { font: 400 46px/1.15 var(--font-display); }
 .s11 .go .k { background: linear-gradient(var(--after), var(--after)) no-repeat 0 94% / 100% 4px; }
 .s11 .url { margin-top: 12px; font: 500 28px/1.3 var(--font-data); }
+.slide a { color: inherit; text-decoration-line: underline; text-decoration-color: var(--rule); text-decoration-thickness: 2px; text-underline-offset: .2em; }
+.slide a:hover { text-decoration-color: currentColor; }
 .s11 .how { margin-top: 18px; font-size: 24px; line-height: 1.4; color: var(--ink); }
 .s11 .links { margin-top: 30px; font: 19px/1.7 var(--font-data); color: var(--muted); }
+
+/* the font shorthand resets numerals: every Young Serif setting gets lining figures back (an old-style 1 reads as ı) */
+.foot .brand, .s1 .top .wm, .tcard .th, .struckcard s, .sh-head .t, .s8 .fz, .s11 .go, .cd .cn, .lims blockquote, .breaks p { font-variant-numeric: lining-nums; }
 
 /* speaker notes: hidden, shown in presenter mode */
 .speaker-notes { display: none; }
@@ -301,6 +309,7 @@ img { display: block; max-width: 100%; height: auto; }
 .presenter .hint { opacity: .25; }
 .presenter.idle, .presenter.idle * { cursor: none !important; }
 .hint { position: fixed; left: 14px; bottom: 10px; font: 12px/1 var(--font-data); color: color-mix(in srgb, var(--bg) 60%, transparent); }
+@media (hover: none) { .hint { display: none; } }
 /* overview grid (ESC) */
 .overview .deck { transform: none !important; position: static; width: auto; height: auto; display: grid; grid-template-columns: repeat(auto-fill, 464px); gap: 22px; padding: 26px; }
 html.overview, .overview body { overflow: auto; }
@@ -320,13 +329,16 @@ html.overview, .overview body { overflow: auto; }
 .motion .s8.on .threads path.t2, .motion .s8.on .threads path.h2 { animation-delay: .8s; }
 .motion .s8.on .threads text { animation: appear .4s ease-out 1.5s both; }
 
-@page { size: 16in 9in landscape; margin: 0; }
+@page { size: 16in 9in; margin: 0; }
 @media print {
   html, body { overflow: visible; height: auto; background: var(--bg); }
   .deck { position: static; transform: none !important; width: auto; height: auto; }
-  .slide { position: relative; visibility: visible; opacity: 1; zoom: .8; page-break-after: always; break-after: page; break-inside: avoid; }
+  .slide { position: relative; visibility: visible; opacity: 1; zoom: .8; page-break-after: always; break-after: page; break-inside: avoid; transition: none; }
   .notes-panel, .hint { display: none !important; }
-  .motion .slide .x::after, .motion .slide .k1::after, .motion .slide .k2::after { animation: none; }
+  /* every slide prints in its final state, whichever slide was open when the print began */
+  .motion .slide *, .motion .slide *::before, .motion .slide *::after { animation: none !important; transition: none !important; }
+  .motion .s9 .bx.x::after { transform: rotate(-58deg) !important; }
+  .motion .s9 .bar .tr i { width: var(--w) !important; }
 }
 </style>
 </head>
@@ -351,15 +363,15 @@ html.overview, .overview body { overflow: auto; }
       <p class="sum">Week 2: 2 kept · 5 new · 2 rekindled by a rating<span class="cur" aria-hidden="true"></span></p>
     </div>
   </div>
-  <p class="meta">Maya is a fictional case · live re-plan of 8 Oct 2026 · rekindle.edycu.dev</p>
+  <p class="meta">Maya is a fictional case · live re-plan of 8 Oct 2026 · <a href="https://rekindle.edycu.dev/">rekindle.edycu.dev</a></p>
   <aside class="speaker-notes">Rekindle helps a clinician do the one step behavioral activation depends on: scheduling things the patient will actually do. The trace on the right is the real agent run behind week two of Maya's plan. The headline is what the product does on screen: it strikes what fails a rule, and it lights up what she rated well.</aside>
 </section>
 
 <section class="slide s2" aria-label="Slide 2: the case">
   <p class="lab">Maya · a fictional case</p>
   <h2 class="hd">She can't name one thing she'd enjoy this week.</h2>
-  <figure class="shot" style="margin:48px 0 0">
-    <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev</span><span class="live">LIVE</span></div><img src="site/maya-case-live.webp" width="1400" height="471" alt="Maya's case card on the live app: six months flat, she can't name one thing she'd enjoy this week; Williamsburg, Brooklyn; energy 1 of 3; within 1.5 km and two price levels; loved Phoebe Bridgers, Fleabag and ramen restaurants."></div>
+  <figure class="shot">
+    <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev</span><span class="live">LIVE</span></div><img src="site/maya-case-live.webp" width="1960" height="660" alt="Maya's case card on the live app: six months flat, she can't name one thing she'd enjoy this week; Williamsburg, Brooklyn; energy 1 of 3; within 1.5 km and two price levels; loved Phoebe Bridgers, Fleabag and ramen restaurants."></div>
     <figcaption class="cap">Her case card on the live app. Her loves resolve to Qloo entities and a tag; her clinician sets place, energy and limits.</figcaption>
   </figure>
   <aside class="speaker-notes">Anhedonia is the problem in one sentence: she can't say what she'd enjoy. Her clinician can still say what she loved before: an artist, a show, a food. That is all Rekindle needs to start, and every case in the app is fictional.</aside>
@@ -390,7 +402,7 @@ html.overview, .overview body { overflow: auto; }
     <div class="boundary" aria-hidden="true"><span>Constraints come from the stored case, never from the model.</span></div>
     <div class="back" aria-hidden="true"><span>↺ her ratings re-plan week two</span></div>
   </div>
-  <p class="src">19 Qloo parameters to 4 endpoints, counted from the code · ARCHITECTURE.md</p>
+  <p class="src">19 Qloo parameters to 4 endpoints, counted from the code · <code>ARCHITECTURE.md</code></p>
   <aside class="speaker-notes">This is the whole design in one line: the language model only decides where to look and writes the coaching line. Qloo returns the places, and a deterministic verifier with no network access decides what is true. Radius, price, recovery, quiet and wheelchair never come from the model.</aside>
 </section>
 
@@ -399,7 +411,7 @@ html.overview, .overview body { overflow: auto; }
   <h2 class="hd">Open at the hour, near her, explained by her loves.</h2>
   <div class="grid">
     <div>
-      <div class="bigcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="co">Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span><span>222 Montrose Ave Brooklyn, NY 11206</span></p></div>
+      <div class="bigcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="wy">because Phoebe Bridgers <b>0.54</b> · Fleabag <b>0.46</b></p><p class="hr">1421 m · Thu 08:00–18:00 · slot 15:00 ✓<span>moved from 18:00 (closed then)</span><span>222 Montrose Ave Brooklyn, NY 11206</span></p></div>
       <div class="struckcard" title="service_type:qloo:bar_service, beverage_offering:qloo:wine, amenity:qloo:wine_pairing, beverage_offering:qloo:sake, amenity:qloo:sake_pairing"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div>
     </div>
     <ol class="notes5">
@@ -417,9 +429,9 @@ html.overview, .overview body { overflow: auto; }
   <div class="grid">
     <div class="callwrap">
       <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965</span><span class="live">LIVE</span></div>
-        <div class="pic"><img src="site/recovery-live.webp" width="1800" height="850" alt="The live app one click after In recovery: Maya's week 1 with the notice 3 outings struck in place and 3 slots refilled live · 2.2 s.">
-          <span class="ring" style="left:8.6%;top:21.6%;width:10.4%;height:8.6%"></span><span class="callout" style="left:19.4%;top:21.4%">1</span>
-          <span class="ring" style="left:.6%;top:37.4%;width:40%;height:8%"></span><span class="callout" style="left:41.6%;top:36.2%">2</span></div></div>
+        <div class="pic"><img src="site/recovery-live.webp" width="2880" height="1360" alt="The live app one click after In recovery, for Maya, a fictional case: In recovery ticked and the notice 3 outings struck in place and 3 slots refilled live · 2.2 s; the week and its agent trace below.">
+          <span class="ring" style="left:8.4%;top:.9%;width:10.6%;height:8.6%"></span><span class="callout" style="left:19.6%;top:.8%">1</span>
+          <span class="ring" style="left:.7%;top:16.6%;width:39.2%;height:7.8%"></span><span class="callout" style="left:40.6%;top:16.1%">2</span></div></div>
     </div>
     <div class="side">
       <p><span class="n">1 · one click</span>Only the affected outings, re-checked live.</p>
@@ -434,9 +446,9 @@ html.overview, .overview body { overflow: auto; }
   <h2 class="hd">Nothing reaches her until a clinician approves.</h2>
   <p class="stampline">approved · Thu 8 Oct · 09:34 UTC</p>
   <div class="row">
-    <div class="gcol"><div class="gcard"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><h3>We Need New Stories</h3><p class="kd">book</p><p class="co">Read ten minutes of We Need New Stories, any page you like.</p><p class="st">approved</p></div><div class="struckcard"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></div>
-    <div class="gcol"><div class="gcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="co">Treat yourself to a calm pause at Dun-Well Doughnuts; savor a bite and breathe easy for a gentle fifteen minutes.</p><p class="st">approved</p></div><div class="struckcard"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></div>
-    <div class="gcol"><div class="gcard"><p class="sl">SOCIAL · 14:00</p><h3>Juice Generation</h3><p class="kd">place</p><p class="co">Drop by Juice Generation at 14:00; a short visit counts.</p><p class="st">approved</p></div><div class="struckcard"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div></div>
+    <div class="gcol"><div class="gcard"><p class="sl">HOME · 10 MIN · 19:00 · SWAPPED IN</p><h3>We Need New Stories</h3><p class="kd">book</p><p class="st">approved</p></div><div class="struckcard"><s>My Name Is Why</s><p>CLINICIAN · swapped out by the clinician</p></div></div>
+    <div class="gcol"><div class="gcard"><p class="sl">SOLO · 15:00</p><h3>Dun-Well Doughnuts</h3><p class="kd">place</p><p class="st">approved</p></div><div class="struckcard"><s>Patisserie Tomoko</s><p>R-ALC · bar_service, wine +3 more · struck when a constraint changed</p></div></div>
+    <div class="gcol"><div class="gcard"><p class="sl">SOCIAL · 14:00</p><h3>Juice Generation</h3><p class="kd">place</p><p class="st">approved</p></div><div class="struckcard"><s>Mozzarella Kosher</s><p>R-ALC · full_bar, beer +3 more · struck when a constraint changed</p></div></div>
   </div>
   <p class="src">Approve, swap or remove each card, then Approve week. A swap re-runs one slot live; the old card stays as a CLINICIAN strike.</p>
   <aside class="speaker-notes">The clinician stays in charge. Swapping a card re-runs that one slot through the same tool and verifier, and the swapped-out card stays on the clinician's sheet. Only an approved week can be printed for the patient.</aside>
@@ -459,7 +471,7 @@ html.overview, .overview body { overflow: auto; }
           </div>
           <svg class="threads" viewBox="0 0 1000 880" aria-hidden="true"><path class="halo h1" pathLength="1" d="M195 284 C195 393 255 399 348 399 S500 401 500 429 L500 472"/><path class="halo h2" pathLength="1" d="M195 284 C195 393 255 399 506 399 S816 401 816 429 L816 472"/><path class="t1" pathLength="1" d="M195 284 C195 393 255 399 348 399 S500 401 500 429 L500 472"/><path class="t2" pathLength="1" d="M195 284 C195 393 255 399 506 399 S816 401 816 429 L816 472"/><text class="l1" x="512" y="387">+0.044</text><text class="l2" x="828" y="387">+0.073</text></svg>
         </div>
-      <p class="src" style="margin-top:14px">Recreated from the live re-plan e0adf88a, 8 Oct 2026. Maya is a fictional case. A thread needs a lead of ≥ 0.02 over her best original love; it is Qloo's attribution, not causation.</p>
+      <p class="src" style="margin-top:14px">Recreated from the live re-plan <code>e0adf88a</code>, 8 Oct 2026. Maya is a fictional case. A thread needs a lead of ≥ 0.02 over her best original love; it is Qloo's attribution, not causation.</p>
     </div>
     <div>
       <p class="lab">The re-plan</p>
@@ -478,8 +490,8 @@ html.overview, .overview body { overflow: auto; }
       <span class="rtag">Hand check</span>
       <p class="big"><span data-n="hand.B.wrong">0</span><span class="of">of</span><span data-n="hand.B.checked">14</span></p>
       <p class="rtx">named venues wrong for Rekindle; the same LLM alone: <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b>.</p>
-      <div class="arm"><p class="lb"><span>LLM alone</span><b><span data-n="hand.A.wrong">7</span> struck</b></p><span class="boxes" data-boxes="A" role="img" aria-label="20 venues sampled: 7 wrong, 10 right, 3 inconclusive"><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
-      <div class="arm"><p class="lb"><span>Rekindle</span><b><span data-n="hand.B.wrong">0</span> struck</b></p><span class="boxes" data-boxes="B" role="img" aria-label="20 venues sampled: 0 wrong, 14 right, 6 inconclusive"><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
+      <div class="arm"><p class="lb"><span>LLM alone</span><b><span data-n="hand.A.wrong">7</span> struck · <span data-n="hand.A.inconclusive">3</span> dashed</b></p><span class="boxes" data-boxes="A" role="img" aria-label="20 venues sampled: 7 wrong, 10 right, 3 inconclusive"><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
+      <div class="arm"><p class="lb"><span>Rekindle</span><b><span data-n="hand.B.wrong">0</span> struck · <span data-n="hand.B.inconclusive">6</span> dashed</b></p><span class="boxes" data-boxes="B" role="img" aria-label="20 venues sampled: 0 wrong, 14 right, 6 inconclusive"><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
     </div>
     <div class="rcell">
       <span class="rtag">In recovery</span>
@@ -502,7 +514,7 @@ html.overview, .overview body { overflow: auto; }
       <p class="rtx">generated verifier cases; no outing that passes breaks a hard constraint. <b data-n="rigor.tests">227</b> tests.</p>
     </div>
   </div>
-  <p class="src"><span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span> Hand check: a random <span data-n="hand.A.sampled">20</span> per arm, not blind.</p>
+  <p class="src"><span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span> Hand check: a random <span data-n="hand.A.sampled">20</span> per arm, not blind; struck = wrong, dashed = inconclusive.</p>
   <aside class="speaker-notes">We lead with the hand check because our automated checker leans on Qloo and over-flags the LLM. The ablation isolates the alcohol screen: Qloo's tags alone are not enough. Every number here is generated from the committed bench files, and the bench is labelled with the changes made after it.</aside>
 </section>
 
@@ -527,9 +539,9 @@ html.overview, .overview body { overflow: auto; }
       <p class="how">Only approved activities, with empty P and M boxes. No weights, rules or strikes reach her.</p>
       <div class="ask">
         <div class="qr" role="img" aria-label="QR code for https://rekindle.edycu.dev/"><svg viewBox="0 0 264 264" width="264" height="264" aria-hidden="true" class="segno"><g transform="scale(8)"><path fill="#fbf8f1" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#26221d" d="M2 2.5h7m2 0h1m1 0h2m4 0h2m3 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h1m6 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m5 0h1m1 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m2 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h4m2 0h2m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m1 0h2m1 0h3m-17 1h3m1 0h2m8 0h1m3 0h1m6 0h2m-28 1h2m2 0h1m3 0h3m1 0h2m2 0h4m1 0h2m1 0h2m2 0h1m-29 1h2m1 0h1m1 0h3m1 0h1m2 0h1m4 0h1m2 0h1m1 0h1m2 0h3m-26 1h2m4 0h2m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h4m2 0h2m2 0h2m1 0h5m3 0h1m1 0h1m2 0h3m-28 1h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m-28 1h1m3 0h5m4 0h6m1 0h1m1 0h3m1 0h2m-29 1h1m1 0h1m1 0h1m3 0h3m1 0h2m1 0h1m1 0h3m1 0h2m1 0h2m1 0h2m-29 1h7m1 0h1m1 0h2m3 0h4m2 0h1m2 0h2m1 0h2m-27 1h1m2 0h1m1 0h1m1 0h1m1 0h3m2 0h2m2 0h1m2 0h1m-24 1h1m2 0h6m2 0h1m2 0h4m2 0h1m1 0h2m-22 1h1m1 0h2m1 0h1m2 0h1m2 0h1m3 0h1m3 0h3m1 0h4m-28 1h1m1 0h7m1 0h1m2 0h1m1 0h9m1 0h1m-19 1h1m1 0h1m1 0h1m3 0h1m1 0h3m3 0h2m1 0h2m-29 1h7m3 0h2m1 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h5m1 0h1m3 0h1m1 0h1m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m2 0h1m4 0h1m3 0h1m1 0h7m-27 1h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h4m4 0h1m2 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m3 0h2m1 0h1m-28 1h7m2 0h3m3 0h1m2 0h3m2 0h1m3 0h1"/></g></svg></div>
-        <div><p class="go">Plan Maya's week, <span class="k">live</span>.</p><p class="url">rekindle.edycu.dev</p></div>
+        <div><p class="go">Plan Maya's week, <span class="k">live</span>.</p><p class="url"><a href="https://rekindle.edycu.dev/">rekindle.edycu.dev</a></p></div>
       </div>
-      <p class="links">no login · fictional cases · /judge · /integrations/qloo · /about</p>
+      <p class="links">no login · fictional cases · <a href="https://rekindle.edycu.dev/judge">/judge</a> · <a href="https://rekindle.edycu.dev/integrations/qloo">/integrations/qloo</a> · <a href="https://rekindle.edycu.dev/about">/about</a></p>
     </div>
   </div>
   <aside class="speaker-notes">What a clinician gets is the sheet a patient can take home, with only what was approved on it. The live app needs no login; plan Maya's week, switch on In recovery, approve, rate three cards and re-plan week two. Receipts are on /judge.</aside>
