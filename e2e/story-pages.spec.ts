@@ -23,10 +23,14 @@ test("/about tells the story and sends a judge to the live app", async ({ page }
   // the FAQ opens
   await page.getByText("Is anything replayed or mocked?").click();
   await expect(page.getByText("Captured Qloo responses are used only in unit tests.")).toBeVisible();
-  // every picture a reader can see loads (scroll first: they are lazy; on a phone the call-log crops are not shown,
-  // and a lazy image that is never rendered is never fetched)
-  for (let y = 0; y < 20000; y += 900) await page.evaluate((v) => window.scrollTo(0, v), y);
-  await page.waitForLoadState("networkidle");
+  // every picture a reader can see loads (they are lazy; a picture hidden at this width is never rendered or fetched)
+  // (B21) a fast scroll loop can skip the frame in which a lazy image would have started loading, so each rendered
+  // image is brought on screen and waited for before the check
+  for (const img of await page.locator("img").all()) {
+    if (!(await img.isVisible())) continue;
+    await img.scrollIntoViewIfNeeded();
+    await expect.poll(() => img.evaluate((i) => (i as HTMLImageElement).complete)).toBe(true);
+  }
   const broken = await page.$$eval("img", (imgs) =>
     imgs.filter((i) => i.getClientRects().length > 0 && !(i as HTMLImageElement).naturalWidth).map((i) => i.getAttribute("src")),
   );
@@ -51,6 +55,43 @@ test("/about's replay waits to be asked, and on a laptop keeps its height from s
       await expect(page.locator(`.rp-state[data-s="${k}"]`)).toBeVisible();
       expect(await height()).toBe(h0);
     }
+  }
+});
+
+test("/about says what was measured and who measured it, and stays under 10,000 px on a laptop", async ({ page, isMobile }) => {
+  await page.goto("/about");
+  const text = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+  // QA B21: the ablation counted tags and keywords, never menus; the manual audit was done by an AI, so it says so
+  expect(text).not.toMatch(/serve alcohol,|outings that serve alcohol|outings serving alcohol|checked by hand|Hand-checked/);
+  expect(text).toContain("carry an alcohol tag or keyword");
+  expect(text).toContain("our build agent (Claude, an AI; not blind)");
+  await expect(page.locator(".rtag").first()).toHaveText(/Manual audit · Claude/);
+  if (!isMobile) {
+    // the exemplars run 5,500 to 7,100 px at this width; the page was 13,706 before B21
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const h = await page.evaluate(() => document.documentElement.scrollHeight);
+    expect(h).toBeLessThanOrEqual(10_000);
+    // each replay step shows its changed slots at the hero sheet's sizes: no replay text under 13 px, names 16 px or more
+    for (const k of [0, 1, 2, 3, 4]) {
+      await page.locator(`.rp-tab[data-go="${k}"]`).click();
+      const small = await page.locator(`.rp-state[data-s="${k}"]`).evaluate((st) => {
+        const out: string[] = [];
+        st.querySelectorAll("*").forEach((el) => {
+          const own = [...el.childNodes].some((n) => n.nodeType === 3 && /\w/.test(n.textContent ?? ""));
+          if (own && parseFloat(getComputedStyle(el).fontSize) < 13) out.push((el.textContent ?? "").slice(0, 40));
+        });
+        st.querySelectorAll(".nm, .rp-struck s, .rp-review .rn, .rp-home .n, .rp-strip .n").forEach((el) => {
+          if (parseFloat(getComputedStyle(el).fontSize) < 16) out.push("name " + (el.textContent ?? "").slice(0, 40));
+        });
+        return out;
+      });
+      expect(small).toEqual([]);
+    }
+  } else {
+    // on a phone every step tab is on screen, the open one included
+    const tab = await page.locator('.rp-tab[aria-current="step"]').boundingBox();
+    const vw = page.viewportSize()!.width;
+    expect(tab && tab.x >= 0 && tab.x + tab.width <= vw).toBe(true);
   }
 });
 
@@ -79,5 +120,11 @@ test("/pitch is an 11-slide deck that keyboard and URL navigate", async ({ page 
     [...document.styleSheets].flatMap((s) => [...s.cssRules]).filter((r) => r instanceof CSSPageRule).map((r) => (r as CSSPageRule).style.getPropertyValue("size")),
   );
   expect(pageSize).toEqual(["16in 9in"]);
+  // QA B21: the cover quotes the app's summary whole, caveat included, and its cursor never prints
+  await page.goto("/pitch#1");
+  await expect(page.locator(".s1 .tcard .sum")).toContainText("2 rekindled by a rating (Qloo's attribution, not causation)");
+  await page.emulateMedia({ media: "print" });
+  expect(await page.locator(".s1 .cur").evaluate((c) => getComputedStyle(c).display)).toBe("none");
+  await page.emulateMedia({ media: "screen" });
   expect(errors).toEqual([]);
 });

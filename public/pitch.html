@@ -119,9 +119,12 @@ img { display: block; max-width: 100%; height: auto; }
 .tcard li b { font-weight: 500; color: var(--muted); }
 .tcard li.key b { color: var(--after-ink); }
 .tcard .sum { padding: 14px 22px 18px; font: 500 19px/1.45 var(--font-data); color: var(--after-ink); }
-.cur { display: inline-block; width: .55em; height: 1.05em; margin-left: 4px; vertical-align: -3px; background: var(--ink); }
-.motion .s1.on .cur { animation: blink 1s steps(1) 3 1.6s both; }
-@keyframes blink { 50% { opacity: 0; } }
+.tcard .sum .m { color: var(--muted); font-weight: 400; }   /* the app prints its caveat in muted ink too (ReplanSummary) */
+/* the trace's cursor blinks three times once the cover opens, then rests hidden: it is never printed and never shown
+   without motion, so no still frame carries a stray ink block (B21) */
+.cur { display: none; width: .55em; height: 1.05em; margin-left: 4px; vertical-align: -3px; background: var(--ink); opacity: 0; }
+.motion .s1.on .cur { display: inline-block; animation: blink 1s steps(1, end) 3 1.6s backwards; }
+@keyframes blink { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .s1 .meta { position: absolute; left: 104px; bottom: 84px; font: 19px/1.5 var(--font-data); color: var(--muted); }
 
 /* 2 · the case */
@@ -189,6 +192,12 @@ img { display: block; max-width: 100%; height: auto; }
 .pic { position: relative; }
 .s6 .side q { display: block; margin-top: 8px; padding: 12px 16px; border: 1.5px solid var(--ink); background: var(--paper); font: 500 22px/1.4 var(--font-data); quotes: none; }
 .callout { position: absolute; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 500 22px/1 var(--font-data); box-shadow: 0 0 0 6px color-mix(in srgb, var(--bg) 80%, transparent); }
+/* slide 6: the numbers sit in the slide's margin, level with the row each ring marks, with a short ink tick to the frame,
+   so they cover nothing the app printed (badge 1 used to sit on the Quiet toggle; B21) */
+.s6 .callout { left: -84px; }
+.s6 .callout::after { content: ""; position: absolute; left: 58px; top: 25px; width: 24px; height: 2px; background: var(--ink); }
+.s6 .callout.m1 { top: 50px; }
+.s6 .callout.m2 { top: 139px; }
 .ring { position: absolute; border: 3px solid var(--ink); border-radius: 10px; }
 .s6 .side p { font-size: 28px; line-height: 1.32; }
 .s6 .side p + p { margin-top: 26px; }
@@ -278,6 +287,7 @@ img { display: block; max-width: 100%; height: auto; }
 .motion .s9:not(.on) .bar .tr i { width: 0; }
 .motion .s9.on .bar .tr i { transition: width 1.1s var(--ease) .5s; }
 .s9 .src { margin-top: 22px; }
+.s9 .rcell .src.cn { margin-top: 20px; font-size: 20px; line-height: 1.4; }   /* the cell's own caveat: provenance, not prose */
 
 /* 10 · limits */
 .lims { display: grid; grid-template-columns: 1fr 1fr; gap: 0 72px; margin-top: 56px; border-top: 3px solid var(--ink); }
@@ -292,7 +302,7 @@ img { display: block; max-width: 100%; height: auto; }
 .s11 .ask { margin-top: 34px; display: grid; grid-template-columns: 264px 1fr; gap: 40px; align-items: center; }
 .qr svg { display: block; width: 264px; height: 264px; border: 1.5px solid var(--ink); }
 .s11 .go { font: 400 46px/1.15 var(--font-display); }
-.s11 .go .k { background: linear-gradient(var(--after), var(--after)) no-repeat 0 94% / 100% 4px; }
+.s11 .go .k { background: linear-gradient(var(--ink), var(--ink)) no-repeat 0 94% / 100% 3px; }
 .s11 .url { margin-top: 12px; font: 500 28px/1.3 var(--font-data); }
 .slide a { color: inherit; text-decoration-line: underline; text-decoration-color: var(--rule); text-decoration-thickness: 2px; text-underline-offset: .2em; }
 .slide a:hover { text-decoration-color: currentColor; }
@@ -334,7 +344,7 @@ html.overview, .overview body { overflow: auto; }
   html, body { overflow: visible; height: auto; background: var(--bg); }
   .deck { position: static; transform: none !important; width: auto; height: auto; }
   .slide { position: relative; visibility: visible; opacity: 1; zoom: .8; page-break-after: always; break-after: page; break-inside: avoid; transition: none; }
-  .notes-panel, .hint { display: none !important; }
+  .notes-panel, .hint, .cur { display: none !important; }
   /* every slide prints in its final state, whichever slide was open when the print began */
   .motion .slide *, .motion .slide *::before, .motion .slide *::after { animation: none !important; transition: none !important; }
   .motion .s9 .bx.x::after { transform: rotate(-58deg) !important; }
@@ -360,7 +370,7 @@ html.overview, .overview body { overflow: auto; }
         <li><b>6</b><span>findOutings day=saturday hour=11 → 25 returned · review 1 → Ceremonia Bakeshop ✓</span></li>
         <li><b>8</b><span>placeSocial day=sunday hour=14 → 11 returned · refused R-KIND 2 → Bushwick Pita Palace ✓</span></li>
       </ol>
-      <p class="sum">Week 2: 2 kept · 5 new · 2 rekindled by a rating<span class="cur" aria-hidden="true"></span></p>
+      <p class="sum">Week 2: 2 kept · 5 new · 2 rekindled by a rating <span class="m">(Qloo&#x27;s attribution, not causation)</span><span class="cur" aria-hidden="true"></span></p>
     </div>
   </div>
   <p class="meta">Maya is a fictional case · live re-plan of 8 Oct 2026 · <a href="https://rekindle.edycu.dev/">rekindle.edycu.dev</a></p>
@@ -430,15 +440,16 @@ html.overview, .overview body { overflow: auto; }
     <div class="callwrap">
       <div class="fr"><div class="chrome"><span class="url">rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965</span><span class="live">LIVE</span></div>
         <div class="pic"><img src="site/recovery-live.webp" width="2880" height="1360" alt="The live app one click after In recovery, for Maya, a fictional case: In recovery ticked and the notice 3 outings struck in place and 3 slots refilled live · 2.2 s; the week and its agent trace below.">
-          <span class="ring" style="left:8.4%;top:.9%;width:10.6%;height:8.6%"></span><span class="callout" style="left:19.6%;top:.8%">1</span>
-          <span class="ring" style="left:.7%;top:16.6%;width:39.2%;height:7.8%"></span><span class="callout" style="left:40.6%;top:16.1%">2</span></div></div>
+          <span class="ring" style="left:8.4%;top:.9%;width:10.6%;height:8.6%"></span>
+          <span class="ring" style="left:.7%;top:16.6%;width:39.2%;height:7.8%"></span></div></div>
+      <span class="callout m1" aria-hidden="true">1</span><span class="callout m2" aria-hidden="true">2</span>
     </div>
     <div class="side">
       <p><span class="n">1 · one click</span>Only the affected outings, re-checked live.</p>
       <p><span class="n">2 · the notice</span><q>3 outings struck in place and 3 slots refilled live · 2.2 s</q></p>
     </div>
   </div>
-  <aside class="speaker-notes">This is the live app, not a mock-up. One click on In recovery re-runs only the outing slots it affects. Qloo's own four-tag exclusion still left 17 of the 25 places in her Thursday query alcohol-tagged, which is why the screen exists. The bench measures why the extra screen exists: with it, <span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span> in-recovery outings serve alcohol; with only Qloo's four bar tags excluded, <span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span> do.</aside>
+  <aside class="speaker-notes">This is the live app, not a mock-up. One click on In recovery re-runs only the outing slots it affects. Qloo's own four-tag exclusion still left 17 of the 25 places in her Thursday query alcohol-tagged, which is why the screen exists. The bench measures why the extra screen exists: with it, <span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span> in-recovery outings carry an alcohol tag or keyword; with only Qloo's four bar tags excluded, <span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span> do. It counts tags and keywords, not menus.</aside>
 </section>
 
 <section class="slide s7" aria-label="Slide 7: the clinician gate">
@@ -487,7 +498,7 @@ html.overview, .overview body { overflow: auto; }
   <h2 class="hd">Measured, with the caveats left on.</h2>
   <div class="rgrid">
     <div class="rcell">
-      <span class="rtag">Hand check</span>
+      <span class="rtag">Manual audit · Claude</span>
       <p class="big"><span data-n="hand.B.wrong">0</span><span class="of">of</span><span data-n="hand.B.checked">14</span></p>
       <p class="rtx">named venues wrong for Rekindle; the same LLM alone: <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b>.</p>
       <div class="arm"><p class="lb"><span>LLM alone</span><b><span data-n="hand.A.wrong">7</span> struck · <span data-n="hand.A.inconclusive">3</span> dashed</b></p><span class="boxes" data-boxes="A" role="img" aria-label="20 venues sampled: 7 wrong, 10 right, 3 inconclusive"><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx x"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx"></i><i class="bx q"></i><i class="bx q"></i><i class="bx q"></i></span></div>
@@ -496,26 +507,28 @@ html.overview, .overview body { overflow: auto; }
     <div class="rcell">
       <span class="rtag">In recovery</span>
       <p class="big"><span data-n="abl.B.leak">0</span><span class="of">of</span><span data-n="abl.B.cards">30</span></p>
-      <p class="rtx">outings serving alcohol, screen on.</p>
+      <p class="rtx">in-recovery outings carry an alcohol tag or keyword, screen on.</p>
       <div class="bars">
         <div class="bar"><p class="lb"><span>4 bar tags</span><b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b></p><div class="tr"><i data-w="abl.B-4" style="--w:75.0%"></i></div></div>
         <div class="bar"><p class="lb"><span>14 tags</span><b><span data-n="abl.B-.leak">3</span> of <span data-n="abl.B-.cards">28</span></b></p><div class="tr"><i data-w="abl.B-" style="--w:10.7%"></i></div></div>
         <div class="bar zero"><p class="lb"><span>+ screen</span><b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b></p><div class="tr"><i data-w="abl.B" style="--w:0.0%"></i></div></div>
       </div>
+      <p class="src cn">Counts tags and keywords, not menus.</p>
     </div>
     <div class="rcell">
       <span class="rtag">Re-plan</span>
       <p class="big"><span data-n="replan.passed">16</span><span class="of">/</span><span data-n="replan.N">16</span></p>
-      <p class="rtx">bench re-plans that follow the ≥ 7 ratings.</p>
+      <p class="rtx">eligible re-plans put a ≥ 7 rating atop Qloo's attribution for a new card.</p>
+      <p class="src cn"><span data-n="replan.excluded">4</span> of <span data-n="bench.profiles">20</span> profiles had too few verified outings to rate. Rated ≤ 3 that came back: <span data-n="replan.low_back">0</span>.</p>
     </div>
     <div class="rcell">
       <span class="rtag">Verifier</span>
       <p class="big"><span data-n="rigor.cases">60,000</span></p>
-      <p class="rtx">generated verifier cases; no outing that passes breaks a hard constraint. <b data-n="rigor.tests">227</b> tests.</p>
+      <p class="rtx">generated cases: no passing outing breaks a hard constraint. <b data-n="rigor.tests">227</b> tests.</p>
     </div>
   </div>
-  <p class="src"><span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span> Hand check: a random <span data-n="hand.A.sampled">20</span> per arm, not blind; struck = wrong, dashed = inconclusive.</p>
-  <aside class="speaker-notes">We lead with the hand check because our automated checker leans on Qloo and over-flags the LLM. The ablation isolates the alcohol screen: Qloo's tags alone are not enough. Every number here is generated from the committed bench files, and the bench is labelled with the changes made after it.</aside>
+  <p class="src">Manual audit: a random <span data-n="hand.A.sampled">20</span> per arm, checked one by one against public listings by our build agent (Claude, an AI; not blind); struck = wrong, dashed = inconclusive. <span data-n="bench.caveat">The bench run of 7 Oct 2026 predates 20 later plan-path changes (listed in DEMO.md).</span></p>
+  <aside class="speaker-notes">We lead with the manual audit, done by our build agent (Claude, an AI) and so not blind, because our automated checker leans on Qloo and over-flags the LLM. The ablation isolates the alcohol screen: Qloo's tags alone are not enough. Every number here is generated from the committed bench files, and the bench is labelled with the changes made after it.</aside>
 </section>
 
 <section class="slide s10" aria-label="Slide 10: honest limits">
@@ -541,7 +554,7 @@ html.overview, .overview body { overflow: auto; }
         <div class="qr" role="img" aria-label="QR code for https://rekindle.edycu.dev/"><svg viewBox="0 0 264 264" width="264" height="264" aria-hidden="true" class="segno"><g transform="scale(8)"><path fill="#fbf8f1" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#26221d" d="M2 2.5h7m2 0h1m1 0h2m4 0h2m3 0h7m-29 1h1m5 0h1m1 0h3m1 0h2m1 0h1m6 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m5 0h1m1 0h4m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m2 0h2m1 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h1m1 0h4m2 0h2m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m1 0h2m1 0h3m-17 1h3m1 0h2m8 0h1m3 0h1m6 0h2m-28 1h2m2 0h1m3 0h3m1 0h2m2 0h4m1 0h2m1 0h2m2 0h1m-29 1h2m1 0h1m1 0h3m1 0h1m2 0h1m4 0h1m2 0h1m1 0h1m2 0h3m-26 1h2m4 0h2m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h4m2 0h2m2 0h2m1 0h5m3 0h1m1 0h1m2 0h3m-28 1h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m-28 1h1m3 0h5m4 0h6m1 0h1m1 0h3m1 0h2m-29 1h1m1 0h1m1 0h1m3 0h3m1 0h2m1 0h1m1 0h3m1 0h2m1 0h2m1 0h2m-29 1h7m1 0h1m1 0h2m3 0h4m2 0h1m2 0h2m1 0h2m-27 1h1m2 0h1m1 0h1m1 0h1m1 0h3m2 0h2m2 0h1m2 0h1m-24 1h1m2 0h6m2 0h1m2 0h4m2 0h1m1 0h2m-22 1h1m1 0h2m1 0h1m2 0h1m2 0h1m3 0h1m3 0h3m1 0h4m-28 1h1m1 0h7m1 0h1m2 0h1m1 0h9m1 0h1m-19 1h1m1 0h1m1 0h1m3 0h1m1 0h3m3 0h2m1 0h2m-29 1h7m3 0h2m1 0h2m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m-27 1h1m5 0h1m1 0h5m1 0h1m3 0h1m1 0h1m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m2 0h1m4 0h1m3 0h1m1 0h7m-27 1h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h4m4 0h1m2 0h1m-28 1h1m1 0h3m1 0h1m1 0h1m1 0h4m1 0h2m1 0h1m1 0h1m2 0h1m4 0h1m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h1m1 0h1m3 0h2m1 0h1m-28 1h7m2 0h3m3 0h1m2 0h3m2 0h1m3 0h1"/></g></svg></div>
         <div><p class="go">Plan Maya's week, <span class="k">live</span>.</p><p class="url"><a href="https://rekindle.edycu.dev/">rekindle.edycu.dev</a></p></div>
       </div>
-      <p class="links">no login · fictional cases · <a href="https://rekindle.edycu.dev/judge">/judge</a> · <a href="https://rekindle.edycu.dev/integrations/qloo">/integrations/qloo</a> · <a href="https://rekindle.edycu.dev/about">/about</a></p>
+      <p class="links">no login · fictional cases · <a href="https://rekindle.edycu.dev/judge">/judge</a> · <a href="https://rekindle.edycu.dev/integrations/qloo">/integrations/qloo</a> · <a href="https://rekindle.edycu.dev/about">/about</a><br>github.com/edycutjong/rekindle (public at submission)</p>
     </div>
   </div>
   <aside class="speaker-notes">What a clinician gets is the sheet a patient can take home, with only what was approved on it. The live app needs no login; plan Maya's week, switch on In recovery, approve, rate three cards and re-plan week two. Receipts are on /judge.</aside>
