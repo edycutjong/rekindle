@@ -109,6 +109,11 @@
    "commit": "15f0ce3",
    "date": "2026-10-08",
    "subject": "T16 (a2a r04): ember thread when the top rated input outweighs the best original love by >= 0.02 (EMBER_MIN_MARGIN, the bench's margin); …"
+  },
+  {
+   "commit": "358ce8e",
+   "date": "2026-10-09",
+   "subject": "fix(trace): the agent trace credits each slot to the model that routed it and says why a call failed; /judge's bench heading reads \"Bench: …"
   }
  ]
 }
