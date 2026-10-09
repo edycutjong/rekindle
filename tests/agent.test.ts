@@ -5,6 +5,9 @@ import type { InsightsResponse, QlooClient, QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14 } from "../lib/tags";
 import type { Card } from "../lib/plan";
 import { MAYA, replayClient } from "./replay";
+import { planDocFromAgent } from "../lib/store";
+import { EMPTY_HISTORY } from "../lib/plan";
+import { routingLabel, traceLine } from "../lib/view";
 
 /* A scripted OpenAI-compatible endpoint: the agent runs the real AI SDK loop against it (test-only; the app calls the
  * real provider). Each handler sees the request body (incl. earlier tool results) and returns the next assistant turn. */
@@ -169,6 +172,37 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
     expect(plan.llmErrors).toHaveLength(1);
     expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
   });
+
+  it("QA 2026-10-09 (demo video): each LLM slot names the provider that routed it, and a failed coaching call reads as coaching, not as a deterministic route", async () => {
+    // the live re-plan 7317047a: Qwen routed Monday then timed out, Groq routed the other slots, then Groq's coaching call
+    // hit its tokens-per-minute limit; the trace printed "→ deterministic route" and the stats credited Qwen with the week
+    let q = 0;
+    const qwen = makeLlm("qwen", { QWEN_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
+      q++ === 0 ? completion([ROUTE_ALL[0]]) : new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
+    let g = 0;
+    const limited = () =>
+      new Response(JSON.stringify({ error: { message: "Rate limit reached for model `openai/gpt-oss-120b` on tokens per minute (TPM): Limit 8000, Used 6686, Requested 1462." } }), { status: 429, headers: { "content-type": "application/json" } });
+    const groq = makeLlm("groq", { GROQ_API_KEY: "k" }, (async () => (g++ === 0 ? completion(ROUTE_ALL.slice(1)) : limited())) as unknown as typeof fetch)!;
+    const events: AgentEvent[] = [];
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [qwen, groq], llmBudgetMs: 6000, coachBudgetMs: 2000, onEvent: (e) => events.push(e) });
+    expect(plan.slots.find((s) => s.slot.day === "monday")).toMatchObject({ routedBy: "llm", llm: "qwen:qwen3.8-flash" });
+    expect(plan.slots.filter((s) => s.slot.day !== "monday").every((s) => s.routedBy === "llm" && s.llm === "groq:openai/gpt-oss-120b")).toBe(true);
+    const fb = events.filter((e) => e.type === "llm_fallback");
+    expect(fb).toEqual([
+      expect.objectContaining({ stage: "route", from: "qwen:qwen3.8-flash", to: "groq:openai/gpt-oss-120b", open: 6 }),
+      expect.objectContaining({ stage: "coach", from: "groq:openai/gpt-oss-120b", to: null }),
+    ]);
+    expect(fb.map((e) => traceLine(e as unknown as { type: string } & Record<string, unknown>))).toEqual([
+      "LLM fallback qwen:qwen3.8-flash (timed out) → groq:openai/gpt-oss-120b",
+      "coaching groq:openai/gpt-oss-120b rate-limited → template lines",
+    ]);
+    expect(plan.coachedBy).toBeNull();
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "template")).toBe(true);
+    // the stored week credits each provider with its own slots
+    const doc = planDocFromAgent(plan, { caseId: "c", history: EMPTY_HISTORY, calls: 0 });
+    expect(doc.cards.map((c) => c.routed_llm)).toEqual(plan.slots.filter((s) => s.card).map((s) => s.llm));
+    expect(routingLabel(doc)).toBe("groq:openai/gpt-oss-120b ×6 · qwen:qwen3.8-flash ×1");
+  }, 15_000);
 
   it("coaching is a race: a primary that hangs loses to the other provider, which coaches every card (QA round 3: Qwen timed out on 5/5 runs)", async () => {
     let n = 0;

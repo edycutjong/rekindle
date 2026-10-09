@@ -90,7 +90,7 @@ export default async function QlooReceipts({ searchParams }: { searchParams: Pro
                 </h2>
                 <p className={s.meta}>
                   {new Date(p.plan.created_at).toUTCString()} · {p.calls.length} Qloo requests · {p.plan.cards} cards · {p.plan.refusals} refusals ·{" "}
-                  {p.plan.llm_model ? `${p.plan.llm_provider}:${p.plan.llm_model}` : "deterministic route"} · {(p.plan.latency_ms / 1000).toFixed(1)} s
+                  {p.plan.routing ?? (p.plan.llm_model ? `${p.plan.llm_provider}:${p.plan.llm_model}` : "deterministic route")} · {(p.plan.latency_ms / 1000).toFixed(1)} s
                 </p>
                 <div className={s.tableWrap}>
                   <table className={s.table}>

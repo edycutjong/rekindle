@@ -5,7 +5,7 @@ import type { WeekPlan } from "../lib/plan";
 import { EMPTY_HISTORY } from "../lib/plan";
 import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
-import { leadShown, reviewReason, shortDetail, tagKind, tagLeaf } from "../lib/view";
+import { leadShown, llmFailure, reviewReason, routingLabel, shortDetail, tagKind, tagLeaf } from "../lib/view";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
   id: "c1",
@@ -332,5 +332,34 @@ describe("REVIEW boxes (QA round 1: the same venue twice)", () => {
     expect(by.saturday.map((x) => x.qloo_entity_id)).toEqual(["VL"]);
     expect(by.sunday.map((x) => x.qloo_entity_id)).toEqual(["VL2"]);
     expect(by.friday).toEqual([]);
+  });
+});
+
+describe("QA 2026-10-09 (demo video): the trace says what failed, and the stats credit every provider that routed", () => {
+  const fb = (o: Record<string, unknown>) => traceLine({ type: "llm_fallback", from: "groq:openai/gpt-oss-120b", to: null, error: "x", ...o });
+  it("a coaching failure says coaching → template lines; a routing failure says why and where it goes", () => {
+    const tpm = "AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` on tokens per minute (TPM): Limit 8000, Used 6686, Requested 1462.";
+    expect(fb({ stage: "coach", error: tpm })).toBe("coaching groq:openai/gpt-oss-120b rate-limited → template lines");
+    expect(fb({ stage: "route", from: "qwen:qwen3.8-flash", to: "groq:openai/gpt-oss-120b", error: "TimeoutError: The operation was aborted due to timeout", open: 6 })).toBe(
+      "LLM fallback qwen:qwen3.8-flash (timed out) → groq:openai/gpt-oss-120b",
+    );
+    expect(fb({ stage: "route", error: tpm, open: 0 })).toBe("LLM groq:openai/gpt-oss-120b rate-limited after every slot was routed · nothing left to fall back on");
+    expect(fb({ stage: "route", error: "Error: the model made no progress (no tool called)", open: 2 })).toBe("LLM fallback groq:openai/gpt-oss-120b (made no tool call) → deterministic route for 2 slots");
+    // an event from before the stage field (an older stream) keeps the old reading
+    expect(fb({ error: "AI_APICallError: model overloaded" })).toBe("LLM fallback groq:openai/gpt-oss-120b (failed) → deterministic route");
+    expect(llmFailure("Error: 429 Too Many Requests")).toBe("rate-limited");
+  });
+
+  it("routingLabel lists each LLM with its card count, then the other routes; older plans keep the single label", () => {
+    const plan = (cards: Partial<CardDoc>[], llm: [string | null, string | null] = ["qwen", "qwen3.8-flash"]) =>
+      ({ llm_provider: llm[0], llm_model: llm[1], cards: cards.map((c) => card(c)) }) as unknown as PlanDoc;
+    const q = { routed_by: "llm" as const, routed_llm: "qwen:qwen3.8-flash" };
+    const g = { routed_by: "llm" as const, routed_llm: "groq:openai/gpt-oss-120b" };
+    expect(routingLabel(plan([g, g, g, g, g, q, { routed_by: "kept" }]))).toBe("groq:openai/gpt-oss-120b ×5 · qwen:qwen3.8-flash ×1 · kept ×1");
+    expect(routingLabel(plan([q, q, q, q, { routed_by: "toggle" }, { routed_by: "toggle" }, { routed_by: "toggle" }]))).toBe("qwen:qwen3.8-flash ×4 · toggle refill ×3");
+    expect(routingLabel(plan([q, q, q, q, q, { routed_by: "fallback" }, { routed_by: "fallback" }]))).toBe("qwen:qwen3.8-flash ×5 · deterministic ×2");
+    // plans stored before cards named their provider
+    expect(routingLabel(plan([{ routed_by: "llm" }, { routed_by: "llm" }]))).toBe("qwen:qwen3.8-flash");
+    expect(routingLabel(plan([{ routed_by: "fallback" }], [null, null]))).toBe("deterministic route");
   });
 });

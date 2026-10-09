@@ -28,6 +28,9 @@ export interface AgentSlot {
   card: Card | null;
   empty?: string;
   routedBy: RoutedBy;
+  /** routedBy "llm": the "provider:model" whose tool call placed this slot (QA 2026-10-09: the first provider used to be
+   *  credited with the whole week, although Groq routed 5 of its 6 LLM slots after Qwen timed out) */
+  llm?: string;
   tool: ToolName;
   params: Record<string, unknown>;
   coaching?: string;
@@ -61,7 +64,9 @@ export interface AgentPlan extends Omit<WeekPlan, "slots"> {
 export type AgentEvent =
   | { type: "start"; week: number; slots: { day: DayName; hour: number; rung: string }[]; llm: string[] }
   | { type: "llm"; provider: string; model: string; step: number; ms: number; toolCalls: string[]; finishReason: string; inputTokens: number | null; outputTokens: number | null }
-  | { type: "llm_fallback"; from: string; to: string | null; error: string }
+  /** stage "route": a routing attempt failed (`to` = the next provider, or null: the deterministic route takes the `open`
+   *  slots, if any); stage "coach": the coaching call failed, so its cards keep the template dose line */
+  | { type: "llm_fallback"; from: string; to: string | null; error: string; stage?: "route" | "coach"; open?: number }
   | { type: "tool"; tool: ToolName; day: DayName; params: Record<string, unknown>; routedBy: RoutedBy; ms: number; returned: number; card: { entity_id: string; name: string; hour: number; movedFrom?: number } | null; refusals: Record<string, number>; review: number; empty?: string }
   | { type: "tool_rejected"; tool: string; day: string; reason: string }
   | { type: "truth_boundary"; dropped: Dropped[] }
@@ -280,12 +285,12 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     emit({ type: "tool", tool: toolName, day: slot.day, params, routedBy: "kept", ms: 0, returned: 1, card: { entity_id: card.entity_id, name: card.name, hour: card.hour }, refusals: {}, review: 0 });
   }
 
-  const record = (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, r: ToolResult & { cell?: string }, routedBy: RoutedBy, ms: number) => {
+  const record = (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, r: ToolResult & { cell?: string }, routedBy: RoutedBy, ms: number, llm?: string) => {
     refusals.push(...r.refusals);
     review.push(...r.review);
     for (const x of r.refusals) otherNames.add(x.name);
     for (const x of r.review) otherNames.add(x.name);
-    const s: AgentSlot = { slot, card: r.card, routedBy, tool: toolName, params, ...(r.card ? {} : { empty: r.empty ?? "no verified candidate" }), ...(r.cell ? { cell: r.cell } : {}) };
+    const s: AgentSlot = { slot, card: r.card, routedBy, ...(llm ? { llm } : {}), tool: toolName, params, ...(r.card ? {} : { empty: r.empty ?? "no verified candidate" }), ...(r.cell ? { cell: r.cell } : {}) };
     filled.set(slot.day, s);
     emit({
       type: "tool",
@@ -304,7 +309,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   };
 
   /** Shared by the LLM tools and the deterministic fallback, so both paths run the same verifier. */
-  const runSlot = async (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, routedBy: RoutedBy) => {
+  const runSlot = async (slot: SlotSpec, toolName: ToolName, params: Record<string, unknown>, routedBy: RoutedBy, llm?: string) => {
     const t = Date.now();
     let r: ToolResult & { cell?: string };
     try {
@@ -318,7 +323,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     } finally {
       pending.delete(slot.day);
     }
-    return record(slot, toolName, params, r, routedBy, Date.now() - t);
+    return record(slot, toolName, params, r, routedBy, Date.now() - t, llm);
   };
 
   /** a slot left empty only because Qloo was unavailable may be routed again */
@@ -348,32 +353,39 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
       ? { ok: true, day: s.slot.day, entity_id: s.card.entity_id, name: s.card.name, type: s.card.entityType, hour: fmtHour(s.card.hour), ...(s.card.movedFrom !== undefined ? { movedFrom: fmtHour(s.card.movedFrom) } : {}), ...(s.card.distance_m !== undefined ? { distance_m: s.card.distance_m } : {}), because: whyText(s.card) }
       : { ok: false, day: s.slot.day, empty: s.empty };
 
+  /** the provider whose routing attempt is running: a tool call records it when it starts (an aborted attempt's calls
+   *  already in flight keep the provider that made them) */
+  let routing: string | undefined;
+
   const tools = {
     findAtHome: tool({
       description: "Fill a home slot with a 10-minute at-home dose: Qloo picks one entity of the chosen domain from the patient's taste signals.",
       inputSchema: z.object({ day: dayEnum, type: z.enum(HOME_TYPES as unknown as [HomeType, ...HomeType[]]), take: z.number().int().min(3).max(10).optional() }),
       execute: async ({ day, type, take }) => {
+        const by = routing;
         const slot = claim("findAtHome", day, "home");
         if ("error" in slot) return { ok: false, error: slot.error };
-        return summary(await runSlot({ ...slot, homeType: type }, "findAtHome", { day, type, ...(take ? { take } : {}) }, "llm"));
+        return summary(await runSlot({ ...slot, homeType: type }, "findAtHome", { day, type, ...(take ? { take } : {}) }, "llm", by));
       },
     }),
     findOutings: tool({
       description: "Fill a solo slot with a verified place: open at the hour and checked by the server against the case row (the model cannot see or change those checks).",
       inputSchema: z.object({ day: dayEnum, hour: z.number().int().min(8).max(21).optional(), narrowMeters: z.number().int().min(300).max(5000).optional() }),
       execute: async ({ day, hour, narrowMeters }) => {
+        const by = routing;
         const slot = claim("findOutings", day, "solo");
         if ("error" in slot) return { ok: false, error: slot.error };
-        return summary(await runSlot({ ...slot, hour: hour ?? slot.hour }, "findOutings", { day, ...(hour ? { hour } : {}), ...(narrowMeters ? { narrowMeters } : {}) }, "llm"));
+        return summary(await runSlot({ ...slot, hour: hour ?? slot.hour }, "findOutings", { day, ...(hour ? { hour } : {}), ...(narrowMeters ? { narrowMeters } : {}) }, "llm", by));
       },
     }),
     placeSocial: tool({
       description: "Fill the social slot: Qloo's heatmap finds where people with the same taste gather near the patient, then a verified place there.",
       inputSchema: z.object({ day: dayEnum, hour: z.number().int().min(8).max(21).optional() }),
       execute: async ({ day, hour }) => {
+        const by = routing;
         const slot = claim("placeSocial", day, "social");
         if ("error" in slot) return { ok: false, error: slot.error };
-        return summary(await runSlot({ ...slot, hour: hour ?? slot.hour }, "placeSocial", { day, ...(hour ? { hour } : {}) }, "llm"));
+        return summary(await runSlot({ ...slot, hour: hour ?? slot.hour }, "placeSocial", { day, ...(hour ? { hour } : {}) }, "llm", by));
       },
     }),
     submitPlan: tool({
@@ -412,7 +424,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     const error = (e instanceof Error ? `${e.name}: ${e.message}` : String(e)).slice(0, 300);
     llmErrors.push({ provider: llm.provider, error });
     failed.add(llm);
-    emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error });
+    const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day)).length;
+    emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error, stage: "route", open });
   };
 
   // Walk the provider chain for ROUTING. A provider that makes progress but stops early (e.g. one tool per step until
@@ -423,6 +436,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   while (i < opts.llms.length && rounds < opts.llms.length + 2) {
     rounds++;
     const llm = opts.llms[i];
+    routing = `${llm.provider}:${llm.modelId}`;
     const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day));
     if (!open.length) break;
     const remaining = deadline - Date.now();
@@ -480,7 +494,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     }
     for (const e of r.errors) {
       llmErrors.push(e);
-      emit({ type: "llm_fallback", from: e.from, to: null, error: e.error });
+      emit({ type: "llm_fallback", from: e.from, to: null, error: e.error, stage: "coach" });
     }
   }
 

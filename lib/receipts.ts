@@ -4,10 +4,10 @@
  * logs, so every number on the page comes from a stored call.
  */
 import type { PlanDoc, QlooCallsDoc, Store } from "./store";
-import { realRefusals } from "./view";
+import { realRefusals, routingLabel } from "./view";
 
 export interface PlanReceipt {
-  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number };
+  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number; /** lib/view.ts routingLabel (absent in receipts cached before 2026-10-09) */ routing?: string };
   calls: QlooCallsDoc["calls"];
 }
 
@@ -78,7 +78,7 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     if (!o.planId && plan.superseded_by) continue;
     const refusals = distinctRefusals(realRefusals(plan.refusals, plan.cards));
     plans.push({
-      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: new Set(refusals.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size, refusals_by_rule: countRules(refusals), review: plan.review.length },
+      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, routing: routingLabel(plan), latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: new Set(refusals.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size, refusals_by_rule: countRules(refusals), review: plan.review.length },
       calls: calls?.calls ?? [],
     });
   }

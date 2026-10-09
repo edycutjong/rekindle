@@ -185,6 +185,33 @@ export function traceFromPlan(plan: PlanDoc): string[] {
   return lines;
 }
 
+/** Why an LLM call failed, in a word or two for the trace (the full error stays in the plan's llm_errors). */
+export function llmFailure(error: unknown): string {
+  const t = String(error ?? "");
+  if (/rate limit|\b429\b|tokens per minute|requests per minute|quota/i.test(t)) return "rate-limited";
+  if (/timeout|timed out|aborted/i.test(t)) return "timed out";
+  if (/no progress|no tool called|did not call/i.test(t)) return "made no tool call";
+  return "failed";
+}
+
+const ROUTE_NAMES: Record<string, string> = { fallback: "deterministic", kept: "kept", toggle: "toggle refill", swap: "clinician swap" };
+
+/**
+ * "routed by" in the trace stats: every LLM that placed a card with its count, then the other routes (QA 2026-10-09: the
+ * first provider used to be credited with the whole week, although Groq routed 5 of its 6 LLM slots after Qwen timed
+ * out). Plans made before cards recorded their provider keep the old single label.
+ */
+export function routingLabel(plan: Pick<PlanDoc, "cards" | "llm_provider" | "llm_model">): string {
+  const llmCards = plan.cards.filter((c) => c.routed_by === "llm");
+  if (!llmCards.some((c) => c.routed_llm)) return plan.llm_model ? `${plan.llm_provider}:${plan.llm_model}` : "deterministic route";
+  const parts = Object.entries(countBy(llmCards.map((c) => c.routed_llm ?? "LLM")))
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([k, n]) => `${k} ×${n}`);
+  const other = countBy(plan.cards.filter((c) => c.routed_by !== "llm").map((c) => c.routed_by));
+  for (const k of Object.keys(ROUTE_NAMES)) if (other[k]) parts.push(`${ROUTE_NAMES[k]} ×${other[k]}`);
+  return parts.join(" · ");
+}
+
 export function countBy(xs: string[]): Record<string, number> {
   const o: Record<string, number> = {};
   for (const x of xs) o[x] = (o[x] ?? 0) + 1;
@@ -198,8 +225,14 @@ export function traceLine(e: { type: string } & Record<string, unknown>): string
       return `start week ${e.week} · ${(e.slots as unknown[]).length} slots · LLM ${(e.llm as string[]).join(" → ") || "none (deterministic)"}`;
     case "llm":
       return `${e.provider}:${e.model} step ${e.step} · ${(e.toolCalls as string[]).length} tool call${(e.toolCalls as string[]).length === 1 ? "" : "s"} · ${e.ms} ms`;
-    case "llm_fallback":
-      return `LLM fallback ${e.from} → ${e.to ?? "deterministic route"}`;
+    case "llm_fallback": {
+      // QA 2026-10-09: a failed COACHING call printed "→ deterministic route" although every slot was already routed
+      const why = llmFailure(e.error);
+      if (e.stage === "coach") return `coaching ${e.from} ${why} → template lines`;
+      if (e.to) return `LLM fallback ${e.from} (${why}) → ${e.to}`;
+      if (e.open === 0) return `LLM ${e.from} ${why} after every slot was routed · nothing left to fall back on`;
+      return `LLM fallback ${e.from} (${why}) → deterministic route${typeof e.open === "number" ? ` for ${e.open} slot${e.open === 1 ? "" : "s"}` : ""}`;
+    }
     case "tool": {
       const p = Object.entries((e.params as Record<string, unknown>) ?? {}).map(([k, v]) => `${k}=${String(v)}`).join(" ");
       const rf = Object.entries((e.refusals as Record<string, number>) ?? {}).map(([r, n]) => `${r} ${n}`).join(", ");

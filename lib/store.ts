@@ -90,6 +90,8 @@ export const CardDoc = z.object({
   coaching_by: z.enum(["llm", "template"]).optional(),
   /** who placed the card: the LLM, the deterministic fallback, a constraint-toggle refill, or a clinician swap */
   routed_by: z.enum(["llm", "fallback", "toggle", "swap", "kept"]).default("llm"),
+  /** routed_by "llm": the "provider:model" whose tool call placed the card (absent on plans made before 2026-10-09) */
+  routed_llm: z.string().optional(),
   tool: z.string().optional(),
   tool_params: z.record(z.string(), z.unknown()).default({}),
   clinician_action: z.enum(["approved", "removed", "swapped"]).nullable().default(null),
@@ -324,7 +326,7 @@ export function planDocFromAgent(p: AgentPlan, o: { id?: string; caseId: string;
     qloo_calls: o.calls,
     latency_ms: p.latencyMs,
     history: o.history,
-    cards: p.slots.flatMap((s) => (s.card ? [cardToDoc(id, s.card, { coaching: s.coaching ?? "", ...(s.coachingBy ? { coaching_by: s.coachingBy } : {}), routed_by: s.routedBy, tool: s.tool, tool_params: s.params })] : [])),
+    cards: p.slots.flatMap((s) => (s.card ? [cardToDoc(id, s.card, { coaching: s.coaching ?? "", ...(s.coachingBy ? { coaching_by: s.coachingBy } : {}), routed_by: s.routedBy, ...(s.llm ? { routed_llm: s.llm } : {}), tool: s.tool, tool_params: s.params })] : [])),
     empty_slots: p.slots.filter((s) => !s.card).map((s) => ({ day_name: s.slot.day, hour: s.slot.hour, rung: s.slot.rung, reason: s.empty ?? "no verified candidate", routed_by: s.routedBy, ...(s.relax ? { relax: s.relax } : {}) })),
     refusals: p.refusals.map((r) => ({ id: newId(), plan_id: id, qloo_entity_id: r.entity_id, name: r.name, rule: r.rule, detail: r.detail, verdict: r.verdict, day_name: r.day, hour: r.hour, ...(r.movedTo !== undefined ? { moved_to: r.movedTo } : {}), ...(r.struckByToggle ? { struck_by_toggle: true } : {}) })),
     review: p.review.map((c) => cardToDoc(id, c, { routed_by: "llm" })),

@@ -10,7 +10,7 @@ import type { CardAction } from "@/lib/gate";
 import type { ConstraintPatch } from "@/lib/service";
 import type { CaseDoc, PlanDoc } from "@/lib/store";
 import { DAYS, type DayName } from "@/lib/verify";
-import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, reviewsByDay, stampLabel, strikesByDay, swapNotice, toggleNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
+import { changedRatings, coverageRefusal, distanceLabel, emberThreads, outageState, ratedCount, reviewsByDay, routingLabel, stampLabel, strikesByDay, swapNotice, toggleNotice, traceFromPlan, traceLine, type PendingRating } from "@/lib/view";
 import { AgentTrace } from "./AgentTrace";
 import { CaseStrip } from "./CaseStrip";
 import { EmberThreads, ReplanStrip, ReplanSummary } from "./ReplanDiff";
@@ -336,7 +336,7 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
   const traceLines = plan && live.length === 0 ? traceFromPlan(plan) : live;
   const stats = {
     qlooCalls: plan ? plan.qloo_calls : qloo,
-    llm: plan ? (plan.llm_model ? `${plan.llm_provider}:${plan.llm_model}` : "deterministic route") : null,
+    llm: plan ? routingLabel(plan) : null,
     seconds: plan ? plan.latency_ms / 1000 : null,
     secondsLabel: plan?.origin === "toggle" ? "last update" : plan?.origin === "replan" ? "re-plan time" : "plan time",
     planId: plan?.id ?? null,

@@ -242,7 +242,7 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
           </li>
         </ol>
 
-        <h2 className={s.h2}>Bench: the killer number</h2>
+        <h2 className={s.h2}>Bench: named places, checked</h2>
         {predates && predates.commits.length > 0 && (
           <details className={j.def} data-testid="bench-predates">
             <summary>
