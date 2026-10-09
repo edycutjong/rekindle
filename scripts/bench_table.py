@@ -33,11 +33,21 @@ def pct(x):
     return f"{x * 100:.1f}%"
 
 
+def auditor_phrase(au) -> str:
+    """Who checked the manual-audit sample, named wherever its number appears (QA on the story page, B21: "checked by
+    hand" reads as a person; the auditor was the build agent, Claude). Read from bench/audit.json, so an external audit
+    that replaces it changes the wording with the numbers."""
+    who = au.get("auditor", "")
+    if who.startswith("the build agent (Claude)"):
+        return "checked one by one against public listings by our build agent (Claude, an AI; not blind)"
+    return f"checked against public listings by {who.split(':')[0]}" if who else "checked against public listings"
+
+
 def audit_pair(au) -> str:
     """The manual-audit cross-check beside the Qloo-graded headline: the only grade not done by Qloo, and the smaller one."""
     a, b = au["arms"]["A"], au["arms"]["B"]
     return (
-        f" Manual audit against public listings (a sample of {a['sampled']} venues per arm; not blind, done by the build agent): "
+        f" Manual audit (a sample of {a['sampled']} venues per arm, {auditor_phrase(au)}): "
         f"**{pct(a['rate'])} vs {pct(b['rate'])}** ({a['violations']} of {a['checked']} checkable vs {b['violations']} of {b['checked']}; "
         f"{a['inconclusive']} and {b['inconclusive']} inconclusive, `bench/audit.json`)."
     )
@@ -74,10 +84,10 @@ def killer(r, au) -> str:
         if fp else ""
     )
     return (
-        f"**Asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'hand-checked venue', 'hand-checked venues')} wrong "
+        f"**Asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'audited venue', 'audited venues')} wrong "
         f"({pct(am['rate'])}); Rekindle: {bm['violations']} of {bm['checked']}.** "
         f"Wrong means not found ({am['not_found']}), closed at the planned hour ({am['closed_at_slot']}) or serving alcohol to a patient in recovery "
-        f"({am['alcohol']}); a random {am['sampled']} per arm against public listings, not blind, done by the build agent, "
+        f"({am['alcohol']}); a random {am['sampled']} per arm, {auditor_phrase(au)}, "
         f"{am['inconclusive']} and {bm['inconclusive']} inconclusive (`bench/audit.json`). "
         f"Our automated checker, on all {r['profiles']} fictional profiles, flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')} "
         f"and {bs['violation']} of Rekindle's {b['outing_venues']} ({b['violation']} by Qloo ID){over} "
@@ -265,16 +275,16 @@ def devpost_bullets(r, au) -> list[str]:
     fu, fp = sum(ovh.values()), ovh.get("ok", 0)
     over = f", but {fp} of the {plural(fu, 'venue', 'venues')} it couldn't match in the audit sample {'was' if fp == 1 else 'were'} real and open" if fp else ""
     number = (
-        f"- **The number:** asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'hand-checked venue', 'hand-checked venues')} wrong "
+        f"- **The number:** asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'audited venue', 'audited venues')} wrong "
         f"({round((am['rate'] or 0) * 100)}%: {am['not_found']} not found, {am['closed_at_slot']} closed at the planned hour, {am['alcohol']} serving alcohol to a patient in recovery); "
-        f"Rekindle got {bm['violations']} of {bm['checked']} (a random {am['sampled']} per arm against public listings; not blind, done by the build agent; `bench/audit.json`). "
-        f"We lead with the hand check because our automated checker leans on Qloo, which flatters Rekindle, and over-flags the LLM: across all "
+        f"Rekindle got {bm['violations']} of {bm['checked']} (a random {am['sampled']} per arm, {auditor_phrase(au)}; `bench/audit.json`). "
+        f"We lead with this manual audit because our automated checker leans on Qloo, which flatters Rekindle, and over-flags the LLM: across all "
         f"{r['profiles']} profiles it flags {a['violation']} of {a['outing_venues']} vs {bs['violation']} of {b['outing_venues']}{over}."
     )
     ab = r["ablation_in_recovery"]
     on, off, four = ab["B"], ab["B-"], ab["B-4"]
     ablation = (
-        f"- **Ablation** ({plural(on['profiles'], 'in-recovery profile', 'in-recovery profiles')}): with the screen on, {on['plan_alcohol_leak']} of {on['outing_cards']} outing cards serve alcohol. "
+        f"- **Ablation** ({plural(on['profiles'], 'in-recovery profile', 'in-recovery profiles')}): with the screen on, {on['plan_alcohol_leak']} of {on['outing_cards']} outing cards carry an alcohol tag or keyword. "
         f"Screen off, Qloo's 14-tag exclusion kept: {off['plan_alcohol_leak']} of {off['outing_cards']}. "
         f"Screen off, only the 4 obvious bar tags excluded: {four['plan_alcohol_leak']} of {four['outing_cards']} (`bench/results.json`, `ablation_in_recovery`)."
     )

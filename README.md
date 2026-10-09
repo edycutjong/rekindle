@@ -35,7 +35,7 @@
 ## 🎯 The number
 
 <!-- bench:killer:start -->
-**Asked for named places, the same LLM got 7 of 17 hand-checked venues wrong (41.2%); Rekindle: 0 of 14.** Wrong means not found (4), closed at the planned hour (2) or serving alcohol to a patient in recovery (1); a random 20 per arm against public listings, not blind, done by the build agent, 3 and 6 inconclusive (`bench/audit.json`). Our automated checker, on all 20 fictional profiles, flags 58 of the LLM's 79 venues and 6 of Rekindle's 66 (0 by Qloo ID), but it over-flags: in the same random sample, 4 of the 10 venues it couldn't match were real and open, because it matches by street address and misses large venues such as parks (`bench/results.json`, run 2026-10-07 13:11 UTC).
+**Asked for named places, the same LLM got 7 of 17 audited venues wrong (41.2%); Rekindle: 0 of 14.** Wrong means not found (4), closed at the planned hour (2) or serving alcohol to a patient in recovery (1); a random 20 per arm, checked one by one against public listings by our build agent (Claude, an AI; not blind), 3 and 6 inconclusive (`bench/audit.json`). Our automated checker, on all 20 fictional profiles, flags 58 of the LLM's 79 venues and 6 of Rekindle's 66 (0 by Qloo ID), but it over-flags: in the same random sample, 4 of the 10 venues it couldn't match were real and open, because it matches by street address and misses large venues such as parks (`bench/results.json`, run 2026-10-07 13:11 UTC).
 <!-- bench:killer:end -->
 
 <!-- bench:caveat:start -->
