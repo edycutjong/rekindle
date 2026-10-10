@@ -188,6 +188,7 @@ export function traceFromPlan(plan: PlanDoc): string[] {
 /** Why an LLM call failed, in a word or two for the trace (the full error stays in the plan's llm_errors). */
 export function llmFailure(error: unknown): string {
   const t = String(error ?? "");
+  if (/^token budget/.test(t)) return "spent its routing token budget";
   if (/rate limit|\b429\b|tokens per minute|requests per minute|quota/i.test(t)) return "rate-limited";
   if (/timeout|timed out|aborted/i.test(t)) return "timed out";
   if (/no progress|no tool called|did not call/i.test(t)) return "made no tool call";

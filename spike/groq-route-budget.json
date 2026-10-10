@@ -1,0 +1,312 @@
+{
+ "what": "Maya's flow (scripts/maya.ts --agent: week 1, then the re-plan) run locally with QWEN_API_KEY unset and LLM_PROVIDER=groq, i.e. Groq alone routes and coaches, as when Qwen times out in production. Groq free tier, openai/gpt-oss-120b; response headers on 2026-10-10: x-ratelimit-limit-tokens 8000 (per minute), x-ratelimit-limit-requests 1000 (per day).",
+ "fictional": true,
+ "before": {
+  "at": "2026-10-10T16:39:00.512Z",
+  "plans": [
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 835,
+      "outputTokens": 453,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 2,
+      "inputTokens": 943,
+      "outputTokens": 242,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 3,
+      "inputTokens": 1054,
+      "outputTokens": 400,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 4,
+      "inputTokens": 1165,
+      "outputTokens": 271,
+      "toolCalls": [
+       "findOutings"
+      ]
+     },
+     {
+      "step": 5,
+      "inputTokens": 1288,
+      "outputTokens": 100,
+      "toolCalls": [
+       "findOutings"
+      ]
+     },
+     {
+      "step": 6,
+      "inputTokens": 1400,
+      "outputTokens": 37,
+      "toolCalls": [
+       "placeSocial"
+      ]
+     },
+     {
+      "step": 7,
+      "inputTokens": 1513,
+      "outputTokens": 298,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "coach",
+      "to": null,
+      "open": null,
+      "error": "AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzecx5qq0mt` service tier `on_demand` on tokens per minu"
+     }
+    ],
+    "week": 1,
+    "routedByLlm": 7,
+    "routedDeterministic": 0,
+    "coachedByLlm": 0,
+    "coachedByTemplate": 7,
+    "tokens": 9999
+   },
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 856,
+      "outputTokens": 543,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "route",
+      "to": null,
+      "open": 6,
+      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzec"
+     }
+    ],
+    "week": 2,
+    "routedByLlm": 1,
+    "routedDeterministic": 6,
+    "coachedByLlm": 0,
+    "coachedByTemplate": 7,
+    "tokens": 1399
+   }
+  ]
+ },
+ "after_budget_4000_first_try": {
+  "at": "2026-10-10T16:42:58.219Z",
+  "plans": [
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 835,
+      "outputTokens": 464,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 2,
+      "inputTokens": 943,
+      "outputTokens": 360,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 3,
+      "inputTokens": 1054,
+      "outputTokens": 221,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 4,
+      "inputTokens": 1165,
+      "outputTokens": 159,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 5,
+      "inputTokens": 1027,
+      "outputTokens": 1809,
+      "toolCalls": [
+       "submitPlan"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "route",
+      "to": null,
+      "open": 3,
+      "error": "token budget: 5201 routing tokens spent (budget 4000); the coaching call keeps its share of the per-minute limit"
+     }
+    ],
+    "week": 1,
+    "routedByLlm": 4,
+    "routedDeterministic": 3,
+    "coachedByLlm": 7,
+    "coachedByTemplate": 0,
+    "tokens": 8037
+   },
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 856,
+      "outputTokens": 523,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 2,
+      "inputTokens": 982,
+      "outputTokens": 282,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "route",
+      "to": null,
+      "open": 5,
+      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzec"
+     }
+    ],
+    "week": 2,
+    "routedByLlm": 2,
+    "routedDeterministic": 5,
+    "coachedByLlm": 0,
+    "coachedByTemplate": 7,
+    "tokens": 2643
+   }
+  ]
+ },
+ "after_budget_3000_shipped": {
+  "at": "2026-10-10T16:46:03.776Z",
+  "plans": [
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 835,
+      "outputTokens": 633,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 2,
+      "inputTokens": 943,
+      "outputTokens": 263,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 3,
+      "inputTokens": 1054,
+      "outputTokens": 229,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 4,
+      "inputTokens": 1027,
+      "outputTokens": 1279,
+      "toolCalls": [
+       "submitPlan"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "route",
+      "to": null,
+      "open": 4,
+      "error": "token budget: 3957 routing tokens spent (budget 3000); the coaching call keeps its share of the per-minute limit"
+     }
+    ],
+    "week": 1,
+    "routedByLlm": 3,
+    "routedDeterministic": 4,
+    "coachedByLlm": 7,
+    "coachedByTemplate": 0,
+    "tokens": 6263
+   },
+   {
+    "steps": [
+     {
+      "step": 1,
+      "inputTokens": 856,
+      "outputTokens": 551,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 2,
+      "inputTokens": 982,
+      "outputTokens": 228,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 3,
+      "inputTokens": 1110,
+      "outputTokens": 260,
+      "toolCalls": [
+       "findAtHome"
+      ]
+     },
+     {
+      "step": 4,
+      "inputTokens": 1159,
+      "outputTokens": 1122,
+      "toolCalls": [
+       "submitPlan"
+      ]
+     }
+    ],
+    "fallbacks": [
+     {
+      "stage": "route",
+      "to": null,
+      "open": 4,
+      "error": "token budget: 3987 routing tokens spent (budget 3000); the coaching call keeps its share of the per-minute limit"
+     }
+    ],
+    "week": 2,
+    "routedByLlm": 3,
+    "routedDeterministic": 4,
+    "coachedByLlm": 7,
+    "coachedByTemplate": 0,
+    "tokens": 6268
+   }
+  ]
+ },
+ "reading": "Before: week 1 spent ~10,000 tokens routing one tool per step and its coaching call was rate-limited (template lines on every card); the re-plan inside the same minute was rate-limited too. A 4,000 budget fixed week 1 but its routing + coaching spent 8,037 tokens, at the limit. The shipped 3,000 budget stops routing after the step that crosses it; the rest of the week is routed deterministically and the model coached every card of both weeks."
+}

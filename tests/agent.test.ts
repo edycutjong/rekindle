@@ -377,3 +377,34 @@ describe("coaching assembler + LLM config", () => {
     expect(llmChainFromEnv({})).toEqual([]);
   });
 });
+
+describe("routing token budget (measured 2026-10-10: Groq-only routing spent ~10,000 tokens and its coaching call hit 8,000 tokens/min)", () => {
+  it("a provider past its routing budget hands the open slots on, stays in the coaching race and coaches every card", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    // one tool per step, as gpt-oss does on Groq; every scripted step reports 20 tokens
+    const groq = scriptedLlm([() => completion([ROUTE_ALL[0]]), () => completion([ROUTE_ALL[1]]), () => completion([ROUTE_ALL[2]]), coach], [], "groq");
+    const events: AgentEvent[] = [];
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [groq], routeTokenBudget: 60, onEvent: (e) => events.push(e) });
+    expect(plan.slots.filter((s) => s.routedBy === "llm").map((s) => s.slot.day)).toEqual(["monday", "tuesday", "wednesday"]);
+    expect(plan.slots.filter((s) => s.routedBy === "fallback")).toHaveLength(4);
+    const fb = events.filter((e) => e.type === "llm_fallback");
+    expect(fb).toEqual([expect.objectContaining({ stage: "route", from: "groq:openai/gpt-oss-120b", to: null, open: 4 })]);
+    expect(traceLine(fb[0] as unknown as { type: string } & Record<string, unknown>)).toBe("LLM fallback groq:openai/gpt-oss-120b (spent its routing token budget) → deterministic route for 4 slots");
+    // a budget stop is not a failure: no error recorded, and the same provider still coaches the week
+    expect(plan.llmErrors).toEqual([]);
+    expect(plan.coachedBy?.provider).toBe("groq");
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+  });
+
+  it("past its budget the primary hands the open slots to the next provider, not to the deterministic route", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const groq = scriptedLlm([() => completion([ROUTE_ALL[0]]), () => completion([ROUTE_ALL[1]]), coach], [], "groq");
+    const qwen = scriptedLlm([() => completion(ROUTE_ALL.slice(2)), coach]);
+    const events: AgentEvent[] = [];
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [groq, qwen], routeTokenBudget: 40, onEvent: (e) => events.push(e) });
+    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+    expect(plan.slots.filter((s) => s.llm === "groq:openai/gpt-oss-120b")).toHaveLength(2);
+    expect(events.find((e) => e.type === "llm_fallback")).toMatchObject({ stage: "route", to: "qwen:qwen3.8-flash", open: 5 });
+    expect(plan.llmErrors).toEqual([]);
+  });
+});

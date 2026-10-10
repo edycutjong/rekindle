@@ -86,6 +86,8 @@ export interface AgentOptions {
   coachBudgetMs?: number;
   coachAttemptMs?: number;
   maxSteps?: number;
+  /** tokens one provider may spend routing (default ROUTE_TOKEN_BUDGET) */
+  routeTokenBudget?: number;
   /** bench ablation only (arms B−/B−4) and the pool audit; never set on the public path */
   toolOptions?: Pick<ToolContext, "alcoholScreen" | "excludeTagSet" | "onPool">;
   /** re-plan only: verified cards placed before routing (their slots are not offered to the model) */
@@ -107,6 +109,15 @@ export const COACH_ATTEMPT_MS = 4_000;
  * QA round 4: a hung primary was aborted only at the shared deadline and the fallback never got a routing turn.
  */
 export const ROUTE_ATTEMPT_SHARE = 0.6;
+/**
+ * Tokens (input + output, as the provider reports them) one provider may spend ROUTING one plan. Past it, the open slots
+ * move to the next route and the provider stays in the coaching race. Measured 2026-10-10 on Groq's free tier
+ * (gpt-oss-120b, 8,000 tokens/min): the model calls one tool per step, so routing Maya's week took 7 steps and ~10,000
+ * tokens, and the coaching call that followed was rate-limited (template lines ×7). A step costs up to ~1,800 tokens and
+ * the coaching call ~2,900 (spike/groq-route-budget.json), so stopping after the step that crosses 3,000 keeps routing +
+ * coaching under 8,000 in the same minute. Qwen reports no input tokens and routes in 2 steps, so it never reaches it.
+ */
+export const ROUTE_TOKEN_BUDGET = 3_000;
 
 /** Deterministic dose line, used when the LLM gave none (or its line was dropped). */
 export function templateCoaching(card: Card, homeType?: HomeType): string {
@@ -412,8 +423,11 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   // 20 s for routing leaves room for the coaching window and the deterministic fallback inside the 30 s plan gate
   const deadline = t0 + (opts.llmBudgetMs ?? 20_000);
 
+  const tokensSpent = new Map<LlmHandle, number>();
+  const routeTokenBudget = opts.routeTokenBudget ?? ROUTE_TOKEN_BUDGET;
   const onCallEnd = (llm: LlmHandle) => (e: { performance: { responseTimeMs: number }; content: readonly { type: string; toolName?: string }[]; finishReason: unknown; usage: { inputTokens?: number; outputTokens?: number } }) => {
     const ms = Math.round(e.performance.responseTimeMs);
+    tokensSpent.set(llm, (tokensSpent.get(llm) ?? 0) + (e.usage.inputTokens ?? 0) + (e.usage.outputTokens ?? 0));
     llmSteps++;
     llmMs += ms;
     const toolCalls = e.content.flatMap((part) => (part.type === "tool-call" && part.toolName ? [part.toolName] : []));
@@ -442,6 +456,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     const remaining = deadline - Date.now();
     if (remaining < 2000) break;
     const attemptMs = i < opts.llms.length - 1 ? Math.max(2000, Math.floor(remaining * ROUTE_ATTEMPT_SHARE)) : remaining;
+    const overBudget = () => (tokensSpent.get(llm) ?? 0) >= routeTokenBudget;
     try {
       const before = { claimed: claimed.size };
       await generateText({
@@ -450,7 +465,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         prompt: userPrompt(c, week, history, open) + (filled.size ? `\nAlready placed (keep):\n${[...filled.values()].filter((f) => f.card).map((f) => JSON.stringify(summary(f))).join("\n")}` : ""),
         tools,
         activeTools: ["findAtHome", "findOutings", "placeSocial"],
-        stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, submittedStop],
+        stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, submittedStop, overBudget],
         maxRetries: 1,
         temperature: 0.2,
         abortSignal: AbortSignal.timeout(attemptMs),
@@ -459,6 +474,13 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
       if (allRouted()) break;
       if (claimed.size === before.claimed) throw new Error("the model made no progress (no tool called)");
+      if (overBudget()) {
+        // not a failure: the provider keeps its place in the coaching race, the open slots move on
+        const next = opts.llms[i + 1];
+        const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day)).length;
+        emit({ type: "llm_fallback", from: `${llm.provider}:${llm.modelId}`, to: next ? `${next.provider}:${next.modelId}` : null, error: `token budget: ${tokensSpent.get(llm)} routing tokens spent (budget ${routeTokenBudget}); the coaching call keeps its share of the per-minute limit`, stage: "route", open });
+        i++;
+      }
     } catch (e) {
       if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
       fail(llm, e, opts.llms[i + 1]);
