@@ -114,6 +114,11 @@
    "commit": "358ce8e",
    "date": "2026-10-09",
    "subject": "fix(trace): the agent trace credits each slot to the model that routed it and says why a call failed; /judge's bench heading reads \"Bench: …"
+  },
+  {
+   "commit": "e132099",
+   "date": "2026-10-10",
+   "subject": "fix(agent): a routing token budget per provider (3,000) — past it the open slots move to the next route and the provider stays in the …"
   }
  ]
 }
