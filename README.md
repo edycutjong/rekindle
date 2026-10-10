@@ -9,6 +9,7 @@
 
   [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-26221D?style=for-the-badge)](https://rekindle.edycu.dev)
   [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-C4501A?style=for-the-badge)](https://rekindle.edycu.dev/judge)
+  [![Demo video](https://img.shields.io/badge/▶_Demo-Video_2:29-c4501a?style=for-the-badge)](https://youtu.be/a2axsKACYsk)
   [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-2E5B4F?style=for-the-badge)](https://qloo.devpost.com/)
 
   <br/>
@@ -21,6 +22,7 @@
 
   <p>
     <a href="https://rekindle.edycu.dev"><b>Try it live: rekindle.edycu.dev</b></a> (no login, fictional cases) ·
+    <a href="https://youtu.be/a2axsKACYsk">Demo video (2:29)</a> ·
     <a href="JUDGE.md">For judges</a> ·
     <a href="DEMO.md">Demo steps + bench</a> ·
     <a href="DX-REPORT.md">Qloo DX report</a> ·

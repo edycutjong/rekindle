@@ -60,6 +60,7 @@ The full list is in the [README](README.md) (Limitations).
 
 ## Links
 
+- Demo video (2:29): https://youtu.be/a2axsKACYsk
 - Live app: https://rekindle.edycu.dev · receipts: https://rekindle.edycu.dev/judge
 - Repository: https://github.com/edycutjong/rekindle
 - Architecture (generated from the code): [ARCHITECTURE.md](ARCHITECTURE.md) · Qloo DX report: [DX-REPORT.md](DX-REPORT.md)
