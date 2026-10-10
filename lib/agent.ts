@@ -115,7 +115,8 @@ export const ROUTE_ATTEMPT_SHARE = 0.6;
  * (gpt-oss-120b, 8,000 tokens/min): the model calls one tool per step, so routing Maya's week took 7 steps and ~10,000
  * tokens, and the coaching call that followed was rate-limited (template lines ×7). A step costs up to ~1,800 tokens and
  * the coaching call ~2,900 (spike/groq-route-budget.json), so stopping after the step that crosses 3,000 keeps routing +
- * coaching under 8,000 in the same minute. Qwen reports no input tokens and routes in 2 steps, so it never reaches it.
+ * coaching under 8,000 in the same minute. Qwen routes all seven slots in one step of parallel tool calls (~400 output
+ * tokens in spike/maya-agent.json), so the primary path stays far under the budget.
  */
 export const ROUTE_TOKEN_BUDGET = 3_000;
 
