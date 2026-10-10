@@ -119,6 +119,11 @@
    "commit": "e132099",
    "date": "2026-10-10",
    "subject": "fix(agent): a routing token budget per provider (3,000) — past it the open slots move to the next route and the provider stays in the …"
+  },
+  {
+   "commit": "2f1e2fc",
+   "date": "2026-10-10",
+   "subject": "docs(agent): ROUTE_TOKEN_BUDGET's comment says what the evidence shows — Qwen routes in one step of parallel tool calls (QA)"
   }
  ]
 }
