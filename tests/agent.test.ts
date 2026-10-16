@@ -471,6 +471,17 @@ describe("a2a r10: the race and the truth boundary agree on what a usable line i
     expect(plan.llmErrors).toEqual([]);
   });
 
+  it("a submitPlan sent with the routing calls is refused (routing has no such tool); the race still coaches every placed card", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const bodies: Body[] = [];
+    const llm = scriptedLlm([() => completion([...ROUTE_ALL, { name: "submitPlan", args: { coaching: [] } }]), coach], bodies);
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [llm] });
+    expect(JSON.stringify(bodies[0]!.tools)).not.toContain("submitPlan");
+    expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
+    expect(plan.coachedBy?.provider).toBe("qwen");
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+  });
+
   it("usableLines applies the boundary's per-line rules without recording anything", () => {
     const cards = [{ entity_id: "A", name: "Prospect Park", rung: "solo" as const }, { entity_id: "B", name: "Phoebe Bridgers", rung: "home" as const }];
     const lines = [

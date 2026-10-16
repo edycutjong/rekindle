@@ -296,7 +296,6 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const review: Card[] = [];
   const otherNames = new Set<string>();
   let submitted: { entity_id: string; line: string }[] = [];
-  let submitCalls = 0;
 
   emit({ type: "start", week, slots: skeleton.map((s) => ({ day: s.day, hour: s.hour, rung: s.rung })), llm: opts.llms.map((l) => `${l.provider}:${l.modelId}`) });
 
@@ -420,18 +419,10 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         return summary(await runSlot({ ...slot, hour: hour ?? slot.hour }, "placeSocial", { day, ...(hour ? { hour } : {}) }, "llm", by));
       },
     }),
-    submitPlan: tool({
-      description: "Finish: one coaching line (≤25 words) per placed card, keyed by the entity_id a tool returned.",
-      inputSchema: z.object({ coaching: z.array(z.object({ entity_id: z.string(), line: z.string() })).max(14) }),
-      execute: async ({ coaching }) => {
-        submitted = [...submitted, ...coaching];
-        submitCalls++;
-        return { ok: true };
-      },
-    }),
   } satisfies ToolSet;
+  // a2a r10: routing has no submitPlan. It was never an active tool here, so a routing-time call was refused as an
+  // unknown tool and the race's `submitCalls === 0` gate was always true; coaching comes only from coachRace below.
 
-  const submittedStop: StopCondition<typeof tools> = ({ steps }) => steps.some((s) => s.toolCalls.some((tc) => tc.toolName === "submitPlan"));
   // routing stops once every slot is routed: the coaching hand-off is its own bounded call (below), so a slow provider
   // that spent the routing budget cannot also take the coaching with it (QA round 2: 20 s timeout → template ×7)
   const routedStop: StopCondition<typeof tools> = () => allRouted();
@@ -485,8 +476,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         system: systemPrompt(),
         prompt: userPrompt(c, week, history, open) + (filled.size ? `\nAlready placed (keep):\n${[...filled.values()].filter((f) => f.card).map((f) => JSON.stringify(summary(f))).join("\n")}` : ""),
         tools,
-        activeTools: ["findAtHome", "findOutings", "placeSocial"],
-        stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, submittedStop, overBudget],
+        stopWhen: [stepCountIs(opts.maxSteps ?? 10), routedStop, overBudget],
         maxRetries: 1,
         temperature: 0.2,
         abortSignal: AbortSignal.timeout(attemptMs),
@@ -528,15 +518,12 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const placed = [...filled.values()].filter((f) => f.card);
   const coachDeadline = Math.max(deadline, Date.now()) + (opts.coachBudgetMs ?? COACH_BUDGET_MS);
   const coaches = opts.llms.filter((l) => !failed.has(l));
-  if (placed.length && submitCalls === 0 && coaches.length) {
+  if (placed.length && coaches.length) {
     const cards = placed.map((s) => s.card!);
     const names = [...otherNames, ...cards.map((c) => c.name)];
     const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd, accept: (lines) => usableLines(cards, lines, names).length > 0 });
-    if (r.lines) {
-      submitted = [...submitted, ...r.lines];
-      submitCalls++;
-      coachedBy = r.by ? { provider: r.by.provider, model: r.by.modelId } : null;
-    } else submitted = [...submitted, ...r.rejected];
+    submitted = r.lines ?? r.rejected;
+    if (r.lines) coachedBy = r.by ? { provider: r.by.provider, model: r.by.modelId } : null;
     for (const e of r.errors) {
       llmErrors.push(e);
       emit({ type: "llm_fallback", from: e.from, to: null, error: e.error, stage: "coach" });

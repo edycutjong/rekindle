@@ -1,6 +1,6 @@
 {
  "generated_by": "scripts/rigor.py",
- "tests": 243,
+ "tests": 244,
  "files": 20,
  "defect_named": 85,
  "properties": 3,
