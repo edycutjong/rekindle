@@ -5,8 +5,11 @@ home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows
 -> diff + ember underline + ember threads (top rated input over the best original love) -> reload keeps week 2 -> week 1 links to week 2 ->
 375 px has no horizontal scroll -> /integrations/qloo lists the calls.
 Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs Playwright: `python3 -m venv .venv && . .venv/bin/activate && pip install playwright && playwright install chromium`).
-Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
-import re, sys, time, json
+Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked.
+It spends 2 plan runs (week 1 and the re-plan) and 2 toggle-class calls (In recovery, one swap). Past the deployment's
+rate limit (lib/ratelimit.ts) the app shows "Capacity reached"; the smoke then prints "CAPPED at <step>" and exits 3:
+that is the limit, not a failed gate. REKINDLE_JUDGE_TOKEN=<token from the Devpost judge link> runs on the judge quota."""
+import json, os, re, sys, time
 from store_guard import require_redis
 
 # a2a r06 F5: the smoke writes ~6 plans; never on a Blob-backed deployment (checked before playwright even loads)
@@ -16,6 +19,20 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 ALC = re.compile(r"\b(drinks?|beers?|wines?|cocktails?|bars?)\b", re.I)
 base = sys.argv[1]; out = sys.argv[2]; tag = sys.argv[3] if len(sys.argv) > 3 else "local"
 res = {}
+CAPPED = 3  # a2a r12: a rate limit is not a failed gate
+ALERTS = "[...document.querySelectorAll('[role=alert]')].map((n) => n.innerText).join(' ')"
+
+
+def wait_or_capped(pg, js, step, timeout):
+    """wait for `js`, or for the app's capped screen (a 429 from lib/ratelimit.ts); on the latter print it and exit 3"""
+    pg.wait_for_function(f"() => /capacity reached|too many requests/i.test({ALERTS}) || ({js})", timeout=timeout)
+    text = " ".join(pg.evaluate(f"() => {ALERTS}").split())
+    if re.search(r"capacity reached|too many requests", text, re.I):
+        print(f"CAPPED at {step}: {text}")
+        print("This is the deployment's rate limit (each response carries x-ratelimit-* headers), not a failed gate.")
+        sys.exit(CAPPED)
+
+
 with sync_playwright() as p:
     b = p.chromium.launch()
     ctx = b.new_context(viewport={"width": 1440, "height": 1000})  # fresh context = logged-out, no cookies
@@ -23,14 +40,17 @@ with sync_playwright() as p:
     errs = []
     pg.on("console", lambda m: m.type == "error" and errs.append(m.text))
     pg.on("pageerror", lambda e: errs.append(str(e)))
+    if os.environ.get("REKINDLE_JUDGE_TOKEN"):
+        # the judge link from the Devpost testing instructions: sets the judge cookie, so these runs use the judge quota
+        pg.goto(base + "/?judge=" + os.environ["REKINDLE_JUDGE_TOKEN"], wait_until="networkidle")
     t0 = time.time()
     pg.goto(base + "/", wait_until="networkidle")
     pg.screenshot(path=f"{out}/{tag}-home-1440.png", full_page=True)
     pg.click("[data-testid=start-maya]")
-    pg.wait_for_url("**/cases/**", timeout=20000)
+    wait_or_capped(pg, "location.pathname.includes('/cases/')", "Maya's case (its week-1 plan starts on arrival)", 20000)
     time.sleep(6)
     pg.screenshot(path=f"{out}/{tag}-streaming-1440.png", full_page=True)
-    pg.wait_for_url("**/plans/**", timeout=90000)
+    wait_or_capped(pg, "location.pathname.includes('/plans/')", "planning week 1", 90000)
     res["plan_seconds_from_click"] = round(time.time() - t0, 1)
     pg.wait_for_selector("[data-testid=slot-card]")
     time.sleep(1)
@@ -42,7 +62,7 @@ with sync_playwright() as p:
     pg.screenshot(path=f"{out}/{tag}-week1-1440.png", full_page=True)
     # toggle in recovery
     pg.click("[data-testid=tab-in_recovery]")
-    pg.wait_for_selector("[data-testid=toggle-notice]", timeout=60000)
+    wait_or_capped(pg, "!!document.querySelector('[data-testid=toggle-notice]')", "the In recovery toggle", 60000)
     res["toggle_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
     res["toggle_url"] = pg.url
     res["struck_after_toggle"] = pg.locator("[data-testid=struck]").count()
@@ -61,7 +81,7 @@ with sync_playwright() as p:
     before_swap = cards.nth(0).locator("h3").inner_text()
     t = time.time()
     cards.nth(0).locator("[data-testid=card-swap]").click()
-    pg.wait_for_function("() => { const n = document.querySelector('[data-testid=toggle-notice]'); return n && /Swapped|No other verified/.test(n.textContent) }", timeout=60000)
+    wait_or_capped(pg, "(() => { const n = document.querySelector('[data-testid=toggle-notice]'); return !!n && /Swapped|No other verified/.test(n.textContent) })()", "the swap", 60000)
     res["swap_seconds"] = round(time.time() - t, 1)
     res["swap_notice"] = pg.locator("[data-testid=toggle-notice]").inner_text()
     res["swap_changed"] = before_swap not in [x for x in pg.locator("[data-testid=slot-card] h3").all_inner_texts()]
@@ -91,7 +111,7 @@ with sync_playwright() as p:
     # ---- re-plan week 2 (live) + diff + ember
     t = time.time()
     pg.click("[data-testid=replan]")
-    pg.wait_for_selector("[data-testid=replan-diff]", timeout=90000)
+    wait_or_capped(pg, "!!document.querySelector('[data-testid=replan-diff]')", "the week-2 re-plan", 90000)
     pg.wait_for_function("() => !document.querySelector('[aria-busy=true]') && document.querySelectorAll('[data-testid=slot-card]').length > 0", timeout=90000)
     res["replan_seconds_from_click"] = round(time.time() - t, 1)
     time.sleep(1)

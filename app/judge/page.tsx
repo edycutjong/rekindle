@@ -126,6 +126,7 @@ export default async function Judge() {
           {`${open ? "" : `# the repository is private until submission; these commands work once it is public\n`}# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
 git clone ${REPO} && cd rekindle && npm ci && npx playwright install chromium
 python3 -m venv .venv && . .venv/bin/activate && pip install playwright && playwright install chromium
+# ui_smoke spends 2 public plan runs, the E2E 1; past your address's hourly limit or the daily cap, ui_smoke prints "CAPPED at <step>" and exits 3: that is the limit, not a failure (REKINDLE_JUDGE_TOKEN=<token from the judge link> runs it on the judge quota)
 python3 scripts/ui_smoke.py ${LIVE} /tmp/shots live
 E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
 # the bench, against a live deployment (needs BENCH_TOKEN and model keys): DEMO.md "Bench (reproduce)"`}

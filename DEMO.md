@@ -133,6 +133,7 @@ Excluded (week 1 too thin to rate): ruth, omar, hana, cal. Low-rated entities ba
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate && pip install playwright && playwright install chromium
-python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live    # the click path above; exits 1 on a failed gate
+# ui_smoke spends 2 public plan runs, the E2E 1; past your address's hourly limit or the daily cap, ui_smoke prints "CAPPED at <step>" and exits 3: that is the limit, not a failure (REKINDLE_JUDGE_TOKEN=<token from the judge link> runs it on the judge quota)
+python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live    # the click path above; exits 1 on a failed gate, 3 when CAPPED
 python3 scripts/edge_states.py https://rekindle.edycu.dev /tmp/shots live # the six edge states from /judge
 ```
