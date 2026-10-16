@@ -69,6 +69,10 @@ export interface ReplanResults {
   ember_margin_median_of_profiles: number | null;
   replan_seconds_p50: number | null;
   definition: string;
+  /** a2a r11 (scripts/replan_check.py --rescore): PASS again, at the margin the product draws an ember thread for */
+  thread_margin?: number;
+  passed_at_thread_margin?: number;
+  threaded_new_cards_total?: number;
 }
 
 export interface AuditArm {
@@ -172,7 +176,7 @@ const BenchResultsSchema: z.ZodType<BenchResults> = z.looseObject({
 const ReplanResultsSchema: z.ZodType<ReplanResults> = z.looseObject({
   generated_by: z.string(), finished_at: z.string(), N: num, passed: num, result: z.string(), excluded: z.array(z.looseObject({ profile: z.string(), reason: z.string() })),
   errors: z.array(z.unknown()), low_rated_reappearing: num, attributed_new_cards_total: num, new_cards_total: num, ember_margin_median_of_profiles: numN,
-  replan_seconds_p50: numN, definition: z.string(),
+  replan_seconds_p50: numN, definition: z.string(), thread_margin: num.optional(), passed_at_thread_margin: num.optional(), threaded_new_cards_total: num.optional(),
 });
 const AuditArmSchema: z.ZodType<AuditArm> = z.looseObject({ sampled: num, checked: num, inconclusive: num, violations: num, rate: numN, not_found: num, closed_at_slot: num, alcohol: num });
 const AuditResultsSchema: z.ZodType<AuditResults> = z.looseObject({

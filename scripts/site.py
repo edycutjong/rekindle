@@ -57,6 +57,8 @@ def facts():
         f[f"abl.{arm}.pool"], f[f"abl.{arm}.flagged"] = ab[arm]["pool_candidates"], ab[arm]["pool_alcohol"]
     f["abl.profiles"] = ab["B"]["profiles"]
     f["replan.passed"], f["replan.N"], f["replan.low_back"] = rp["passed"], rp["N"], rp["low_rated_reappearing"]
+    # a2a r11: the headline counts a pass only at the margin the product draws an ember thread for (replan_check.py --rescore)
+    f["replan.passed_thread"] = rp["passed_at_thread_margin"]
     f["replan.excluded"] = len(rp["excluded"])   # profiles whose week 1 was too thin to rate (README, Limitations 2)
     lat = res["latency"]["B"]
     f["lat.p50"], f["lat.p95"], f["lat.calls"] = f"{lat['client_p50_s']:.2f} s", f"{lat['client_p95_s']:.2f} s", lat["qloo_calls_mean"]

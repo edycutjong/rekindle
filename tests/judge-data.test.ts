@@ -35,6 +35,8 @@ describe("committed bench files /judge reads", () => {
     if (!d.emberLive) return;
     expect(d.emberLive.threshold).toBe(EMBER_MIN_MARGIN);
     expect(d.emberLive.definition).toContain(`>= ${EMBER_MIN_MARGIN}`);
+    // a2a r11: the re-plan bench's thread-margin pass count uses the same margin (scripts/replan_check.py THREAD_MARGIN)
+    if (d.replan?.thread_margin !== undefined) expect(d.replan.thread_margin).toBe(EMBER_MIN_MARGIN);
   });
 
   it("a2a r10: every judge-facing statement of the ember margin is EMBER_MIN_MARGIN", () => {

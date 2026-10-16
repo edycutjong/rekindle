@@ -377,7 +377,10 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
             <p className={j.def}>
               {replan.definition} Excluded: {replan.excluded.length ? replan.excluded.map((x) => `${seedLabel(x.profile)} (${x.reason})`).join("; ") : "none"}. Low-rated
               entities back in week 2: {replan.low_rated_reappearing}. New week-2 cards whose top input is a rekindled rating: {replan.attributed_new_cards_total} of{" "}
-              {replan.new_cards_total}. Median margin over the best original love: {replan.ember_margin_median_of_profiles ?? "—"}. Re-plan p50 {replan.replan_seconds_p50} s.
+              {replan.new_cards_total}
+              {replan.passed_at_thread_margin !== undefined &&
+                ` (at the ember thread's own margin, a rating ahead of the best original love by >= ${replan.thread_margin}: ${replan.threaded_new_cards_total} of those ${replan.attributed_new_cards_total}, and ${replan.passed_at_thread_margin}/${replan.N} profiles still pass)`}
+              . Median margin over the best original love: {replan.ember_margin_median_of_profiles ?? "—"}. Re-plan p50 {replan.replan_seconds_p50} s.
             </p>
             {emberLive && (
               <p className={j.def} data-testid="ember-live">

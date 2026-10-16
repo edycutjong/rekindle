@@ -12,8 +12,12 @@ For every arm-B week-1 plan in bench/results.json:
         (stronger than "named anywhere in explainability", which is near-automatic once a rated entity is a signal), and
     (b) contains 0 entities sharing an ID with the <= 3-rated one.
   Also reported per profile: the ember margin on each new card = (top rekindled weight) - (best original-love weight).
+  a2a r11: PASS also at the ember thread's own margin (THREAD_MARGIN = lib/replan.ts EMBER_MIN_MARGIN, pinned by
+  tests/judge-data.test.ts): (a) holds only when a new card's rekindled-top lead over the best original love is >= it —
+  the rule the UI draws a thread by. `--rescore` recomputes it from the stored per-card margins (no live calls).
 
 Usage: BENCH_TOKEN=... python3 scripts/replan_check.py --base https://rekindle.edycu.dev [--results bench/results.json] [--out bench/replan.json]
+       python3 scripts/replan_check.py --rescore [--out bench/replan.json]   (offline: re-derive the summary from the stored rows)
 """
 import argparse, json, os, re, statistics, sys, time, urllib.error, urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -22,6 +26,7 @@ from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UA = "rekindle-bench/0.1 (+https://github.com/edycutjong/rekindle)"
+THREAD_MARGIN = 0.02   # = EMBER_MIN_MARGIN (lib/replan.ts); tests/judge-data.test.ts fails if they differ
 
 
 def call(base, token, method, path, body=None, timeout=120, sse=False):
@@ -97,18 +102,33 @@ def check(base, token, run, love_ids):
             attributed.append(c["name"])
         if margin is not None:
             margins.append(margin)
+    threaded = [c["name"] for c in new_cards if c["rekindled_is_top"] and c["margin"] is not None and c["margin"] >= THREAD_MARGIN]
     low_in_w2 = [c["name"] for c in w2["cards"] if c["qloo_entity_id"] in low]
     ok = len(attributed) >= 1 and not low_in_w2
     return {
         "profile": run["profile"], "status": "pass" if ok else "fail", "week1_plan": pid, "week2_plan": w2["id"], "replan_seconds": secs,
         "rated": [{"name": c["name"], "rung": c["rung"], "pleasure": p, "mastery": m} for c, p, m in rules],
-        "week2_cards": len(w2["cards"]), "new_cards": len(new_cards), "attributed_new_cards": attributed, "low_rated_in_week2": low_in_w2,
+        "week2_cards": len(w2["cards"]), "new_cards": len(new_cards), "attributed_new_cards": attributed, "threaded_new_cards": threaded, "low_rated_in_week2": low_in_w2,
         "margin_median": round(statistics.median(margins), 4) if margins else None, "margin_min": min(margins) if margins else None, "cards": new_cards,
         "diff_summary": {k: len(w2["diff"][k]) for k in ("kept", "added", "removed")} if w2.get("diff") else None,
     }
 
 
+def rescore(out_path):
+    """a2a r11: re-derive the summary from the stored per-profile rows; the run's own fields are kept"""
+    d = json.load(open(out_path))
+    d.update(summarise(d["profiles"]))
+    d["profiles"] = d.pop("profiles")   # keep the rows last
+    with open(out_path, "w") as f:
+        json.dump(d, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+    print(f"rescored {out_path}: {d['result']} · at the thread margin {d['passed_at_thread_margin']}/{d['N']} · threaded new cards {d['threaded_new_cards_total']} of {d['attributed_new_cards_total']} rating-led")
+
+
 def main():
+    if "--rescore" in sys.argv:
+        i = sys.argv.index("--out") + 1 if "--out" in sys.argv else None
+        return rescore(sys.argv[i] if i else os.path.join(ROOT, "bench", "replan.json"))
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True)
     ap.add_argument("--results", default=os.path.join(ROOT, "bench", "results.json"))
@@ -132,16 +152,37 @@ def main():
 
     with ThreadPoolExecutor(max_workers=a.workers) as ex:
         rows = list(ex.map(go, runs))
-    n = [r for r in rows if r["status"] in ("pass", "fail")]
-    passed = [r for r in n if r["status"] == "pass"]
-    margins = [r["margin_median"] for r in n if r.get("margin_median") is not None]
-    secs = [r["replan_seconds"] for r in n]
     out = {
         "generated_by": "scripts/replan_check.py",
         "started_at": started,
         "finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "base": base,
         "source": os.path.relpath(a.results, ROOT),
+        **summarise(rows),
+        "profiles": rows,
+    }
+    with open(a.out, "w") as f:
+        json.dump(out, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+    print(f"\nRE-PLAN RESPONSIVENESS {out['result']} · at the thread margin {out['passed_at_thread_margin']}/{out['N']} · excluded {[x['profile'] for x in out['excluded']]} · errors {len(out['errors'])} · low-rated reappearing {out['low_rated_reappearing']} · attributed new cards {out['attributed_new_cards_total']}/{out['new_cards_total']} · margin median {out['ember_margin_median_of_profiles']} · wrote {a.out}")
+
+
+def threaded_of(r):
+    """rows written before a2a r11 lack threaded_new_cards: derive it from the stored per-card margins"""
+    if "threaded_new_cards" in r:
+        return r["threaded_new_cards"]
+    return [c["name"] for c in r.get("cards", []) if c["rekindled_is_top"] and c["margin"] is not None and c["margin"] >= THREAD_MARGIN]
+
+
+def summarise(rows):
+    n = [r for r in rows if r["status"] in ("pass", "fail")]
+    passed = [r for r in n if r["status"] == "pass"]
+    for r in n:
+        r["threaded_new_cards"] = threaded_of(r)
+    passed_thread = [r for r in passed if r["threaded_new_cards"]]
+    margins = [r["margin_median"] for r in n if r.get("margin_median") is not None]
+    secs = [r["replan_seconds"] for r in n]
+    return {
         "N": len(n),
         "passed": len(passed),
         "result": f"{len(passed)}/{len(n)}",
@@ -154,13 +195,11 @@ def main():
         "ember_margin_median_of_profiles": round(statistics.median(margins), 4) if margins else None,
         "ember_margin_min_of_profiles": min(margins) if margins else None,
         "replan_seconds_p50": sorted(secs)[max(0, -(-len(secs) // 2) - 1)] if secs else None,
-        "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient).",
-        "profiles": rows,
+        "thread_margin": THREAD_MARGIN,
+        "passed_at_thread_margin": len(passed_thread),
+        "threaded_new_cards_total": sum(len(r["threaded_new_cards"]) for r in n),
+        "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient). PASS at the thread margin = PASS with at least one such card whose margin is >= thread_margin, the lead the product draws an ember thread for.",
     }
-    with open(a.out, "w") as f:
-        json.dump(out, f, indent=1, ensure_ascii=False)
-        f.write("\n")
-    print(f"\nRE-PLAN RESPONSIVENESS {out['result']} · excluded {[x['profile'] for x in out['excluded']]} · errors {len(out['errors'])} · low-rated reappearing {out['low_rated_reappearing']} · attributed new cards {out['attributed_new_cards_total']}/{out['new_cards_total']} · margin median {out['ember_margin_median_of_profiles']} · wrote {a.out}")
 
 
 if __name__ == "__main__":

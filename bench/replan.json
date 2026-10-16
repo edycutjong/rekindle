@@ -33,7 +33,10 @@
  "ember_margin_median_of_profiles": 0.0555,
  "ember_margin_min_of_profiles": 0.0047,
  "replan_seconds_p50": 20.71,
- "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient).",
+ "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient). PASS at the thread margin = PASS with at least one such card whose margin is >= thread_margin, the lead the product draws an ember thread for.",
+ "thread_margin": 0.02,
+ "passed_at_thread_margin": 16,
+ "threaded_new_cards_total": 50,
  "profiles": [
   {
    "profile": "maya",
@@ -126,7 +129,12 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Ceremonia Bakeshop",
+    "Kabob Shack",
+    "Bushwick Pita Palace"
+   ]
   },
   {
    "profile": "theo",
@@ -220,7 +228,12 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Bien Cuit",
+    "Van Leeuwen Ice Cream",
+    "Shelsky's Of Brooklyn Appetizing and Delicatessen"
+   ]
   },
   {
    "profile": "ana",
@@ -314,7 +327,10 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Eataly - Flatiron"
+   ]
   },
   {
    "profile": "sam",
@@ -398,7 +414,11 @@
     "kept": 1,
     "added": 5,
     "removed": 5
-   }
+   },
+   "threaded_new_cards": [
+    "Avenue Coffee House",
+    "Paris Oven"
+   ]
   },
   {
    "profile": "priya",
@@ -500,7 +520,14 @@
     "kept": 0,
     "added": 7,
     "removed": 7
-   }
+   },
+   "threaded_new_cards": [
+    "Carole Bayer Sager",
+    "2 Dope Queens",
+    "White Castle",
+    "Sugar Hill Creamery",
+    "KFC"
+   ]
   },
   {
    "profile": "jo",
@@ -568,7 +595,11 @@
     "kept": 3,
     "added": 3,
     "removed": 3
-   }
+   },
+   "threaded_new_cards": [
+    "Constellation Coffee",
+    "El Cafetal"
+   ]
   },
   {
    "profile": "marcus",
@@ -644,7 +675,12 @@
     "kept": 3,
     "added": 4,
     "removed": 4
-   }
+   },
+   "threaded_new_cards": [
+    "Millie's Cafe",
+    "Tacos Delta",
+    "House of Pies"
+   ]
   },
   {
    "profile": "lena",
@@ -737,7 +773,13 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "The Cheesecake Factory",
+    "The Sidewalk Cafe",
+    "Pier Burger",
+    "Hot Dog on a Stick"
+   ]
   },
   {
    "profile": "ruth",
@@ -836,7 +878,13 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Mission Minis",
+    "Search Party",
+    "Haus Coffee",
+    "Banh Mi Viet"
+   ]
   },
   {
    "profile": "kim",
@@ -922,7 +970,13 @@
     "kept": 2,
     "added": 5,
     "removed": 5
-   }
+   },
+   "threaded_new_cards": [
+    "Boba Guys Hayes Valley",
+    "Choux",
+    "Boba Guys Fillmore",
+    "Blue Bottle Coffee"
+   ]
   },
   {
    "profile": "omar",
@@ -1012,7 +1066,13 @@
     "kept": 2,
     "added": 5,
     "removed": 5
-   }
+   },
+   "threaded_new_cards": [
+    "Brandy",
+    "Ratchet & Respectable",
+    "Peach's Restaurant",
+    "McDonald's"
+   ]
   },
   {
    "profile": "leo",
@@ -1097,7 +1157,12 @@
     "kept": 2,
     "added": 5,
     "removed": 5
-   }
+   },
+   "threaded_new_cards": [
+    "Alliance Bakery — Division",
+    "Letizia's Natural Bakery",
+    "Artemio's Bakery"
+   ]
   },
   {
    "profile": "hana",
@@ -1178,7 +1243,11 @@
     "kept": 3,
     "added": 4,
     "removed": 4
-   }
+   },
+   "threaded_new_cards": [
+    "Top Pot Doughnuts",
+    "Zeeks Pizza"
+   ]
   },
   {
    "profile": "ivy",
@@ -1281,7 +1350,13 @@
     "kept": 0,
     "added": 7,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Brave New World",
+    "sweetgreen - Healthy Salads, Wraps, and Bowls",
+    "Bakeri",
+    "Milk Bar"
+   ]
   },
   {
    "profile": "nate",
@@ -1349,7 +1424,11 @@
     "kept": 4,
     "added": 3,
     "removed": 3
-   }
+   },
+   "threaded_new_cards": [
+    "Little Roy Coffee Co.",
+    "Bake Shop"
+   ]
   },
   {
    "profile": "ruby",
@@ -1443,7 +1522,13 @@
     "kept": 1,
     "added": 6,
     "removed": 6
-   }
+   },
+   "threaded_new_cards": [
+    "Fong's Pizza",
+    "Hessen Haus",
+    "Difficult People",
+    "Molly's Cupcakes"
+   ]
   },
   {
    "profile": "cal",
