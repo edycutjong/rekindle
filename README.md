@@ -152,17 +152,17 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Control | Why it is load-bearing | Test |
 |---|---|---|
-| Any deny-listed alcohol tag refuses an in-recovery outing | 14 exclusion tags alone still let alcohol-tagged places through (P19) | `tests/verify.property.test.ts:109` (20,000 cases), `tests/verify.test.ts:101` |
-| Alcohol screen matches whole tokens, never substrings | a substring screen refuses `espresso_bar` and `independent_publishing` | `tests/verify.test.ts:128` |
-| Drinking-establishment categories are refused for every case | "TeKu Tavern + Café" passed as a café (B5 bench) | `tests/verify.test.ts:174` |
-| Missing opening hours are refused, never assumed open | an unknown hour would put a patient outside a closed door | `tests/verify.test.ts:39`, property P3 |
-| A coaching line keyed to an ID no tool returned is dropped | the model must never pick or invent a venue | `tests/agent.test.ts:105` |
-| Drinking language in coaching is dropped on every case | the model never sees the recovery flag (COACH-ALC) | `tests/agent.test.ts:353` |
-| Clinical words and contact data are refused before any Qloo request | love-box text is sent to Qloo | `tests/gate.test.ts:404` |
-| Fabricated entity IDs and duplicate loves are refused at intake | the client cannot plant a love Qloo never returned | `tests/gate.test.ts:423` |
-| Another visitor cannot change a week (403, read-only) | plans carry the creator's httpOnly owner cookie | `tests/gate.test.ts:320` |
-| Two concurrent re-plans run one agent run | a double click must not fork week 2 | `tests/gate.test.ts:493` |
-| A wrong or short judge/bench token is treated as public | quotas cannot be borrowed | `tests/ratelimit.test.ts:10` |
+| Any deny-listed alcohol tag refuses an in-recovery outing | 14 exclusion tags alone still let alcohol-tagged places through (P19) | [`tests/verify.property.test.ts:109`](tests/verify.property.test.ts#L109 "P2: in recovery, any deny-listed alcohol tag is REFUSED") (20,000 cases), [`tests/verify.test.ts:101`](tests/verify.test.ts#L101 "strikes what the 14 tags missed: Hungry Ghost Coffee") |
+| Alcohol screen matches whole tokens, never substrings | a substring screen refuses `espresso_bar` and `independent_publishing` | [`tests/verify.test.ts:128`](tests/verify.test.ts#L128 "does not false-positive on P10's substring traps") |
+| Drinking-establishment categories are refused for every case | "TeKu Tavern + Café" passed as a café (B5 bench) | [`tests/verify.test.ts:174`](tests/verify.test.ts#L174 "refuses a drinking-establishment category even beside") |
+| Missing opening hours are refused, never assumed open | an unknown hour would put a patient outside a closed door | [`tests/verify.test.ts:39`](tests/verify.test.ts#L39 "null opens/closes is UNKNOWN, never assumed open (P8)"), property P3 |
+| A coaching line keyed to an ID no tool returned is dropped | the model must never pick or invent a venue | [`tests/agent.test.ts:105`](tests/agent.test.ts#L105 "truth boundary: a coaching line keyed to an ID no tool") |
+| Drinking language in coaching is dropped on every case | the model never sees the recovery flag (COACH-ALC) | [`tests/agent.test.ts:353`](tests/agent.test.ts#L353 "drops drinking language on every case (COACH-ALC): the live") |
+| Clinical words and contact data are refused before any Qloo request | love-box text is sent to Qloo | [`tests/gate.test.ts:404`](tests/gate.test.ts#L404 "/api/resolve refuses clinical words and contact data before") |
+| Fabricated entity IDs and duplicate loves are refused at intake | the client cannot plant a love Qloo never returned | [`tests/gate.test.ts:423`](tests/gate.test.ts#L423 "intake refuses duplicate loves, fabricated IDs and clinical") |
+| Another visitor cannot change a week (403, read-only) | plans carry the creator's httpOnly owner cookie | [`tests/gate.test.ts:320`](tests/gate.test.ts#L320 "plans have owners: the creator's httpOnly rk_owner cookie") |
+| Two concurrent re-plans run one agent run | a double click must not fork week 2 | [`tests/gate.test.ts:493`](tests/gate.test.ts#L493 "one re-plan per rated week: two concurrent re-plans run ONE") |
+| A wrong or short judge/bench token is treated as public | quotas cannot be borrowed | [`tests/ratelimit.test.ts:10`](tests/ratelimit.test.ts#L10 "classifies bench, judge (header or cookie) and public") |
 
 ### Limitations: honest limits (7)
 
