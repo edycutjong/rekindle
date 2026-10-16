@@ -482,6 +482,18 @@ describe("a2a r10: the race and the truth boundary agree on what a usable line i
     expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
   });
 
+  it("found while verifying: routing is not told to call submitPlan, and the coaching call is not told to route", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const bodies: Body[] = [];
+    await runAgent({ qloo: replayClient(), case: MAYA, llms: [scriptedLlm([() => completion(ROUTE_ALL), coach], bodies)] });
+    const system = (b: Body) => JSON.stringify(b.messages.filter((m) => m.role === "system"));
+    expect(bodies).toHaveLength(2);
+    expect(system(bodies[0]!)).toContain("findAtHome");
+    expect(system(bodies[0]!)).not.toContain("submitPlan");
+    expect(system(bodies[1]!)).toContain("submitPlan");
+    expect(system(bodies[1]!)).not.toMatch(/findAtHome|findOutings|placeSocial/);
+  });
+
   it("usableLines applies the boundary's per-line rules without recording anything", () => {
     const cards = [{ entity_id: "A", name: "Prospect Park", rung: "solo" as const }, { entity_id: "B", name: "Phoebe Bridgers", rung: "home" as const }];
     const lines = [

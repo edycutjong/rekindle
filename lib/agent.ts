@@ -256,16 +256,27 @@ function whyText(c: Card) {
   return c.why.map((w) => `${w.name} ${w.score.toFixed(2)}`).join(" · ");
 }
 
-export function systemPrompt(): string {
-  return [
-    "You are the routing step of Rekindle, a behavioural-activation planning agent a clinician uses with a patient.",
-    "You never name, invent or recommend venues, artists, books, podcasts or shows yourself. Every activity comes from a tool result, and only entity_ids from tool results exist.",
-    "Step 1: fill every open slot of the ladder by calling exactly one tool per slot. Call them all at once, in parallel.",
-    "- home slots → findAtHome: choose the domain (artist, podcast, book, tv_show) that best fits the patient's loves; vary domains across the week.",
-    "- solo slots → findOutings: keep the suggested hour unless a different hour suits a low-energy day; narrowMeters may only tighten the walk.",
-    "- the social slot → placeSocial.",
-    "Step 2: call submitPlan once with one coaching line per placed card: at most 25 words, second person, warm and concrete, a small dose: an at-home card is a ten-minute dose (never name another duration), an outing at most twenty minutes (e.g. 'listen to one song you choose', 'twenty minutes there is enough'). No clinical or efficacy claims. Do not mention any name other than that card's own name. Do not state distances, walking times, prices or opening hours: the card already shows Qloo's data.",
-  ].join("\n");
+const ROLE = [
+  "You are the routing step of Rekindle, a behavioural-activation planning agent a clinician uses with a patient.",
+  "You never name, invent or recommend venues, artists, books, podcasts or shows yourself. Every activity comes from a tool result, and only entity_ids from tool results exist.",
+];
+const ROUTE_STEP = [
+  "Step 1: fill every open slot of the ladder by calling exactly one tool per slot. Call them all at once, in parallel.",
+  "- home slots → findAtHome: choose the domain (artist, podcast, book, tv_show) that best fits the patient's loves; vary domains across the week.",
+  "- solo slots → findOutings: keep the suggested hour unless a different hour suits a low-energy day; narrowMeters may only tighten the walk.",
+  "- the social slot → placeSocial.",
+];
+const COACH_STEP = [
+  "Step 2: call submitPlan once with one coaching line per placed card: at most 25 words, second person, warm and concrete, a small dose: an at-home card is a ten-minute dose (never name another duration), an outing at most twenty minutes (e.g. 'listen to one song you choose', 'twenty minutes there is enough'). No clinical or efficacy claims. Do not mention any name other than that card's own name. Do not state distances, walking times, prices or opening hours: the card already shows Qloo's data.",
+];
+
+/**
+ * System prompt per stage. a2a r10: routing used to carry Step 2 too, telling the model to call a submitPlan that
+ * routing does not offer (refused as an unknown tool) and spending its 498 characters (~100+ input tokens) per routing step against
+ * ROUTE_TOKEN_BUDGET; the coaching call carried Step 1's three routing tools it cannot call.
+ */
+export function systemPrompt(stage: "route" | "coach" = "route"): string {
+  return [...ROLE, ...(stage === "route" ? ROUTE_STEP : COACH_STEP)].join("\n");
 }
 
 export function userPrompt(c: CaseRow, week: number, history: PlanHistory, open: SlotSpec[]): string {
@@ -587,7 +598,7 @@ export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs
     } satisfies ToolSet;
     await generateText({
       model: llm.model,
-      system: systemPrompt(),
+      system: systemPrompt("coach"),
       prompt: o.prompt,
       tools,
       toolChoice: { type: "tool", toolName: "submitPlan" },
