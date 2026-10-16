@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { receiptsPaused, RECEIPTS_PAUSED_NOTE } from "../lib/receipts-cached";
-import { benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, REPO_CLOSED_NOTE, repoPublic, type AuditResults, type BenchResults } from "../lib/judge";
+import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, REPO_CLOSED_NOTE, repoPublic, type AuditResults, type BenchResults } from "../lib/judge";
 import { countRules, summarise } from "../lib/receipts";
 
 const arm = (o: Partial<BenchResults["arms"][string]> = {}) => ({ outing_venues: 10, errors: 0, violation: 3, violation_rate: 0.3, unverifiable: 2, closed_at_slot: 1, alcohol: 0, alcohol_denominator: 5, unknown_hours: 1, ...o });
@@ -75,6 +75,11 @@ describe("/judge view model", () => {
     const t = summarise([plan({ "R-ALC": 2 }, 1), plan({ "R-ALC": 1, "R-NEAR": 4 }, 0)]);
     expect(t.refusals_by_rule).toEqual({ "R-ALC": 3, "R-NEAR": 4 });
     expect(t.review).toBe(1);
+  });
+
+  it("a2a r11: each /judge arm label names its own arm (the B-sym row read 'B · …')", () => {
+    const prefix: Record<string, string> = { A: "A · ", B: "B · ", "B-": "B− · ", "B-4": "B−4 · ", "B-sym": "B-sym · " };
+    for (const [k, label] of Object.entries(ARM_LABEL)) expect(label.startsWith(prefix[k]!), `${k}: ${label}`).toBe(true);
   });
 
   it("a2a r11: totals the agency dial (model-placed and model-coached cards) only over receipts that carry it", () => {

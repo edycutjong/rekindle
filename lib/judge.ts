@@ -208,7 +208,7 @@ export const ARM_LABEL: Record<string, string> = {
   B: "B · Rekindle",
   "B-": "B− · screen off, 14-tag exclusion kept",
   "B-4": "B−4 · screen off, 4 bar tags only",
-  "B-sym": "B · Rekindle cards through arm A's address pipeline",
+  "B-sym": "B-sym · Rekindle's cards through arm A's address pipeline",
 };
 
 export const pctLabel = (r: number | null | undefined) => (r === null || r === undefined ? "—" : `${(r * 100).toFixed(1)}%`);
