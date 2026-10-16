@@ -30,7 +30,7 @@ export interface AgentSlot {
   card: Card | null;
   empty?: string;
   routedBy: RoutedBy;
-  /** routedBy "llm": the "provider:model" whose tool call placed this slot (QA 2026-10-09: the first provider used to be
+  /** routedBy "llm": the "provider:model" whose tool call routed this slot (QA 2026-10-09: the first provider used to be
    *  credited with the whole week, although Groq routed 5 of its 6 LLM slots after Qwen timed out) */
   llm?: string;
   tool: ToolName;

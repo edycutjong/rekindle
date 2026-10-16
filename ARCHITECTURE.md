@@ -95,7 +95,7 @@ The Qloo friction we hit, with repro commands, is in [DX-REPORT.md](DX-REPORT.md
 
 ## Failure and edge states
 
-**Routing token budget** (`ROUTE_TOKEN_BUDGET`, 3,000 tokens per provider per plan, since 10 Oct): a provider stops routing once it has spent the budget, the open slots go to the next route, and the provider stays in the coaching race. Run locally on Groq alone, Maya's two weeks went from template lines on every card to model lines on every card, with 3 of 7 slots model-routed ([spike/groq-route-budget.json](spike/groq-route-budget.json)). `/judge` reports the same two counts over the latest live runs (cards a model tool call placed · cards with model coaching).
+**Routing token budget** (`ROUTE_TOKEN_BUDGET`, 3,000 tokens per provider per plan, since 10 Oct): a provider stops routing once it has spent the budget, the open slots go to the next route, and the provider stays in the coaching race. Run locally on Groq alone, Maya's two weeks went from template lines on every card to model lines on every card, with 3 of 7 slots model-routed ([spike/groq-route-budget.json](spike/groq-route-budget.json)). `/judge` reports the same two counts over the latest live runs (cards a model routed, its tool call choosing where Qloo looked · cards with model coaching).
 
 | State | Where it comes from | What the sheet shows |
 |---|---|---|

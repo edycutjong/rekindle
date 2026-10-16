@@ -7,7 +7,7 @@ import type { PlanDoc, QlooCallsDoc, Store } from "./store";
 import { realRefusals, routingLabel } from "./view";
 
 export interface PlanReceipt {
-  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number; /** lib/view.ts routingLabel (absent in receipts cached before 2026-10-09) */ routing?: string; /** a2a r11: cards a model tool call placed / cards with a model coaching line */ model_routed?: number; model_coached?: number };
+  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number; /** lib/view.ts routingLabel (absent in receipts cached before 2026-10-09) */ routing?: string; /** a2a r11: cards a model routed (its tool call chose where Qloo looked) / cards with a model coaching line */ model_routed?: number; model_coached?: number };
   calls: QlooCallsDoc["calls"];
 }
 

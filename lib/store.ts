@@ -91,7 +91,7 @@ export const CardDoc = z.object({
   coaching_by: z.enum(["llm", "template"]).optional(),
   /** who placed the card: the LLM, the deterministic fallback, a constraint-toggle refill, or a clinician swap */
   routed_by: z.enum(["llm", "fallback", "toggle", "swap", "kept"]).default("llm"),
-  /** routed_by "llm": the "provider:model" whose tool call placed the card (absent on plans made before 2026-10-09) */
+  /** routed_by "llm": the "provider:model" whose tool call routed the card's slot (Qloo picked the venue) (absent on plans made before 2026-10-09) */
   routed_llm: z.string().optional(),
   tool: z.string().optional(),
   tool_params: z.record(z.string(), z.unknown()).default({}),
