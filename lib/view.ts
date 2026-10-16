@@ -205,7 +205,12 @@ const ROUTE_NAMES: Record<string, string> = { fallback: "deterministic", kept: "
  * first provider used to be credited with the whole week, although Groq routed 5 of its 6 LLM slots after Qwen timed
  * out). Plans made before cards recorded their provider keep the old single label.
  */
+/** routingLabel of a week with no card (the trace shows it as is, not after "routed by") */
+export const NO_CARD_PLACED = "no card placed";
+
 export function routingLabel(plan: Pick<PlanDoc, "cards" | "llm_provider" | "llm_model">): string {
+  // a2a r10: no card → nothing was routed to name ([].every() read an all-outage week as "deterministic route")
+  if (!plan.cards.length) return NO_CARD_PLACED;
   const llmCards = plan.cards.filter((c) => c.routed_by === "llm");
   // a2a r09: the single stored label only for LLM-placed cards that predate routed_llm; a plan whose cards no model
   // placed never names one (it printed the failed provider when a kept card had credited it)

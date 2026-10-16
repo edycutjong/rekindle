@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import s from "./rekindle.module.css";
+import { NO_CARD_PLACED } from "@/lib/view";
 
 export interface TraceStats {
   qlooCalls: number;
@@ -35,7 +36,7 @@ export function AgentTrace({ lines, stats, live }: { lines: string[]; stats: Tra
         </div>
         {stats.llm && (
           <div>
-            routed by <strong>{stats.llm}</strong>
+            {stats.llm === NO_CARD_PLACED ? <strong>{stats.llm}</strong> : <>routed by <strong>{stats.llm}</strong></>}
           </div>
         )}
         {stats.seconds !== null && (
