@@ -57,7 +57,7 @@ The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, 
 
 ### The Problem
 
-Behavioral activation (BA) is a first-line, low-cost treatment for depression. Its core step is **activity scheduling**: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most:
+Behavioral activation (BA) is a first-line, low-cost treatment for depression. In the COBRA trial (Richards et al., Lancet 2016), BA delivered by junior mental-health workers was non-inferior to CBT, so the people who would use a tool like this are often not specialists. Its core step is **activity scheduling**: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most:
 
 - **Anhedonic patients cannot name anything they would enjoy**, so the session goes to brainstorming.
 - **Generic suggestions** ("go for a walk") do not stick.
