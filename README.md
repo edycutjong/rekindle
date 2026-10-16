@@ -143,7 +143,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Unit + property tests | **240** (Vitest, 20 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
 | Tests named for the defect they pin | 85 (probes P8–P23, bench B5 / D9, QA rounds 1–6, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
-| Coverage (`lib/`, API routes) | 94.6% lines · 81.0% branches | `npm run test:coverage` (CI uploads the report) |
+| Coverage (`lib/`, API routes) | 94.8% lines · 81.7% branches | `npm run test:coverage` (CI uploads the report) |
 | E2E | Playwright, keyless in CI (desktop + Pixel 7); `scripts/ui_smoke.py` runs 18 gates against the live deploy | `e2e/`, `scripts/` |
 | Lighthouse (/, /judge, /cases/new, desktop) | 97–100 performance · 100 accessibility · 100 best practices · 100 SEO in the CI runs for 6672043, cdb9070 and 73be59e (100 on all three pages except performance 97 on / at 6672043) | CI Stage 5: [run 37660324552](https://github.com/edycutjong/rekindle/actions/runs/37660324552) (73be59e); later runs write the scores to the job summary and keep the LHR JSON as a 90-day `lighthouse` artifact. Thresholds in `lighthouserc.json`; accessibility < 0.9 fails |
 | Plan latency, hosted | p50 17.43 s · p95 20.61 s (bench run; it predates later plan-path changes, see the caveat under The number) | `bench/results.json` |
