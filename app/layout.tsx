@@ -8,10 +8,10 @@ const body = Atkinson_Hyperlegible({ variable: "--font-atkinson", weight: ["400"
 const data = IBM_Plex_Mono({ variable: "--font-plex-mono", weight: ["400", "500"], subsets: ["latin"] });
 
 // Bump OG_IMAGE's version whenever public/og-image.png changes: Discord, X and Slack cache cards by URL (social-card trap 1).
-const OG_IMAGE = "/og-image.png?v=qa6";
-// The counts come from the committed hand check, so a bench re-run (D20) updates the alt with the image (QA round 5)
+const OG_IMAGE = "/og-image.png?v=qa7";
+// The counts come from the committed manual audit (bench/audit.json), so a bench re-run (D20) updates the alt with the image (QA round 5)
 const [A, B] = [audit.arms.A, audit.arms.B];
-const OG_ALT = `Rekindle: hand-checked, the same LLM got ${A.violations} of ${A.checked} named venues wrong and Rekindle ${B.violations} of ${B.checked}; beside it, week two re-planned live from a fictional patient's ratings.`;
+const OG_ALT = `Rekindle: audited by our build agent (an AI), the same LLM got ${A.violations} of ${A.checked} named venues wrong and Rekindle ${B.violations} of ${B.checked}; beside it, week two re-planned live from a fictional patient's ratings.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rekindle.edycu.dev"),

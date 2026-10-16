@@ -27,3 +27,13 @@ describe("generated headline copy (scripts/bench_table.py)", () => {
     expect(render(0)).not.toMatch(/over-flags: in the same random sample/);
   });
 });
+
+describe("the audit is never called a hand check (a2a r11)", () => {
+  // B21 fixed the visible copy; the README hero's alt, the SVG's label, the og:image alt and /judge's line kept
+  // "hand-checked" / "the hand check" for an audit our build agent (an AI) did. Scan whole files, alt and meta included.
+  it("no judge-facing file says hand-checked or hand check", async () => {
+    const { readFileSync } = await import("node:fs");
+    const files = ["README.md", "JUDGE.md", "DEMO.md", "app/layout.tsx", "lib/judge.ts", "app/judge/page.tsx", "public/about.html", "public/pitch.html", "docs/assets/readme-hero-animated.svg"];
+    for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/hand[- ]check/i);
+  });
+});

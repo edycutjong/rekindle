@@ -97,7 +97,7 @@ export function oracleOverFlag(audit: AuditResults | null): string | null {
   const cell = audit?.oracle_vs_hand?.A?.unverifiable;
   if (!cell || !cell.ok) return null;
   const n = cell.ok + cell.wrong + cell.inconclusive;
-  return `In the same random sample, ${cell.ok} of the ${n} LLM venues the automated checker could not match were real and open (it matches by street address, which misses large venues such as parks), so the hand check is the headline.`;
+  return `In the same random sample, ${cell.ok} of the ${n} LLM venues the automated checker could not match were real and open (it matches by street address, which misses large venues such as parks), so the one-by-one audit is the headline.`;
 }
 
 /** bench/predates.json (scripts/bench_table.py): plan-path commits made after the bench finished */
