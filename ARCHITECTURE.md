@@ -62,7 +62,7 @@ The model chooses where to look. Qloo and deterministic code decide what is true
   - If the narrowed query verifies nothing, `findOutings` retries once at the case radius before it leaves the slot empty.
 - **Every card is a Qloo entity returned in that run.** It passed every rule in `lib/verify.ts` against the case row. A refused candidate stays on the sheet, struck through, with its rule.
   An ambiguous candidate goes to a REVIEW box for the clinician and is never placed.
-- **The model writes one coaching line per card.** Qwen and Groq race for it in one window after routing (`coachRace` in `lib/agent.ts`); the first valid answer wins. Each line is checked (R-ID, length, facts, other names, drinking, and the card's dose; drops are stored as `dropped` on the plan). Cards a constraint toggle refilled get one short raced call of their own. A swap, and any card whose line was dropped or did not arrive in time, uses a template line and says "coaching: template".
+- **The model writes one coaching line per card.** Qwen and Groq race for it in one window after routing (`coachRace` in `lib/agent.ts`); the first answer with a line for a placed card wins. Each line is checked (R-ID, length, facts, other names, drinking, and the card's dose; drops are stored as `dropped` on the plan). Cards a constraint toggle refilled get one short raced call of their own. A swap, and any card whose line was dropped or did not arrive in time, uses a template line and says "coaching: template".
 - **Qloo down = the slot stays empty, with the reason.** The model never fills a slot on its own (`qlooDown` in `lib/plan.ts`).
 
 ## Qloo usage

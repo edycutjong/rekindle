@@ -134,6 +134,11 @@
    "commit": "778c6ec",
    "date": "2026-10-17",
    "subject": "a2a r09: the coaching race is won by a usable call only; drop the dead COACH_ATTEMPT_MS"
+  },
+  {
+   "commit": "ff3e2d5",
+   "date": "2026-10-17",
+   "subject": "a2a r09: provider errors drop account ids before the trace, the stored plan and the plan API"
   }
  ]
 }

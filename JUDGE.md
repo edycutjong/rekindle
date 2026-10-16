@@ -33,7 +33,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 <!-- bench:ember:end -->
 
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 25 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 26 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 [DEMO.md](DEMO.md#bench-reproduce) explains how to read the table (Qloo grades both arms; the manual audit was not blind).

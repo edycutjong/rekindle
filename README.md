@@ -41,7 +41,7 @@
 <!-- bench:killer:end -->
 
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 25 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 26 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, the B-sym noise floor, the alcohol-screen ablation, latency, and re-plan responsiveness. It also says how to read it. Qloo grades both arms, and the manual audit was not blind.
@@ -99,7 +99,7 @@ flowchart LR
 </details>
 
 - **Next.js 15** (App Router, TypeScript) on Vercel. The UI and API routes are one deploy, and week plans stream to the browser as Server-Sent Events.
-- **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call in a 6 s window after the 20 s routing budget, and the first valid answer wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
+- **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call, due 6 s after the 20 s routing budget ends (or 6 s after routing finishes, if that is later), and the first answer with a line for a placed card wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
   Constraints never come from the model: radius, price, recovery, quiet and wheelchair are applied from the stored case on every request.
   The agent trace credits each slot to the model that routed it and says why a call failed (for example `coaching groq:openai/gpt-oss-120b rate-limited → template lines`). On the free tiers both providers can fail inside one plan: live re-plan `7317047a` (9 Oct) lost Qwen to a timeout and Groq to its tokens-per-minute limit, so the models routed its week but every card says "coaching: template". Since 10 Oct a provider stops routing once it has spent 3,000 tokens on it (`ROUTE_TOKEN_BUDGET`): the open slots go to the next route, and the provider stays in the coaching race. Run locally on Groq alone, Maya's two weeks went from template lines on every card to model lines on every card, with 3 of 7 slots model-routed ([spike/groq-route-budget.json](spike/groq-route-budget.json)).
 - **Store:** one zod-validated JSON document per case, plan, and plan call log, in Upstash Redis when it is configured, else a private Vercel Blob store; in memory for local development. If the store refuses, the app keeps planning live on per-instance memory under a banner, and saved weeks say "unavailable right now" rather than "Not found".
@@ -196,7 +196,7 @@ npm run check                  # typecheck + lint + tests + seed check + docs ch
 npm run dev                    # http://localhost:3000
 ```
 
-- **Without `BLOB_READ_WRITE_TOKEN`**, plans and rate-limit counters live in memory. Restarting the dev server clears them.
+- **Without a store** (Upstash Redis via `KV_REST_API_URL` + `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`; else `BLOB_READ_WRITE_TOKEN` for Vercel Blob), plans and the daily rate-limit counters live in memory. Restarting the dev server clears them.
 - **The judge and bench quotas** need `JUDGE_TOKEN` / `BENCH_TOKEN` (16 or more characters). Without them, every request uses the public namespace.
 - **The Qloo key only works against `https://hackathon.api.qloo.com`.** Every variable is listed in [`.env.example`](.env.example).
 
@@ -262,4 +262,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## 🙏 Acknowledgments
 
-Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/) on Devpost. Thanks to Qloo for the Taste AI Insights API and the hackathon key; Alibaba Cloud Model Studio (Qwen) and Groq for the models; Vercel for hosting, Blob and the AI SDK. Behavioral activation's evidence base: Richards et al., *Lancet* 2016 (COBRA).
+Built for the [Qloo Agentic Hackathon](https://qloo.devpost.com/) on Devpost. Thanks to Qloo for the Taste AI Insights API and the hackathon key; Alibaba Cloud Model Studio (Qwen) and Groq for the models; Vercel for hosting, Blob and the AI SDK; Upstash for Redis. Behavioral activation's evidence base: Richards et al., *Lancet* 2016 (COBRA).
