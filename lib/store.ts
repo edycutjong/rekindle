@@ -16,6 +16,7 @@ import { Redis } from "@upstash/redis";
 import { z } from "zod";
 import type { AgentPlan } from "./agent";
 import type { QlooCallLog } from "./qloo";
+import { redactAccountIds } from "./redact";
 import type { Card, CaseRow, PlanHistory, WeekPlan } from "./plan";
 import { DAYS, type DayName } from "./verify";
 
@@ -173,7 +174,8 @@ export const PlanDoc = z.object({
   review: z.array(CardDoc),
   /** truth-boundary drops (R-ID / COACH-*) */
   dropped: z.array(z.object({ rule: z.string(), entity_id: z.string(), detail: z.string() })),
-  llm_errors: z.array(z.object({ provider: z.string(), error: z.string() })).default([]),
+  /** provider errors, account ids dropped (also on plans stored before a2a r09: lib/redact.ts) */
+  llm_errors: z.array(z.object({ provider: z.string(), error: z.string().transform(redactAccountIds) })).default([]),
   /** how this week was produced: the agent run, or a constraint toggle applied to a parent plan */
   origin: z.enum(["agent", "toggle", "replan"]).default("agent"),
   /** set on a rated week once it has been re-planned: the week that came from its ratings (one re-plan per week) */

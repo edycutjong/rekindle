@@ -16,6 +16,7 @@ import { generateText, stepCountIs, tool, type StopCondition, type ToolSet } fro
 import { z } from "zod";
 import type { LlmHandle } from "./llm";
 import type { QlooClient } from "./qloo";
+import { providerError } from "./redact";
 import { DAYS, type DayName } from "./verify";
 import { diagnoseEmpty, EMPTY_HISTORY, findAtHome, findOutings, HOME_TYPES, ladder, placeSocial, type Card, type Relax, type CaseRow, type HomeType, type PlanHistory, type Refusal, type SlotSpec, type ToolContext, type ToolResult, type WeekPlan } from "./plan";
 
@@ -442,7 +443,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   };
   const failed = new Set<LlmHandle>();
   const fail = (llm: LlmHandle, e: unknown, next: LlmHandle | undefined) => {
-    const error = (e instanceof Error ? `${e.name}: ${e.message}` : String(e)).slice(0, 300);
+    const error = providerError(e);
     llmErrors.push({ provider: llm.provider, error });
     failed.add(llm);
     const open = skeleton.filter((s) => !claimed.has(s.day) || retryable(s.day)).length;
@@ -606,7 +607,7 @@ export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs
     return {
       lines: null,
       by: null,
-      errors: settled.flatMap((x, k) => (x.status === "rejected" ? [{ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: (x.reason instanceof Error ? `${x.reason.name}: ${x.reason.message}` : String(x.reason)).slice(0, 300) }] : [])),
+      errors: settled.flatMap((x, k) => (x.status === "rejected" ? [{ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: providerError(x.reason) }] : [])),
     };
   }
 }

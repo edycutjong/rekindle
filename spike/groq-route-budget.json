@@ -68,7 +68,7 @@
       "stage": "coach",
       "to": null,
       "open": null,
-      "error": "AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzecx5qq0mt` service tier `on_demand` on tokens per minu"
+      "error": "AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_…` service tier `on_demand` on tokens per minu"
      }
     ],
     "week": 1,
@@ -94,7 +94,7 @@
       "stage": "route",
       "to": null,
       "open": 6,
-      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzec"
+      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_…"
      }
     ],
     "week": 2,
@@ -191,7 +191,7 @@
       "stage": "route",
       "to": null,
       "open": 5,
-      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kk3gsj2nfk6vnpzec"
+      "error": "AI_RetryError: Failed after 2 attempts. Last error: AI_APICallError: Rate limit reached for model `openai/gpt-oss-120b` in organization `org_…"
      }
     ],
     "week": 2,

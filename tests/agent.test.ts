@@ -458,3 +458,17 @@ describe("a2a r09: the coaching race is won by a usable call only", () => {
     expect(llmFailure("Error: the model's submitPlan named no placed card")).toBe("named no placed card");
   });
 });
+
+describe("a2a r09: provider errors drop account ids before the trace, the stored plan and the plan API", () => {
+  it("a Groq 429 naming the organization reaches neither the SSE events nor llm_errors with the id; older stored plans are redacted on read", async () => {
+    const msg = "Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01testorgid42` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7900, Requested 1462.";
+    const groq = makeLlm("groq", { GROQ_API_KEY: "k" }, (async () => new Response(JSON.stringify({ error: { message: msg } }), { status: 429, headers: { "content-type": "application/json" } })) as unknown as typeof fetch)!;
+    const events: AgentEvent[] = [];
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [groq], onEvent: (e) => events.push(e) });
+    expect(plan.llmErrors.length).toBeGreaterThan(0);
+    expect(plan.llmErrors[0]!.error).toContain("organization `org_…`");
+    expect(JSON.stringify(events)).not.toContain("org_01testorgid42");
+    const stored = planDocFromAgent({ ...plan, llmErrors: [{ provider: "groq", error: msg }] }, { caseId: "c", history: EMPTY_HISTORY, calls: 0 });
+    expect(stored.llm_errors[0]!.error).not.toContain("org_01testorgid42");
+  }, 15_000);
+});

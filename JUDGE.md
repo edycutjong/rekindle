@@ -24,7 +24,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 |---|---|---|
 | Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
 | Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
-| Unit + property tests | 238 Vitest tests, 20 files, no keys needed | `npm test` |
+| Unit + property tests | 239 Vitest tests, 20 files, no keys needed | `npm test` |
 | Exhaustive check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): no PASS outing ever breaks a hard constraint; any deny-listed alcohol tag is refused in recovery; missing hours are never open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |
 
@@ -33,7 +33,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 <!-- bench:ember:end -->
 
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 24 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 25 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 [DEMO.md](DEMO.md#bench-reproduce) explains how to read the table (Qloo grades both arms; the manual audit was not blind).

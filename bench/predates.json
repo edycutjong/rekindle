@@ -129,6 +129,11 @@
    "commit": "de0410d",
    "date": "2026-10-17",
    "subject": "a2a r09: credit and progress from the model's own tool calls, not claimed.size"
+  },
+  {
+   "commit": "778c6ec",
+   "date": "2026-10-17",
+   "subject": "a2a r09: the coaching race is won by a usable call only; drop the dead COACH_ATTEMPT_MS"
   }
  ]
 }

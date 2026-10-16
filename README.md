@@ -15,7 +15,7 @@
   <br/>
 
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![tests](https://img.shields.io/badge/tests-238_passing-2E5B4F?style=flat)
+  ![tests](https://img.shields.io/badge/tests-239_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-6F675B?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
@@ -41,7 +41,7 @@
 <!-- bench:killer:end -->
 
 <!-- bench:caveat:start -->
-**Caveat: this bench run predates 24 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
+**Caveat: this bench run predates 25 later changes to the plan path** (listed in [DEMO.md](DEMO.md#bench-reproduce)). Every bench number on this page, latency included, was measured before them; the bench is re-run on the final deploy before submission.
 <!-- bench:caveat:end -->
 
 The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, the B-sym noise floor, the alcohol-screen ablation, latency, and re-plan responsiveness. It also says how to read it. Qloo grades both arms, and the manual audit was not blind.
@@ -140,7 +140,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Metric | Value | Source |
 |---|---|---|
-| Unit + property tests | **238** (Vitest, 20 files), no keys needed | `npm test` |
+| Unit + property tests | **239** (Vitest, 20 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
 | Tests named for the defect they pin | 85 (probes P8–P23, bench B5 / D9, QA rounds 1–6, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 94.6% lines · 81.0% branches | `npm run test:coverage` (CI uploads the report) |
@@ -202,7 +202,7 @@ npm run dev                    # http://localhost:3000
 
 ## 🧪 Testing & CI
 
-- **238 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
+- **239 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.
