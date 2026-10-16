@@ -69,12 +69,24 @@ def plural(n: int, one: str, many: str) -> str:
 
 
 def killer(r, au) -> str:
-    # a2a r05 (judge lens): the hand check leads. It is a random sample of the same venues, graded against public
+    # a2a r05 (judge lens): the manual audit leads. It is a random sample of the same venues, graded against public
     # listings, and it disagrees with the automated checker: oracle_vs_hand in bench/audit.json shows the checker
-    # flagging real, open places (large venues such as parks sit far from a street address) as unverifiable. The full-run
-    # checker numbers follow, with that over-flag stated.
-    a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
+    # flagging real, open places (large venues such as parks sit far from a street address) as unverifiable. a2a r11: the
+    # full-run checker numbers, with that over-flag stated, moved to DEMO.md (checker_note); this line points there.
     am, bm = au["arms"]["A"], au["arms"]["B"]
+    return (
+        f"**Asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'audited venue', 'audited venues')} wrong "
+        f"({pct(am['rate'])}); Rekindle: {bm['violations']} of {bm['checked']}.** "
+        f"Wrong means not found ({am['not_found']}), closed at the planned hour ({am['closed_at_slot']}) or serving alcohol to a patient in recovery "
+        f"({am['alcohol']}); a random {am['sampled']} per arm, {auditor_phrase(au)}; inconclusive: {am['inconclusive']} of the LLM's "
+        f"{am['sampled']} and {bm['inconclusive']} of Rekindle's {bm['sampled']} (`bench/audit.json`). "
+        f"The automated checker's count over all {r['profiles']} profiles, and why it over-flags, is in [DEMO.md](DEMO.md#bench-reproduce)."
+    )
+
+
+def checker_note(r, au) -> str:
+    """a2a r11 (judge lens): the full-run checker sentence moved from the README's first screen to DEMO.md's table block."""
+    a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
     ovh = (au.get("oracle_vs_hand") or {}).get("A", {}).get("unverifiable", {})
     fu = sum(ovh.values()) if ovh else 0
     fp = ovh.get("ok", 0) if ovh else 0
@@ -84,14 +96,9 @@ def killer(r, au) -> str:
         if fp else ""
     )
     return (
-        f"**Asked for named places, the same LLM got {am['violations']} of {plural(am['checked'], 'audited venue', 'audited venues')} wrong "
-        f"({pct(am['rate'])}); Rekindle: {bm['violations']} of {bm['checked']}.** "
-        f"Wrong means not found ({am['not_found']}), closed at the planned hour ({am['closed_at_slot']}) or serving alcohol to a patient in recovery "
-        f"({am['alcohol']}); a random {am['sampled']} per arm, {auditor_phrase(au)}, "
-        f"{am['inconclusive']} and {bm['inconclusive']} inconclusive (`bench/audit.json`). "
-        f"Our automated checker, on all {r['profiles']} fictional profiles, flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')} "
+        f"**Automated checker.** On all {r['profiles']} fictional profiles it flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')} "
         f"and {bs['violation']} of Rekindle's {b['outing_venues']} ({b['violation']} by Qloo ID){over} "
-        f"(`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC)."
+        f"(`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC). This is why the manual audit leads."
     )
 
 
@@ -258,7 +265,7 @@ def stale_files(r, rp, au, rows, write: bool) -> list:
         if not p.exists():
             continue
         doc = p.read_text()
-        new = replace(replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows)), "ember", ember_md())
+        new = replace(replace(replace(replace(replace(doc, "killer", killer(r, au)), "table", checker_note(r, au) + "\n\n" + table(r, rp, au)), "predates", predates_md(rows)), "caveat", caveat_md(rows)), "ember", ember_md())
         if new != doc:
             stale.append(p.name)
             if write:

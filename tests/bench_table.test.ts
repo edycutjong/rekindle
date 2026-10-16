@@ -7,7 +7,7 @@ function render(n: number): string {
   const r = { profiles: 1, finished_at: "2026-10-30T12:00:00", arms: { A: arm(n, 1), B: arm(0, 1), "B-sym": arm(n, 1) }, ablation_in_recovery: { B: { profiles: 1, outing_cards: 1, plan_alcohol_leak: 0 }, "B-": { profiles: 1, outing_cards: 1, plan_alcohol_leak: n }, "B-4": { profiles: 1, outing_cards: 1, plan_alcohol_leak: n } } };
   const hand = { sampled: 1, checked: 1, inconclusive: n, violations: n, rate: n, not_found: n, closed_at_slot: n, alcohol: n };
   const au = { auditor: "the build agent (Claude), not blind: test", arms: { A: hand, B: { ...hand, violations: 0, rate: 0 } }, oracle_vs_hand: { A: { unverifiable: { ok: n, wrong: 0, inconclusive: 0 } } } };
-  const py = `import json,sys; sys.path.insert(0,'scripts'); import bench_table as t; r,au=json.loads(sys.argv[1]),json.loads(sys.argv[2]); print(t.killer(r,au)); print("\\n".join(t.devpost_bullets(r,au)))`;
+  const py = `import json,sys; sys.path.insert(0,'scripts'); import bench_table as t; r,au=json.loads(sys.argv[1]),json.loads(sys.argv[2]); print(t.killer(r,au)); print(t.checker_note(r,au)); print("\\n".join(t.devpost_bullets(r,au)))`;
   return execFileSync("python3", ["-c", py, JSON.stringify(r), JSON.stringify(au)], { encoding: "utf8" });
 }
 
