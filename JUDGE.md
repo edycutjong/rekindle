@@ -42,6 +42,8 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 
 ```bash
 # the product, live: plans call Qloo and the routing model; nothing on this path is replayed
+npm ci && npx playwright install chromium
+pip install playwright && playwright install chromium
 python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live
 E2E_BASE_URL=https://rekindle.edycu.dev E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
 # the bench, against a live deployment (needs BENCH_TOKEN and model keys): see DEMO.md "Bench (reproduce)"

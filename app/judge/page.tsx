@@ -124,7 +124,8 @@ export default async function Judge() {
         <h2 className={s.h2}>Reproduce (the real path)</h2>
         <pre className={j.cmd} data-testid="reproduce">
           {`${open ? "" : `# the repository is private until submission; these commands work once it is public\n`}# the product, live: plans call Qloo and the routing model; nothing on this path is replayed
-git clone ${REPO} && cd rekindle && npm ci
+git clone ${REPO} && cd rekindle && npm ci && npx playwright install chromium
+pip install playwright && playwright install chromium
 python3 scripts/ui_smoke.py ${LIVE} /tmp/shots live
 E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --project=chromium
 # the bench, against a live deployment (needs BENCH_TOKEN and model keys): DEMO.md "Bench (reproduce)"`}
