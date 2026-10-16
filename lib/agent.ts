@@ -273,6 +273,11 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const filled = new Map<DayName, AgentSlot>();
   const claimed = new Set<DayName>();
   const pending = new Set<DayName>();
+  /** a2a r09: slots the model's own tool calls claimed, retries of a Qloo-unavailable slot included. Kept (pinned) cards
+   *  and the deterministic route never pass through claim(), so this, not claimed.size, says "the model routed": a kept
+   *  card used to credit a provider that failed before any tool call, and a retry (claimed.size unchanged) read as "no
+   *  tool called", which cost the provider its coaching seat */
+  let llmClaims = 0;
   const refusals: Refusal[] = [];
   const review: Card[] = [];
   const otherNames = new Set<string>();
@@ -357,6 +362,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     }
     claimed.add(day);
     pending.add(day);
+    llmClaims++;
     return slot!;
   };
 
@@ -458,8 +464,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     if (remaining < 2000) break;
     const attemptMs = i < opts.llms.length - 1 ? Math.max(2000, Math.floor(remaining * ROUTE_ATTEMPT_SHARE)) : remaining;
     const overBudget = () => (tokensSpent.get(llm) ?? 0) >= routeTokenBudget;
+    const before = llmClaims;
     try {
-      const before = { claimed: claimed.size };
       await generateText({
         model: llm.model,
         system: systemPrompt(),
@@ -472,9 +478,9 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         abortSignal: AbortSignal.timeout(attemptMs),
         onLanguageModelCallEnd: onCallEnd(llm),
       });
-      if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
+      if (!routedBy && llmClaims > before) routedBy = { provider: llm.provider, model: llm.modelId };
       if (allRouted()) break;
-      if (claimed.size === before.claimed) throw new Error("the model made no progress (no tool called)");
+      if (llmClaims === before) throw new Error("the model made no progress (no tool called)");
       if (overBudget()) {
         // not a failure: the provider keeps its place in the coaching race, the open slots move on
         const next = opts.llms[i + 1];
@@ -483,7 +489,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
         i++;
       }
     } catch (e) {
-      if (!routedBy && claimed.size > 0) routedBy = { provider: llm.provider, model: llm.modelId };
+      if (!routedBy && llmClaims > before) routedBy = { provider: llm.provider, model: llm.modelId };
       fail(llm, e, opts.llms[i + 1]);
       i++;
     }

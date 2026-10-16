@@ -361,5 +361,8 @@ describe("QA 2026-10-09 (demo video): the trace says what failed, and the stats 
     // plans stored before cards named their provider
     expect(routingLabel(plan([{ routed_by: "llm" }, { routed_by: "llm" }]))).toBe("qwen:qwen3.8-flash");
     expect(routingLabel(plan([{ routed_by: "fallback" }], [null, null]))).toBe("deterministic route");
+    // a2a r09: no card placed by a model → no model named, even if the stored plan credited one
+    expect(routingLabel(plan([{ routed_by: "kept" }, { routed_by: "fallback" }]))).toBe("deterministic ×1 · kept ×1");
+    expect(routingLabel(plan([{ routed_by: "fallback" }]))).toBe("deterministic route");
   });
 });

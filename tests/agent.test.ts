@@ -408,3 +408,41 @@ describe("routing token budget (measured 2026-10-10: Groq-only routing spent ~10
     expect(plan.llmErrors).toEqual([]);
   });
 });
+
+describe("a2a r09: routing credit and progress come from the model's own tool calls, not claimed.size", () => {
+  const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+  /** a re-plan's kept card: the Monday at-home card of a deterministic week */
+  async function keptMonday() {
+    const w1 = await runAgent({ qloo: replayClient(), case: MAYA, llms: [] });
+    return [{ card: w1.slots.find((s) => s.slot.day === "monday")!.card!, params: { rated: 8 } }];
+  }
+
+  it("a kept card does not credit a provider that failed before any tool call: both fail → no LLM named anywhere", async () => {
+    const pinned = await keptMonday();
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), failingLlm("groq", 500)], pinned });
+    expect(plan.slots.find((s) => s.slot.day === "monday")?.routedBy).toBe("kept");
+    expect(plan.llm).toBeNull();
+    const label = routingLabel(planDocFromAgent(plan, { caseId: "c", history: EMPTY_HISTORY, calls: 0 }));
+    expect(label).not.toMatch(/qwen|groq/);
+    expect(label).toContain("kept ×1");
+  });
+
+  it("Qwen fails before any tool call on a re-plan, Groq routes the open slots → the plan is credited to Groq", async () => {
+    const pinned = await keptMonday();
+    const groq = scriptedLlm([() => completion(ROUTE_ALL.slice(1)), coach], [], "groq");
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), groq], pinned });
+    expect(plan.llm?.provider).toBe("groq");
+    expect(plan.slots.filter((s) => s.routedBy === "llm").every((s) => s.llm?.startsWith("groq:"))).toBe(true);
+  });
+
+  it("re-routing slots Qloo still can't answer is progress, not 'no tool call'; the provider keeps its coaching seat", async () => {
+    const outings = ROUTE_ALL.filter((c) => c.name !== "findAtHome");
+    const stop = () => completion([], "Done.");
+    // round 1 routes the week (outings come back Qloo-unavailable); rounds 2 and 3 re-route only those outings
+    const llm = scriptedLlm([() => completion(ROUTE_ALL), stop, () => completion(outings), stop, () => completion(outings), stop, coach]);
+    const plan = await runAgent({ qloo: replayClient([], true), case: MAYA, llms: [llm] });
+    expect(plan.slots.filter((s) => s.slot.rung !== "home").every((s) => !s.card && /^Qloo unavailable/.test(s.empty ?? ""))).toBe(true);
+    expect(plan.llmErrors.filter((e) => /no progress/.test(e.error))).toEqual([]);
+    expect(plan.coachedBy?.provider).toBe("qwen");
+  });
+});

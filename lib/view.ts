@@ -179,7 +179,7 @@ export function traceFromPlan(plan: PlanDoc): string[] {
     const params = s.card ? Object.entries(s.card.tool_params).map(([k, v]) => `${k}=${String(v)}`).join(" ") : "";
     const byRule = countBy(strikes[s.day].map((x) => x.rule));
     const refused = Object.keys(byRule).length ? ` · refused ${Object.entries(byRule).map(([r, n]) => `${r} ${n}`).join(", ")}` : "";
-    const route = s.card ? ` (${s.card.routed_by})` : "";
+    const route = s.card ? ` (${s.card.routed_llm ?? s.card.routed_by})` : "";
     lines.push(`${tool} ${params}${route} → ${s.card ? s.card.name : `empty: ${s.empty}`}${refused}`.replace(/\s+/g, " "));
   }
   return lines;
@@ -204,11 +204,14 @@ const ROUTE_NAMES: Record<string, string> = { fallback: "deterministic", kept: "
  */
 export function routingLabel(plan: Pick<PlanDoc, "cards" | "llm_provider" | "llm_model">): string {
   const llmCards = plan.cards.filter((c) => c.routed_by === "llm");
-  if (!llmCards.some((c) => c.routed_llm)) return plan.llm_model ? `${plan.llm_provider}:${plan.llm_model}` : "deterministic route";
+  // a2a r09: the single stored label only for LLM-placed cards that predate routed_llm; a plan whose cards no model
+  // placed never names one (it printed the failed provider when a kept card had credited it)
+  if (llmCards.length && !llmCards.some((c) => c.routed_llm)) return plan.llm_model ? `${plan.llm_provider}:${plan.llm_model}` : "deterministic route";
   const parts = Object.entries(countBy(llmCards.map((c) => c.routed_llm ?? "LLM")))
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([k, n]) => `${k} ×${n}`);
   const other = countBy(plan.cards.filter((c) => c.routed_by !== "llm").map((c) => c.routed_by));
+  if (!parts.length && Object.keys(other).every((k) => k === "fallback")) return "deterministic route";
   for (const k of Object.keys(ROUTE_NAMES)) if (other[k]) parts.push(`${ROUTE_NAMES[k]} ×${other[k]}`);
   return parts.join(" · ");
 }
