@@ -50,3 +50,6 @@ bench/manual_audit_key.csv
 
 # Lighthouse CI
 .lighthouseci/
+
+# Python venv for the Playwright scripts (JUDGE.md "Reproduce")
+.venv/

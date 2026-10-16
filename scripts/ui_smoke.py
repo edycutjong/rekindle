@@ -4,7 +4,7 @@ home -> Plan Maya (live) -> week renders -> "In recovery" toggle -> reload shows
 (swap one card live, approve one card, approve the week -> stamp) -> rate 3 activities (P/M) -> re-plan week 2 (live)
 -> diff + ember underline + ember threads (top rated input over the best original love) -> reload keeps week 2 -> week 1 links to week 2 ->
 375 px has no horizontal scroll -> /integrations/qloo lists the calls.
-Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs `pip install playwright`).
+Usage: python3 scripts/ui_smoke.py <base-url> <screenshot-dir> [tag]   (needs Playwright: `python3 -m venv .venv && . .venv/bin/activate && pip install playwright && playwright install chromium`).
 Exits 1 if any gate assertion fails. It drives the real deployment; nothing is mocked."""
 import re, sys, time, json
 from store_guard import require_redis

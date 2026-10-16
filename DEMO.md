@@ -132,7 +132,7 @@ Excluded (week 1 too thin to rate): ruth, omar, hana, cal. Low-rated entities ba
 ## End-to-end checks (Playwright, logged-out, live)
 
 ```bash
-pip install playwright && playwright install chromium
+python3 -m venv .venv && . .venv/bin/activate && pip install playwright && playwright install chromium
 python3 scripts/ui_smoke.py https://rekindle.edycu.dev /tmp/shots live    # the click path above; exits 1 on a failed gate
 python3 scripts/edge_states.py https://rekindle.edycu.dev /tmp/shots live # the six edge states from /judge
 ```
