@@ -23,7 +23,7 @@ The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [
 | Receipt | Value | Source |
 |---|---|---|
 | Plan latency, hosted (arm B, 20 plans) | p50 17.43 s · p95 20.61 s · 9.4 Qloo calls per plan | `bench/results.json` |
-| Re-plan responsiveness | 16/16 eligible profiles; 0 low-rated entities back in week 2 | `bench/replan.json` |
+| Re-plan responsiveness | 16/16 eligible profiles (16/16 also at the 0.02 ember-thread margin); 0 low-rated entities back in week 2 | `bench/replan.json` |
 | Unit + property tests | 253 Vitest tests, 20 files, no keys needed | `npm test` |
 | Property check of the verifier | 60,000 generated cases (3 properties × 20,000, fixed seeds): in none did a PASS outing break a hard constraint, a deny-listed alcohol tag escape refusal in recovery, or missing hours count as open | `tests/verify.property.test.ts` |
 | E2E | Playwright, desktop + Pixel 7, in CI; `scripts/ui_smoke.py` drives the whole live flow (18 gates) | `e2e/`, `scripts/` |

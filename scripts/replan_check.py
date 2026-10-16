@@ -198,7 +198,7 @@ def summarise(rows):
         "thread_margin": THREAD_MARGIN,
         "passed_at_thread_margin": len(passed_thread),
         "threaded_new_cards_total": sum(len(r["threaded_new_cards"]) for r in n),
-        "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient). PASS at the thread margin = PASS with at least one such card whose margin is >= thread_margin, the lead the product draws an ember thread for.",
+        "definition": "N = arm-B week-1 plans with >= 2 verified outings and >= 1 at-home card. PASS = week 2 has >= 1 new entity whose top-weighted explainability input is a >= 7-rated entity, and 0 entities with the <= 3-rated ID. margin = top rekindled weight - best original-love weight on a new card (Qloo's attribution, not a causal claim about the patient). PASS at the thread margin = PASS with at least one such card whose margin is at least " + f"{THREAD_MARGIN} (thread_margin), the lead the product draws an ember thread for.",
     }
 
 

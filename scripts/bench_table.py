@@ -69,7 +69,7 @@ def plural(n: int, one: str, many: str) -> str:
 
 
 def killer(r, au) -> str:
-    # a2a r05 (judge lens): the manual audit leads. It is a random sample of the same venues, graded against public
+    # a2a r05: the manual audit leads. It is a random sample of the same venues, graded against public
     # listings, and it disagrees with the automated checker: oracle_vs_hand in bench/audit.json shows the checker
     # flagging real, open places (large venues such as parks sit far from a street address) as unverifiable. a2a r11: the
     # full-run checker numbers, with that over-flag stated, moved to DEMO.md (checker_note); this line points there.
@@ -85,19 +85,20 @@ def killer(r, au) -> str:
 
 
 def checker_note(r, au) -> str:
-    """a2a r11 (judge lens): the full-run checker sentence moved from the README's first screen to DEMO.md's table block."""
+    """a2a r11: the full-run checker sentence moved from the README's first screen to DEMO.md's table block. It opens the
+    block, ahead of the manual-audit paragraph, so it names that sample instead of leaning on a README line (a2a r12)."""
     a, b, bs = r["arms"]["A"], r["arms"]["B"], r["arms"]["B-sym"]
     ovh = (au.get("oracle_vs_hand") or {}).get("A", {}).get("unverifiable", {})
     fu = sum(ovh.values()) if ovh else 0
     fp = ovh.get("ok", 0) if ovh else 0
     over = (
-        f", but it over-flags: in the same random sample, {fp} of the {plural(fu, 'venue', 'venues')} it couldn't match "
+        f". It over-flags: in the manual audit's random sample (below), {fp} of the {plural(fu, 'venue', 'venues')} it couldn't match "
         f"{'was' if fp == 1 else 'were'} real and open, because it matches by street address and misses large venues such as parks"
         if fp else ""
     )
     return (
-        f"**Automated checker.** On all {r['profiles']} fictional profiles it flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')} "
-        f"and {bs['violation']} of Rekindle's {b['outing_venues']} ({b['violation']} by Qloo ID){over} "
+        f"**Automated checker.** On all {r['profiles']} fictional profiles it flags {a['violation']} of the LLM's {plural(a['outing_venues'], 'venue', 'venues')}; "
+        f"run through the same address matching, it flags {bs['violation']} of Rekindle's {b['outing_venues']}, and {b['violation']} when matched by Qloo ID{over} "
         f"(`bench/results.json`, run {r['finished_at'][:16].replace('T', ' ')} UTC). This is why the manual audit leads."
     )
 
@@ -172,7 +173,10 @@ def table(r, rp, au) -> str:
         f"**Re-plan responsiveness: {rp['result']}** (`bench/replan.json`). {rp['definition']}",
         f"Excluded (week 1 too thin to rate): {', '.join(e['profile'] if isinstance(e, dict) else str(e) for e in rp['excluded'])}. "
         f"Low-rated entities back in week 2: {rp['low_rated_reappearing']}. New week-2 cards whose top input is a rekindled rating: "
-        f"{rp['attributed_new_cards_total']} of {rp['new_cards_total']}; median margin over the best original love {rp['ember_margin_median_of_profiles']}.",
+        f"{rp['attributed_new_cards_total']} of {rp['new_cards_total']}; median margin over the best original love {rp['ember_margin_median_of_profiles']}."
+        # a2a r12: the stricter pass is defined above and headlined on /about and /pitch; DEMO.md reports it too
+        + (f" At the thread margin ({rp['thread_margin']}): {rp['threaded_new_cards_total']} of those {rp['attributed_new_cards_total']}, "
+           f"and {rp['passed_at_thread_margin']}/{rp['N']} profiles still pass." if rp.get("passed_at_thread_margin") is not None else ""),
         "",
         f"**Manual audit** (`bench/audit.json`): {au['auditor']}.",
     ]

@@ -27,7 +27,9 @@ describe("generated headline copy (scripts/bench_table.py)", () => {
       expect(out).toContain("our 14-tag exclusion (sent through Qloo's filter)");
     }
     expect(render(1)).toMatch(/1 of the 1 venue it couldn't match was real and open/);
-    expect(render(0)).not.toMatch(/over-flags: in the same random sample/);
+    expect(render(0)).not.toMatch(/over-flags: in the manual audit's random sample/);
+    // a2a r12: the checker note opens DEMO.md's table block, ahead of the audit paragraph, so it names the sample
+    expect(render(1)).toMatch(/It over-flags: in the manual audit's random sample \(below\)/);
   });
 });
 
