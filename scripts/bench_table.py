@@ -196,7 +196,7 @@ def table(r, rp, au) -> str:
 # the code that decides what a plan contains; a commit touching any of these after the bench run is listed as a caveat
 PLAN_PATH = ["lib/verify.ts", "lib/plan.ts", "lib/replan.ts", "lib/agent.ts", "lib/tags.ts", "lib/gate.ts"]
 # commits on those files that change no plan behaviour (comments, trace-only fields); everything else is listed
-NO_BEHAVIOUR = {"f461510", "1e402e8"}  # 1e402e8: inputTokens on the llm trace event
+NO_BEHAVIOUR = {"f461510", "1e402e8", "0ae6998"}  # 1e402e8: inputTokens on the llm trace event; 0ae6998: a doc comment (a2a r12)
 
 
 def predates(r) -> list:
