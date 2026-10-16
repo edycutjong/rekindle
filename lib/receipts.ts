@@ -7,13 +7,13 @@ import type { PlanDoc, QlooCallsDoc, Store } from "./store";
 import { realRefusals, routingLabel } from "./view";
 
 export interface PlanReceipt {
-  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number; /** lib/view.ts routingLabel (absent in receipts cached before 2026-10-09) */ routing?: string };
+  plan: Pick<PlanDoc, "id" | "case_id" | "week" | "created_at" | "llm_provider" | "llm_model" | "latency_ms" | "origin"> & { cards: number; refusals: number; refusals_by_rule: Record<string, number>; review: number; /** lib/view.ts routingLabel (absent in receipts cached before 2026-10-09) */ routing?: string; /** a2a r11: cards a model tool call placed / cards with a model coaching line */ model_routed?: number; model_coached?: number };
   calls: QlooCallsDoc["calls"];
 }
 
 export interface Receipts {
   plans: PlanReceipt[];
-  totals: { calls: number; non200: number; endpoints: string[]; params: string[]; p50: number | null; p95: number | null; refusals_by_rule: Record<string, number>; review: number };
+  totals: { calls: number; non200: number; endpoints: string[]; params: string[]; p50: number | null; p95: number | null; refusals_by_rule: Record<string, number>; review: number; agency: { cards: number; model_routed: number; model_coached: number } };
 }
 
 /** parameters that carry product meaning; transport-only keys are not counted as depth */
@@ -33,7 +33,14 @@ export function summarise(plans: PlanReceipt[]): Receipts["totals"] {
   const refusals_by_rule: Record<string, number> = {};
   for (const p of plans) for (const [k, v] of Object.entries(p.plan.refusals_by_rule ?? {})) refusals_by_rule[k] = (refusals_by_rule[k] ?? 0) + v;
   const review = plans.reduce((n, p) => n + (p.plan.review ?? 0), 0);
-  return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95), refusals_by_rule, review };
+  // a2a r11: the agency dial, over the plans whose receipt carries it (receipts cached before it have neither count)
+  const counted = plans.filter((p) => p.plan.model_routed !== undefined);
+  const agency = {
+    cards: counted.reduce((n, p) => n + p.plan.cards, 0),
+    model_routed: counted.reduce((n, p) => n + (p.plan.model_routed ?? 0), 0),
+    model_coached: counted.reduce((n, p) => n + (p.plan.model_coached ?? 0), 0),
+  };
+  return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95), refusals_by_rule, review, agency };
 }
 
 /**
@@ -78,7 +85,7 @@ export async function latestReceipts(store: Store, o: { limit?: number; planId?:
     if (!o.planId && plan.superseded_by) continue;
     const refusals = distinctRefusals(realRefusals(plan.refusals, plan.cards));
     plans.push({
-      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, routing: routingLabel(plan), latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, refusals: new Set(refusals.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size, refusals_by_rule: countRules(refusals), review: plan.review.length },
+      plan: { id: plan.id, case_id: plan.case_id, week: plan.week, created_at: plan.created_at, llm_provider: plan.llm_provider, llm_model: plan.llm_model, routing: routingLabel(plan), latency_ms: plan.latency_ms, origin: plan.origin, cards: plan.cards.length, model_routed: plan.cards.filter((c) => c.routed_by === "llm").length, model_coached: plan.cards.filter((c) => c.coaching_by === "llm").length, refusals: new Set(refusals.map((x) => `${x.day_name}|${x.qloo_entity_id}`)).size, refusals_by_rule: countRules(refusals), review: plan.review.length },
       calls: calls?.calls ?? [],
     });
   }

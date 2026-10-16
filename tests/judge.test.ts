@@ -77,6 +77,15 @@ describe("/judge view model", () => {
     expect(t.review).toBe(1);
   });
 
+  it("a2a r11: totals the agency dial (model-placed and model-coached cards) only over receipts that carry it", () => {
+    const plan = (cards: number, routed?: number, coached?: number) => ({
+      plan: { id: "p", case_id: "c", week: 1, created_at: "t", llm_provider: null, llm_model: null, latency_ms: 1, origin: "agent" as const, cards, refusals: 0, refusals_by_rule: {}, review: 0, ...(routed !== undefined ? { model_routed: routed, model_coached: coached } : {}) },
+      calls: [],
+    });
+    expect(summarise([plan(7, 7, 7), plan(7, 3, 0), plan(7)]).agency).toEqual({ cards: 14, model_routed: 10, model_coached: 7 });
+    expect(summarise([plan(7)]).agency).toEqual({ cards: 0, model_routed: 0, model_coached: 0 });
+  });
+
   it("QA round 4 (a2a r05): /judge states the checker's over-flag from oracle_vs_hand, and says nothing when there is none", () => {
     const base = { generated_by: "x", finished_at: "x", auditor: "x", method: "x", arms: {} } as AuditResults;
     expect(oracleOverFlag({ ...base, oracle_vs_hand: { A: { unverifiable: { ok: 4, wrong: 3, inconclusive: 3 } } } })).toMatch(/4 of the 10 LLM venues the automated checker could not match were real and open/);

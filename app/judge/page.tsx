@@ -430,6 +430,15 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
               <dt>sent to clinician review</dt>
               <dd>{live.totals.review}</dd>
             </div>
+            {live.totals.agency.cards > 0 && (
+              <div className={s.wide}>
+                <dt>agency: cards a model tool call placed · cards with model coaching</dt>
+                <dd data-testid="agency">
+                  {live.totals.agency.model_routed} of {live.totals.agency.cards} · {live.totals.agency.model_coached} of {live.totals.agency.cards} (the rest: the deterministic route, a
+                  kept or refilled card, or a template line; the agent trace credits each slot)
+                </dd>
+              </div>
+            )}
             <div className={s.wide}>
               <dt>refusals by rule</dt>
               <dd data-testid="refusals-by-rule">

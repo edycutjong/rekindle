@@ -15,7 +15,7 @@
   <br/>
 
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![tests](https://img.shields.io/badge/tests-250_passing-2E5B4F?style=flat)
+  ![tests](https://img.shields.io/badge/tests-251_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-6F675B?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
@@ -101,7 +101,7 @@ flowchart LR
 - **Next.js 15** (App Router, TypeScript) on Vercel. The UI and API routes are one deploy, and week plans stream to the browser as Server-Sent Events.
 - **Agent:** Vercel AI SDK `generateText` with typed zod tools. The model is `qwen3.8-flash` on DashScope-intl with thinking off; Groq `openai/gpt-oss-120b` takes over routing on a provider error or timeout. The coaching lines are a race: both providers get the same forced call, due 6 s after the 20 s routing budget ends (or 6 s after routing finishes, if that is later), and the first answer with a line that passes the truth boundary wins. Cards a constraint toggle refilled get one short raced call (4 s). A swapped-in card, a card whose line breaks a truth-boundary rule, and a card with no line in time get a template coaching line and say "coaching: template".
   Constraints never come from the model: radius, price, recovery, quiet and wheelchair are applied from the stored case on every request.
-  The agent trace credits each slot to the model that routed it and says why a call failed (for example `coaching groq:openai/gpt-oss-120b rate-limited → template lines`). On the free tiers both providers can fail inside one plan: live re-plan `7317047a` (9 Oct) lost Qwen to a timeout and Groq to its tokens-per-minute limit, so the models routed its week but every card says "coaching: template". Since 10 Oct a provider stops routing once it has spent 3,000 tokens on it (`ROUTE_TOKEN_BUDGET`): the open slots go to the next route, and the provider stays in the coaching race. Run locally on Groq alone, Maya's two weeks went from template lines on every card to model lines on every card, with 3 of 7 slots model-routed ([spike/groq-route-budget.json](spike/groq-route-budget.json)).
+  The agent trace credits each slot to the model that routed it and says why a call failed (for example `coaching groq:openai/gpt-oss-120b rate-limited → template lines`). On the free tiers both providers can fail inside one plan: live re-plan `7317047a` (9 Oct) lost Qwen to a timeout and Groq to its tokens-per-minute limit, so the models routed its week but every card says "coaching: template". Since 10 Oct a provider stops routing once it has spent 3,000 tokens on it (`ROUTE_TOKEN_BUDGET`): the open slots go to the next route, and the provider stays in the coaching race. Its measured effect is in [ARCHITECTURE.md](ARCHITECTURE.md#failure-and-edge-states); `/judge` counts, over the latest live runs, the cards a model tool call placed and the cards with model coaching.
 - **Store:** one zod-validated JSON document per case, plan, and plan call log, in Upstash Redis when it is configured, else a private Vercel Blob store; in memory for local development. If the store refuses, the app keeps planning live on per-instance memory under a banner, and saved weeks say "unavailable right now" rather than "Not found".
 - **Rate limits:** public / judge / bench namespaces, so judges have their own quota and the bench never touches the public one. Public plan runs share a daily cap and a per-address hourly limit (`lib/ratelimit.ts`; each plan response carries the cap in `x-ratelimit-daily-limit`). Past a limit the app says "Capacity reached", invents no week, and links the latest live runs at `/integrations/qloo`; Maya's stored [week 1](https://rekindle.edycu.dev/plans/ab088de3-3544-4a11-9c4e-033d2cf60965) and [week 2](https://rekindle.edycu.dev/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e) stay readable without a run.
 
@@ -142,7 +142,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Metric | Value | Source |
 |---|---|---|
-| Unit + property tests | **250** (Vitest, 20 files), no keys needed | `npm test` |
+| Unit + property tests | **251** (Vitest, 20 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
 | Tests named for the defect they pin | 85 (probes P8–P23, bench B5 / D9, QA rounds 1–6, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 95.1% lines · 81.9% branches | `npm run test:coverage` (CI uploads the report) |
@@ -204,7 +204,7 @@ npm run dev                    # http://localhost:3000
 
 ## 🧪 Testing & CI
 
-- **250 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
+- **251 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.
