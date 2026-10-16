@@ -285,7 +285,7 @@ def devpost_bullets(r, au) -> list[str]:
     on, off, four = ab["B"], ab["B-"], ab["B-4"]
     ablation = (
         f"- **Ablation** ({plural(on['profiles'], 'in-recovery profile', 'in-recovery profiles')}): with the screen on, {on['plan_alcohol_leak']} of {on['outing_cards']} outing cards carry an alcohol tag or keyword. "
-        f"Screen off, Qloo's 14-tag exclusion kept: {off['plan_alcohol_leak']} of {off['outing_cards']}. "
+        f"Screen off, our 14-tag exclusion (sent through Qloo's filter) kept: {off['plan_alcohol_leak']} of {off['outing_cards']}. "
         f"Screen off, only the 4 obvious bar tags excluded: {four['plan_alcohol_leak']} of {four['outing_cards']} (`bench/results.json`, `ablation_in_recovery`)."
     )
     return [number, ablation]

@@ -22,6 +22,9 @@ describe("generated headline copy (scripts/bench_table.py)", () => {
       expect(out).not.toMatch(/hand-checked|done by the build agent|cards serve alcohol/);
       expect(out.match(/our build agent \(Claude, an AI; not blind\)/g)?.length).toBe(2);
       expect(out).toContain("outing cards carry an alcohol tag or keyword");
+      // a2a r11: the 14-tag and four-tag lists are ours, sent through Qloo's filter; Qloo's CTO reads "Qloo's 14-tag" as a product claim
+      expect(out).not.toMatch(/Qloo's (own )?(14|four|4)[- ]tag/);
+      expect(out).toContain("our 14-tag exclusion (sent through Qloo's filter)");
     }
     expect(render(1)).toMatch(/1 of the 1 venue it couldn't match was real and open/);
     expect(render(0)).not.toMatch(/over-flags: in the same random sample/);
