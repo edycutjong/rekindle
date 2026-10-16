@@ -377,6 +377,13 @@ export function Workbench({ initialCase, initialPlan, previousPlan = null, fault
           {notice}
         </p>
       )}
+      {plan && phase === "idle" && !notice && !failure && !outage && canEdit && plan.status === "draft" && plan.week === 1 && plan.origin !== "toggle" && !c.in_recovery && plan.cards.some((x) => x.rung !== "home") && (
+        // a2a r11: the strike-in-place beat was reachable only from the docs; the week itself now points at the toggle
+        <p className={s.notice} role="note" data-testid="recovery-hint">
+          Next: switch on <b>In recovery</b> above. Outings that carry an alcohol tag or keyword are struck where they stand, with the rule beneath, and their slots
+          are refilled live.
+        </p>
+      )}
       {failure && (
         <div className={s.errorBox} role="alert">
           <p>

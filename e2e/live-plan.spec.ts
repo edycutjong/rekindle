@@ -17,6 +17,8 @@ test("Plan Maya's week, live: 7 slots, every card explained by Qloo, Qloo calls 
   const n = await cards.count();
   expect(n).toBeGreaterThanOrEqual(5);
   await expect(page.getByTestId("why")).toHaveCount(n);
+  // a2a r11: the landed week points the visitor at the In recovery toggle (the strike-in-place beat)
+  await expect(page.getByTestId("recovery-hint")).toContainText("In recovery");
   const planId = page.url().split("/plans/")[1];
   await page.goto(`/integrations/qloo?plan=${planId}`);
   await expect(page.getByText("/v2/insights").first()).toBeVisible();
