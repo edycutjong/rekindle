@@ -39,4 +39,19 @@ describe("the audit is never called a hand check (a2a r11)", () => {
     const files = ["README.md", "JUDGE.md", "DEMO.md", "app/layout.tsx", "lib/judge.ts", "app/judge/page.tsx", "public/about.html", "public/pitch.html", "docs/assets/readme-hero-animated.svg"];
     for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/hand[- ]check/i);
   });
+
+  // a2a r12: three lines the r11 edits did not reach kept the old wording; /about and /pitch wrap numbers in spans,
+  // so the scan strips tags before matching
+  it("no judge-facing file keeps a phrasing the r11 edits replaced", async () => {
+    const { readFileSync } = await import("node:fs");
+    const files = ["README.md", "JUDGE.md", "DEMO.md", "app/judge/page.tsx", "lib/judge.ts", "public/about.html", "public/pitch.html"];
+    for (const f of files) {
+      const text = readFileSync(f, "utf8").replace(/<[^>]+>/g, "");
+      expect(text, f).not.toMatch(/no passing outing breaks/i);
+      expect(text, f).not.toMatch(/\b\d+ and \d+ inconclusive/);
+      // the screen's 0 is by construction; never set against the four-tag arm alone
+      expect(text, f).not.toMatch(/with the screen, \d+ of \d+ in-recovery outings carry an alcohol tag or keyword; with only/);
+      expect(text, f).not.toMatch(/\d+ of \d+ in-recovery outings carry an alcohol tag or keyword, against \d+ of \d+ with only/);
+    }
+  });
 });
