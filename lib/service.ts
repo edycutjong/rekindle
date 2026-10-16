@@ -3,7 +3,7 @@
  * for a stored case with its Qloo call log persisted beside the plan.
  */
 import profiles from "../fixtures/profiles.json";
-import { assembleCoaching, coachingAlcohol, coachRace, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "./agent";
+import { assembleCoaching, coachingAlcohol, coachRace, runAgent, templateCoaching, usableLines, type AgentEvent, type AgentSlot } from "./agent";
 import { llmChainFromEnv, type LlmHandle } from "./llm";
 import { QLOO_RUN_BUDGET_MS, QlooClient, qlooFromEnv, type QlooCallLog } from "./qloo";
 import { applyConstraints, EMPTY_HISTORY, wkt } from "./plan";
@@ -281,12 +281,14 @@ export async function coachRefills(plan: PlanDoc, llms: LlmHandle[], windowMs: n
     return { slot: card.slot, card, routedBy: "llm", tool: "findOutings", params: {} };
   });
   const lines = slots.map((s) => JSON.stringify({ ok: true, day: s.slot.day, entity_id: s.card!.entity_id, name: s.card!.name, type: s.card!.entityType, hour: `${String(s.card!.hour).padStart(2, "0")}:00`, because: s.card!.why.map((w) => `${w.name} ${w.score.toFixed(2)}`).join(" · ") }));
-  const ids = new Set(slots.map((s) => s.card!.entity_id));
-  const r = await coachRace({ llms, prompt: `All slots are filled:\n${lines.join("\n")}\nCall submitPlan now.`, windowMs, accept: (got) => got.some((l) => ids.has(l.entity_id)) });
-  const llmErrors = [...plan.llm_errors, ...r.errors.map((e) => ({ provider: e.provider, error: `toggle coaching: ${e.error}` }))];
-  if (!r.lines) return PlanDoc.parse({ ...plan, llm_errors: llmErrors });
   const others = [...plan.cards.map((c) => c.name), ...plan.refusals.map((x) => x.name), ...plan.review.map((x) => x.name)];
-  const dropped = assembleCoaching(slots, r.lines, others);
+  const refillCards = slots.map((s) => s.card!);
+  // a2a r10: the same predicate the truth boundary applies below (a call whose every line it would drop cannot win)
+  const r = await coachRace({ llms, prompt: `All slots are filled:\n${lines.join("\n")}\nCall submitPlan now.`, windowMs, accept: (got) => usableLines(refillCards, got, others).length > 0 });
+  const llmErrors = [...plan.llm_errors, ...r.errors.map((e) => ({ provider: e.provider, error: `toggle coaching: ${e.error}` }))];
+  const got = r.lines ?? r.rejected;
+  if (!got.length) return PlanDoc.parse({ ...plan, llm_errors: llmErrors });
+  const dropped = assembleCoaching(slots, got, others);
   const byId = new Map(slots.map((s) => [s.card!.entity_id, s]));
   const cards = plan.cards.map((c) => {
     const s = c.routed_by === "toggle" && c.coaching_by === "template" ? byId.get(c.qloo_entity_id) : undefined;

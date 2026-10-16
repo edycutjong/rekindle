@@ -179,6 +179,39 @@ export function doseConflict(line: string, rung: "home" | "solo" | "social"): nu
 
 export const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
+type CoachedCard = Pick<Card, "entity_id" | "name" | "rung">;
+const boundaryNames = (otherNames: Iterable<string>) => [...new Set(otherNames)].filter((n) => n.trim().length >= 4);
+
+/** The per-line rules of the truth boundary (length, fact, dose, drinking, another entity's name), or null: usable. */
+function lineFault(card: CoachedCard, text: string, names: string[]): Omit<Dropped, "entity_id"> | null {
+  if (!text || wordCount(text) > WORD_LIMIT) return { rule: "COACH-LENGTH", detail: `coaching line has ${wordCount(text)} words (limit ${WORD_LIMIT})` };
+  const fact = FACT_PATTERN.exec(text);
+  if (fact) return { rule: "COACH-FACT", detail: `coaching line states a fact the card owns ("${fact[0]}")` };
+  const dose = doseConflict(text, card.rung);
+  if (dose !== null) return { rule: "COACH-DOSE", detail: `coaching line names ${dose} minutes; the card's dose is ${card.rung === "home" ? `${DOSE_MINUTES.home} minutes` : `at most ${DOSE_MINUTES.outingMax} minutes`}` };
+  const alc = coachingAlcohol(text, card.name);
+  if (alc) return { rule: "COACH-ALC", detail: `coaching line mentions drinking ("${alc}")` };
+  const lower = text.toLowerCase();
+  const own = card.name.toLowerCase();
+  const named = names.find((n) => n.toLowerCase() !== own && !own.includes(n.toLowerCase()) && lower.includes(n.toLowerCase()));
+  if (named) return { rule: "COACH-NAME", detail: `coaching line names another entity ("${named}")` };
+  return null;
+}
+
+/**
+ * The lines the truth boundary would keep: keyed to one of `cards` and passing every per-line rule. Pure (nothing is
+ * recorded), so the coaching race can use it as its `accept` (a2a r10: a fast call whose every line the boundary drops,
+ * e.g. all COACH-ALC, used to win the race and leave the week on templates).
+ */
+export function usableLines(cards: CoachedCard[], lines: { entity_id: string; line: string }[], otherNames: Iterable<string>) {
+  const byId = new Map(cards.map((c) => [c.entity_id, c]));
+  const names = boundaryNames(otherNames);
+  return lines.filter((l) => {
+    const c = byId.get(l.entity_id);
+    return !!c && !lineFault(c, l.line.trim(), names);
+  });
+}
+
 /**
  * Truth-boundary assembler for coaching lines: keeps only lines keyed to a card placed in this run, ≤25 words, that
  * name no other entity seen in the run. Everything else is dropped and logged.
@@ -186,7 +219,7 @@ export const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).le
 export function assembleCoaching(slots: AgentSlot[], submitted: { entity_id: string; line: string }[], otherNames: Iterable<string>): Dropped[] {
   const dropped: Dropped[] = [];
   const byId = new Map(slots.filter((s) => s.card).map((s) => [s.card!.entity_id, s]));
-  const names = [...new Set(otherNames)].filter((n) => n.trim().length >= 4);
+  const names = boundaryNames(otherNames);
   for (const { entity_id, line } of submitted) {
     const s = byId.get(entity_id);
     if (!s) {
@@ -198,30 +231,9 @@ export function assembleCoaching(slots: AgentSlot[], submitted: { entity_id: str
       continue;
     }
     const text = line.trim();
-    if (!text || wordCount(text) > WORD_LIMIT) {
-      dropped.push({ rule: "COACH-LENGTH", entity_id, detail: `coaching line has ${wordCount(text)} words (limit ${WORD_LIMIT})` });
-      continue;
-    }
-    const fact = FACT_PATTERN.exec(text);
-    if (fact) {
-      dropped.push({ rule: "COACH-FACT", entity_id, detail: `coaching line states a fact the card owns ("${fact[0]}")` });
-      continue;
-    }
-    const dose = doseConflict(text, s.card!.rung);
-    if (dose !== null) {
-      dropped.push({ rule: "COACH-DOSE", entity_id, detail: `coaching line names ${dose} minutes; the card's dose is ${s.card!.rung === "home" ? `${DOSE_MINUTES.home} minutes` : `at most ${DOSE_MINUTES.outingMax} minutes`}` });
-      continue;
-    }
-    const alc = coachingAlcohol(text, s.card!.name);
-    if (alc) {
-      dropped.push({ rule: "COACH-ALC", entity_id, detail: `coaching line mentions drinking ("${alc}")` });
-      continue;
-    }
-    const lower = text.toLowerCase();
-    const own = s.card!.name.toLowerCase();
-    const named = names.find((n) => n.toLowerCase() !== own && !own.includes(n.toLowerCase()) && lower.includes(n.toLowerCase()));
-    if (named) {
-      dropped.push({ rule: "COACH-NAME", entity_id, detail: `coaching line names another entity ("${named}")` });
+    const fault = lineFault(s.card!, text, names);
+    if (fault) {
+      dropped.push({ ...fault, entity_id });
       continue;
     }
     s.coaching = text;
@@ -517,13 +529,14 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const coachDeadline = Math.max(deadline, Date.now()) + (opts.coachBudgetMs ?? COACH_BUDGET_MS);
   const coaches = opts.llms.filter((l) => !failed.has(l));
   if (placed.length && submitCalls === 0 && coaches.length) {
-    const placedIds = new Set(placed.map((s) => s.card!.entity_id));
-    const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd, accept: (lines) => lines.some((l) => placedIds.has(l.entity_id)) });
+    const cards = placed.map((s) => s.card!);
+    const names = [...otherNames, ...cards.map((c) => c.name)];
+    const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd, accept: (lines) => usableLines(cards, lines, names).length > 0 });
     if (r.lines) {
       submitted = [...submitted, ...r.lines];
       submitCalls++;
       coachedBy = r.by ? { provider: r.by.provider, model: r.by.modelId } : null;
-    }
+    } else submitted = [...submitted, ...r.rejected];
     for (const e of r.errors) {
       llmErrors.push(e);
       emit({ type: "llm_fallback", from: e.from, to: null, error: e.error, stage: "coach" });
@@ -564,10 +577,13 @@ const coachingSchema = z.object({ coaching: z.array(z.object({ entity_id: z.stri
  * a loser's late call can never add lines), the first provider whose call returns lines wins and the rest are
  * aborted. Errors are reported only when no provider won (an aborted loser is not a failure). `accept` (a2a r09): a
  * call it rejects (e.g. `coaching: []`, or lines keyed only to IDs no card carries) is a failed attempt, not a win, so
- * it cannot abort a provider still writing usable lines.
+ * it cannot abort a provider still writing usable lines. Callers pass `usableLines(...).length > 0` (a2a r10), the
+ * same predicate the truth boundary applies after the race, so a call whose every line would be dropped cannot win.
+ * `rejected`: when no call won, the lines of the rejected calls, so the boundary still logs why each was dropped.
  */
-export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs: number; onCallEnd?: CallEnd; accept?: (lines: { entity_id: string; line: string }[]) => boolean }): Promise<{ lines: { entity_id: string; line: string }[] | null; by: LlmHandle | null; errors: { provider: string; from: string; error: string }[] }> {
-  if (!o.llms.length || o.windowMs < 1500) return { lines: null, by: null, errors: [] };
+export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs: number; onCallEnd?: CallEnd; accept?: (lines: { entity_id: string; line: string }[]) => boolean }): Promise<{ lines: { entity_id: string; line: string }[] | null; by: LlmHandle | null; errors: { provider: string; from: string; error: string }[]; rejected: { entity_id: string; line: string }[] }> {
+  if (!o.llms.length || o.windowMs < 1500) return { lines: null, by: null, errors: [], rejected: [] };
+  const rejected: { entity_id: string; line: string }[] = [];
   const won = new AbortController();
   const signal = AbortSignal.any([AbortSignal.timeout(o.windowMs), won.signal]);
   const attempt = async (llm: LlmHandle) => {
@@ -595,19 +611,23 @@ export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs
       ...(o.onCallEnd ? { onLanguageModelCallEnd: o.onCallEnd(llm) } : {}),
     });
     if (!got) throw new Error("the model did not call submitPlan");
-    if (o.accept && !o.accept(got)) throw new Error("the model's submitPlan named no placed card");
+    if (o.accept && !o.accept(got)) {
+      rejected.push(...(got as { entity_id: string; line: string }[]));
+      throw new Error("the model's submitPlan had no usable line for a placed card");
+    }
     won.abort();
     return { llm, lines: got as { entity_id: string; line: string }[] };
   };
   const runs = o.llms.map(attempt);
   try {
     const r = await Promise.any(runs);
-    return { lines: r.lines, by: r.llm, errors: [] };
+    return { lines: r.lines, by: r.llm, errors: [], rejected: [] };
   } catch {
     const settled = await Promise.allSettled(runs);
     return {
       lines: null,
       by: null,
+      rejected,
       errors: settled.flatMap((x, k) => (x.status === "rejected" ? [{ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: providerError(x.reason) }] : [])),
     };
   }

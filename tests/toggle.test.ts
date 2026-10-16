@@ -88,6 +88,27 @@ describe("constraint toggle (POST /api/plans/:id/constraints)", () => {
     expect(next.coach_llm).toMatch(/^groq:/);
   });
 
+  it("a2a r10: a toggle coaching call whose every line the boundary drops does not win; the drops are still logged", async () => {
+    const { store, plan } = await mayaWeek();
+    const target = plan.cards.find((x) => x.rung === "solo")!;
+    await store.putPlan(PlanDoc.parse({ ...plan, cards: plan.cards.map((x) => (x.id === target.id ? { ...x, tags: [...x.tags, "urn:tag:beverage_offering:qloo:craft_beer"] } : x)) }));
+    const llm = makeLlm("groq", { GROQ_API_KEY: "k" }, (async (_u: string, init: RequestInit) => {
+      const text = JSON.stringify(JSON.parse(String(init.body)).messages);
+      const ids = [...new Set([...text.matchAll(/entity_id\\":\\"([^"\\]+)/g)].map((m) => m[1]!))];
+      const coaching = ids.map((entity_id) => ({ entity_id, line: "Stay for an hour or two." }));
+      return new Response(JSON.stringify({ id: "x", object: "chat.completion", created: 0, model: "m", choices: [{ index: 0, message: { role: "assistant", content: null, tool_calls: [{ id: "c0", type: "function", function: { name: "submitPlan", arguments: JSON.stringify({ coaching }) } }] }, finish_reason: "tool_calls" }], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 } }), { status: 200, headers: { "content-type": "application/json" } });
+    }) as unknown as typeof fetch)!;
+    const { plan: next } = await toggleConstraints({ store, planId: plan.id, patch: { in_recovery: true }, qloo: loggingReplay, llms: [llm], coachWindowMs: 3000 });
+    const refills = next.cards.filter((c) => c.routed_by === "toggle");
+    expect(refills.length).toBeGreaterThan(0);
+    for (const c of refills) {
+      expect(c.coaching_by).toBe("template");
+      expect(next.dropped).toContainEqual(expect.objectContaining({ rule: "COACH-DOSE", entity_id: c.qloo_entity_id }));
+    }
+    expect(next.coach_llm).toBeNull();
+    expect(next.llm_errors.map((e) => e.error)).toContainEqual(expect.stringContaining("toggle coaching: Error: the model's submitPlan had no usable line"));
+  });
+
   it("in recovery ON re-screens every card's coaching, home cards too (COACH-ALC): a drinking line becomes the template dose", async () => {
     const { store, plan } = await mayaWeek();
     const home = plan.cards.find((x) => x.rung === "home")!;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assembleCoaching, coachingAlcohol, doseConflict, namedMinutes, runAgent, templateCoaching, type AgentEvent, type AgentSlot } from "../lib/agent";
+import { assembleCoaching, coachingAlcohol, doseConflict, namedMinutes, runAgent, templateCoaching, usableLines, type AgentEvent, type AgentSlot } from "../lib/agent";
 import { llmChainFromEnv, makeLlm, type LlmHandle } from "../lib/llm";
 import type { InsightsResponse, QlooClient, QlooParams } from "../lib/qloo";
 import { ALCOHOL_EXCLUDE_14 } from "../lib/tags";
@@ -455,7 +455,32 @@ describe("a2a r09: the coaching race is won by a usable call only", () => {
     const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [qwen, slowGroq], routeTokenBudget: 1e6 });
     expect(plan.coachedBy?.provider).toBe("groq");
     expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
-    expect(llmFailure("Error: the model's submitPlan named no placed card")).toBe("named no placed card");
+    expect(llmFailure("Error: the model's submitPlan named no placed card")).toBe("no usable coaching line");
+  });
+});
+
+describe("a2a r10: the race and the truth boundary agree on what a usable line is", () => {
+  it("a fast call whose every placed-card line mentions drinking loses to the provider writing usable lines", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const qwen = scriptedLlm([() => completion(ROUTE_ALL), (b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "Grab a beer after." })) } }])]);
+    const slowGroq = scriptedLlm([(b) => new Promise<Response>((r) => setTimeout(() => r(coach(b)), 50)) as unknown as Response], [], "groq");
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [qwen, slowGroq], routeTokenBudget: 1e6 });
+    expect(plan.coachedBy?.provider).toBe("groq");
+    expect(plan.dropped.filter((d) => d.rule === "COACH-ALC")).toEqual([]);
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+    expect(plan.llmErrors).toEqual([]);
+  });
+
+  it("usableLines applies the boundary's per-line rules without recording anything", () => {
+    const cards = [{ entity_id: "A", name: "Prospect Park", rung: "solo" as const }, { entity_id: "B", name: "Phoebe Bridgers", rung: "home" as const }];
+    const lines = [
+      { entity_id: "A", line: "Grab a beer after." },
+      { entity_id: "A", line: "Walk for two hours." },
+      { entity_id: "B", line: "Then try Prospect Park." },
+      { entity_id: "Z", line: "One small step is plenty." },
+      { entity_id: "B", line: "One small step is plenty." },
+    ];
+    expect(usableLines(cards, lines, ["Prospect Park", "Phoebe Bridgers"])).toEqual([{ entity_id: "B", line: "One small step is plenty." }]);
   });
 });
 
