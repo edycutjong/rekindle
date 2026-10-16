@@ -1,12 +1,12 @@
 name: uptime
 
 # Liveness of the judged deployment. A failed run emails the repo owner (GitHub's default notification).
-# Every 6 h while the repo is private (Actions minutes are metered there); switch the cron to hourly at the
-# public flip, when minutes are free. /api/health?deep=1 = Qloo /v2/tags + an LLM ping + one Redis PING, cached
+# Hourly (the repo is public, so Actions minutes are free; it ran every 6 h while the repo was private).
+# /api/health?deep=1 = Qloo /v2/tags + an LLM ping + one Redis PING, cached
 # 60 s per instance; it returns 503 when any probe fails or the instance is in safe mode.
 on:
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
