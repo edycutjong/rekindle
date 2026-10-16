@@ -118,6 +118,8 @@ Full detail, with route, module and rule tables generated from the code: [ARCHIT
 
 ## 🏆 Qloo Integration: why Qloo is the engine
 
+Maya's loves are an artist and a TV show (Phoebe Bridgers, Fleabag) plus a food tag; her week is real places within 1.5 km of her. Only a cross-domain taste graph makes that jump, and Qloo says why: every card carries Qloo's explainability weights (`because Phoebe Bridgers 0.54 · Fleabag 0.46`). Qloo's heatmap places her social outing where her taste clusters, Qloo's place tags are what the in-recovery screen reads first, and her ratings go back to Qloo as signals and exclusions. A places API can check that a venue exists; it cannot get from Fleabag to a doughnut shop (Dun-Well Doughnuts, the card those weights are from).
+
 Without Qloo, the plan is an LLM naming venues it cannot verify. In the bench, the same model asked for named places produced the arm-A row of the table above.
 
 Rekindle depends on these parts of the Qloo API:
