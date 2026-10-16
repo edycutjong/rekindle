@@ -22,8 +22,12 @@ export const receiptsError = (e: unknown) =>
       ? e.message
       : String(e);
 
+/** Bump when Receipts changes shape: the Next data cache outlives a deploy, so an entry cached by the previous build would
+ *  reach the new page (a2a r11: totals.agency was undefined on /judge until the key moved) */
+const RECEIPTS_SHAPE = "v2";
+
 export const cachedLatestReceipts = (limit = 5): Promise<Receipts> =>
-  unstable_cache(() => latestReceipts(storeFromEnv(), { limit }), ["receipts-latest", String(limit)], {
+  unstable_cache(() => latestReceipts(storeFromEnv(), { limit }), ["receipts-latest", RECEIPTS_SHAPE, String(limit)], {
     revalidate: Number(process.env.RECEIPTS_TTL_S ?? 900),
     tags: [RECEIPTS_TAG],
   })();
