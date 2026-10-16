@@ -144,6 +144,21 @@
    "commit": "763644e",
    "date": "2026-10-17",
    "subject": "a2a r09: one source for the empty-slot reason prefixes that double as state"
+  },
+  {
+   "commit": "c3daf85",
+   "date": "2026-10-17",
+   "subject": "a2a r10: the coaching race accepts a call only if the truth boundary would keep one of its lines"
+  },
+  {
+   "commit": "caf344e",
+   "date": "2026-10-17",
+   "subject": "a2a r10: routing has no submitPlan; the coaching race runs for every placed week"
+  },
+  {
+   "commit": "adc2b4a",
+   "date": "2026-10-17",
+   "subject": "a2a r10 (found while verifying): routing is no longer told to call submitPlan; coaching is not told to route"
   }
  ]
 }
