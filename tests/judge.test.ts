@@ -84,10 +84,10 @@ describe("/judge view model", () => {
     expect(oracleOverFlag(null)).toBeNull();
   });
 
-  it("QA round 6: /judge links into the repository only once REPO_PUBLIC=1 is set; before the flip its files are named, marked public at submission", () => {
+  it("QA round 6, a2a r09: the repository is public, so /judge links into it by default; REPO_PUBLIC=0 names its files, marked public at submission", () => {
     expect(repoPublic({ REPO_PUBLIC: "1" })).toBe(true);
-    expect(repoPublic({})).toBe(false);
-    expect(repoPublic({ REPO_PUBLIC: "true" })).toBe(false);
+    expect(repoPublic({})).toBe(true);
+    expect(repoPublic({ REPO_PUBLIC: "0" })).toBe(false);
     expect(REPO_CLOSED_NOTE).toBe("public at submission");
   });
 

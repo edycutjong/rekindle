@@ -214,7 +214,7 @@ def predates_md(rows) -> str:
 
 
 def ember_md() -> str:
-    """T16: the ember-thread receipt, from bench/ember-live.json (live re-plans + the bench's cards, same margin)."""
+    """The ember-thread receipt, from bench/ember-live.json (live re-plans + the bench's cards, same margin)."""
     p = ROOT / "bench" / "ember-live.json"
     if not p.exists():
         return "Ember threads: `scripts/ember-margins.ts` has not been run yet."
@@ -227,7 +227,7 @@ def ember_md() -> str:
         f"{plural(e['replans'], 're-plan', 're-plans')} with {plural(d['rating_sets'], 'distinct rating set', 'distinct rating sets')} (Qloo returns the same week for the same ratings). "
         f"Of {d['cards']} distinct new week-2 cards that name a rating, a rating outweighed the case's best original love on {d['rating_leads_loves']}; "
         f"{d['threaded']} cleared the {e['threshold']} lead that draws a thread and {d['rating_leads_loves'] - d['threaded']} are shown as ties. "
-        f"The rule before T16 (a lead over the next input of any kind) threaded {d['previous_rule_threaded']} of the same cards.{bench} "
+        f"The previous rule (a lead over the next input of any kind) threaded {d['previous_rule_threaded']} of the same cards.{bench} "
         "The live sample is small; Qloo's attribution, not causation."
     )
 

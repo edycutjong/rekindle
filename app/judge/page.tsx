@@ -7,6 +7,7 @@ import r from "@/components/rekindle.module.css";
 import rigorJson from "@/docs/rigor.json";
 import { ARM_LABEL, benchReceipt, benchRows, loadJudgeData, oracleOverFlag, pctLabel, profilesWith, REPO, REPO_CLOSED_NOTE, repoPublic, type Rigor } from "@/lib/judge";
 import { pageGate } from "@/lib/reads";
+import { EMBER_MIN_MARGIN } from "@/lib/replan";
 import { cachedLatestReceipts, RECEIPTS_PAUSED_NOTE, receiptsError, receiptsPaused } from "@/lib/receipts-cached";
 import { type Receipts } from "@/lib/receipts";
 import { SEEDS } from "@/lib/service";
@@ -21,7 +22,7 @@ const rigor: Rigor = rigorJson;
 
 const seedLabel = (slug: string) => SEEDS.find((p) => p.slug === slug)?.label ?? slug;
 
-/** A file in the repository: a link once it is public (REPO_PUBLIC=1), plain text marked "(public at submission)" before. */
+/** A file in the repository: a link (the repo is public), or plain text marked "(public at submission)" under REPO_PUBLIC=0. */
 function RepoFile({ open, path = "", target = false, children }: { open: boolean; path?: string; target?: boolean; children: ReactNode }) {
   if (open) {
     return (
@@ -143,8 +144,8 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
           </li>
           <li>
             <b>The ember thread is Qloo&apos;s attribution, not causation.</b> It is drawn when a week-2 card&apos;s top rated input outweighs the case&apos;s best
-            original love by at least {emberLive?.threshold ?? 0.02}
-            {emberLive && emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded > emberLive.distinct.threaded ? "; on live re-plans of Maya most leads are still ties (see re-plan responsiveness below)." : " (see re-plan responsiveness below)."}
+            original love by at least {EMBER_MIN_MARGIN}
+            {emberLive && emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded > emberLive.distinct.threaded ? "; on live re-plans most leads are still ties (see re-plan responsiveness below)." : " (see re-plan responsiveness below)."}
           </li>
           <li>
             <b>The alcohol screen is a deny list.</b> It is measured by the ablation below, but an alcohol-serving venue with none of the tags or keywords would get
@@ -383,11 +384,11 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
                 <strong>Ember threads on this deployment</strong> (<code>bench/ember-live.json</code>, scripts/ember-margins.ts, {emberLive.generated_at.slice(0, 16).replace("T", " ")} UTC):{" "}
                 {emberLive.replans} live re-plans with {emberLive.distinct.rating_sets} distinct rating sets (Qloo returns the same week for the same ratings). Of{" "}
                 {emberLive.distinct.cards} distinct new week-2 cards that name a rating, a rating outweighed the case&apos;s best original love on {emberLive.distinct.rating_leads_loves}.
-                The product draws an ember thread and says &ldquo;because of&rdquo; when that lead is at least {emberLive.threshold} (the bench&apos;s margin): {emberLive.distinct.threaded}{" "}
-                cleared it; the other {emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded} are shown as ties. The rule before T16, a lead over the card&apos;s next input of
+                The product draws an ember thread and says &ldquo;because of&rdquo; when that lead is at least {EMBER_MIN_MARGIN} (the bench&apos;s margin): {emberLive.distinct.threaded}{" "}
+                cleared it; the other {emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded} are shown as ties. The previous rule, a lead over the card&apos;s next input of
                 any kind, threaded {emberLive.distinct.previous_rule_threaded} of the same cards.
                 {emberLive.bench && ` On the bench's ${emberLive.bench.cards_with_margin} new cards (${emberLive.bench.source}, same margin), ${emberLive.bench.threaded} clear it.`}
-                {emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded > emberLive.distinct.threaded && " Qloo splits explainability nearly evenly across signals, so most live re-plan picks for Maya are not attributable to one rating."}{" "}
+                {emberLive.distinct.rating_leads_loves - emberLive.distinct.threaded > emberLive.distinct.threaded && " Qloo splits explainability nearly evenly across signals, so most live re-plan picks are not attributable to one rating."}{" "}
                 The live sample is small. Qloo&apos;s attribution, not causation.
               </p>
             )}

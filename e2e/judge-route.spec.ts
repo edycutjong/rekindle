@@ -15,11 +15,11 @@ test("/judge is 200 with no credentials and no session, and shows the receipts",
   await expect(page.getByTestId("receipt-line")).toContainText(/\d+ Vitest tests in \d+ files/);
   await expect(page.getByTestId("reproduce")).toContainText("scripts/ui_smoke.py https://rekindle.edycu.dev");
   await expect(page.getByTestId("limitations").getByRole("listitem")).toHaveCount(4);
-  // the repository is private until submission: /judge links into it only with REPO_PUBLIC=1 (set at the public flip);
-  // before that every repo file is named as text marked "(public at submission)", and no link to it 404s (QA round 6)
+  // the repository is public (2026-10-17): /judge links into it unless REPO_PUBLIC=0, which names every repo file as text
+  // marked "(public at submission)" so no link 404s for a private repository (QA round 6, a2a r09)
   const links = page.getByTestId("links");
   const pub = await links.getAttribute("data-repo-public");
-  if (!process.env.E2E_BASE_URL) expect(pub).toBe(process.env.REPO_PUBLIC === "1" ? "1" : "0");
+  if (!process.env.E2E_BASE_URL) expect(pub).toBe(process.env.REPO_PUBLIC === "0" ? "0" : "1");
   if (pub === "1") {
     await expect(links.getByRole("link", { name: "GitHub repository" })).toHaveAttribute("href", "https://github.com/edycutjong/rekindle");
   } else {

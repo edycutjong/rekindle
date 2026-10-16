@@ -206,13 +206,14 @@ export function profilesWith(bench: BenchResults | null, what: "review" | "cover
 }
 
 /**
- * The GitHub repository stays private until submission, so /judge links into it only once REPO_PUBLIC=1 is set (in the
- * same step as the visibility flip, then a redeploy). Until then the repo's files are named as plain text marked
- * "(public at submission)": a link that 404s for everyone without access is worse than no link.
+ * The GitHub repository is public (since 2026-10-17), so /judge links into its files by default, including a local
+ * `npm run dev` with no REPO_PUBLIC set (a2a r09: the default used to be closed). REPO_PUBLIC=0 restores the plain-text
+ * names marked "(public at submission)", which are only right for a private repository: a link that 404s for everyone
+ * without access is worse than no link.
  */
 export const REPO = "https://github.com/edycutjong/rekindle";
 export const REPO_CLOSED_NOTE = "public at submission";
-export const repoPublic = (env: Record<string, string | undefined> = process.env) => env.REPO_PUBLIC === "1";
+export const repoPublic = (env: Record<string, string | undefined> = process.env) => env.REPO_PUBLIC !== "0";
 
 /** docs/rigor.json ← scripts/rigor.py: test counts measured from the suite (drift-checked by npm run docs:check) */
 export interface Rigor {
