@@ -594,7 +594,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     <h1 id="hero-h"><span class="ln"><span class="ph">The schedule that</span></span> <span class="ln"><span class="ph"><span class="x">crosses things out</span></span> <span class="ph">and then</span></span> <span class="ln"><span class="ph"><span class="k k1">lights up</span></span> <span class="ph"><span class="k k2">what she liked.</span></span></span></h1>
     <div class="hero-row">
       <div class="hero-copy">
-        <p class="lede">Maya can't name one thing she'd enjoy this week. Her clinician types what she loved before: Phoebe Bridgers, Fleabag, ramen. Rekindle's agent turns those into a week of things to do at home and real places near her, strikes any that fail a rule, waits for the clinician's approval, and re-plans week two from her ratings. Checked one by one against public listings by our build agent <span class="cv">(Claude, an AI; not blind)</span>, the same LLM alone got <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b> named venues wrong; Rekindle, <b><span data-n="hand.B.wrong">0</span> of <span data-n="hand.B.checked">14</span></b> <span class="cv">(a random <span data-n="hand.A.sampled">20</span> per arm)</span>.</p>
+        <p class="lede">Maya can't name one thing she'd enjoy this week. Her clinician types what she loved before: Phoebe Bridgers, Fleabag, ramen. Rekindle's agent turns those into a week of at-home doses and real places near her, strikes any that fail a rule, waits for the clinician's approval, and re-plans week two from her ratings. Checked one by one against public listings by our build agent <span class="cv">(Claude, an AI; not blind)</span>, the same LLM alone got <b><span data-n="hand.A.wrong">7</span> of <span data-n="hand.A.checked">17</span></b> named venues wrong; Rekindle, <b><span data-n="hand.B.wrong">0</span> of <span data-n="hand.B.checked">14</span></b> <span class="cv">(a random <span data-n="hand.A.sampled">20</span> per arm)</span>.</p>
         <div class="ctas"><a class="btn" href="https://github.com/edycutjong/rekindle">Source on GitHub</a><a class="btn" href="/pitch">Pitch deck</a><a class="btn ink" href="https://rekindle.edycu.dev/">Plan Maya's week, live <span class="ar" aria-hidden="true">→</span></a><a class="tl" href="/judge">Judge receipts</a></div>
         <p class="proof">no login · every case fictional · every plan, swap and toggle calls Qloo live; nothing on the path is replayed</p>
       </div>
@@ -651,7 +651,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
     <div class="rcell">
       <span class="rtag">Re-plan</span>
       <p class="big"><span class="cu" data-n="replan.passed_thread">16</span><span class="of">/</span><span data-n="replan.N">16</span></p>
-      <p class="rtx">eligible re-plans (<span data-n="replan.excluded">4</span> of <span data-n="bench.profiles">20</span> profiles had too few verified outings) put a ≥ 7 rating at the top of Qloo's attribution for a new card, ahead of that profile's own original loves by at least 0.02, the lead an ember thread needs. Entities rated ≤ 3 that came back: <b data-n="replan.low_back">0</b>.</p>
+      <p class="rtx">eligible re-plans (<span data-n="replan.excluded">4</span> of <span data-n="bench.profiles">20</span> profiles had too few verified outings) put a ≥ 7 rating at the top of Qloo's attribution for a new card, ahead of that profile's original loves by ≥ 0.02 (an ember thread's lead). Entities rated ≤ 3 that came back: <b data-n="replan.low_back">0</b>.</p>
       <p class="rsrc"><code>bench/replan.json</code></p>
     </div>
     <div class="rcell">
@@ -676,7 +676,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
         <figcaption>Her case card on the live app's home page, 8 Oct 2026. Maya is a fictional case; her loves resolve to real Qloo entities and a tag.</figcaption>
       </figure>
       <div>
-        <p class="dek" style="margin-top:0">Behavioral activation is a first-line, low-cost treatment for depression. In the COBRA trial, BA delivered by junior mental-health workers was non-inferior to CBT delivered by psychological therapists. BA works without a specialist, so a tool for its scheduling step has to work for non-specialists too. Its core step is <b>activity scheduling</b>: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most.</p>
+        <p class="dek" style="margin-top:0">Behavioral activation is a first-line, low-cost treatment for depression. In the COBRA trial, BA from junior mental-health workers was non-inferior to CBT from psychological therapists, so a tool for its scheduling step has to work for non-specialists too. Its core step is <b>activity scheduling</b>: plan specific pleasant activities for specific times, then rate them. That step breaks where it matters most.</p>
         <ol class="breaks">
           <li><b>She cannot name anything she would enjoy,</b> so the session goes to brainstorming.</li>
           <li><b>Generic suggestions do not stick:</b> <span class="walk">go for a walk</span>.</li>
@@ -778,7 +778,7 @@ h1 .k::after { content: ""; position: absolute; left: 0; right: .02em; bottom: -
         </ul>
         <div class="finding">
           <p class="k">Why a screen on top of Qloo's filter</p>
-          <p>With four bar tags excluded, 17 of the 25 places Qloo returned for Maya's Thursday query still carried alcohol tags. So Rekindle excludes 14 tags and screens every tag and token on top. With only the four bar tags excluded, <b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b> in-recovery outings carry an alcohol tag or keyword; with the 14-tag exclusion and the screen off, <b><span data-n="abl.B-.leak">3</span> of <span data-n="abl.B-.cards">28</span></b> do. With the screen on it is <b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b>, zero by construction, since the screen refuses exactly those.</p>
+          <p>With four bar tags excluded, 17 of the 25 places Qloo returned for Maya's Thursday query still carried alcohol tags, so Rekindle excludes 14 tags and screens every tag and token on top. In-recovery outings with an alcohol tag or keyword: <b><span data-n="abl.B-4.leak">21</span> of <span data-n="abl.B-4.cards">28</span></b> with four bar tags, <b><span data-n="abl.B-.leak">3</span> of <span data-n="abl.B-.cards">28</span></b> with 14 and no screen, <b><span data-n="abl.B.leak">0</span> of <span data-n="abl.B.cards">30</span></b> with the screen (by construction).</p>
           <p class="src">DX-REPORT §2 · <code>bench/results.json</code> · it counts tags and keywords, not menus (README · Limitations, 5)</p>
         </div>
       </div>
