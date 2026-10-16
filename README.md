@@ -156,8 +156,8 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 | Alcohol screen matches whole tokens, never substrings | a substring screen refuses `espresso_bar` and `independent_publishing` | `tests/verify.test.ts:128` |
 | Drinking-establishment categories are refused for every case | "TeKu Tavern + Café" passed as a café (B5 bench) | `tests/verify.test.ts:174` |
 | Missing opening hours are refused, never assumed open | an unknown hour would put a patient outside a closed door | `tests/verify.test.ts:39`, property P3 |
-| A coaching line keyed to an ID no tool returned is dropped | the model must never pick or invent a venue | `tests/agent.test.ts:102` |
-| Drinking language in coaching is dropped on every case | the model never sees the recovery flag (COACH-ALC) | `tests/agent.test.ts:265` |
+| A coaching line keyed to an ID no tool returned is dropped | the model must never pick or invent a venue | `tests/agent.test.ts:105` |
+| Drinking language in coaching is dropped on every case | the model never sees the recovery flag (COACH-ALC) | `tests/agent.test.ts:353` |
 | Clinical words and contact data are refused before any Qloo request | love-box text is sent to Qloo | `tests/gate.test.ts:404` |
 | Fabricated entity IDs and duplicate loves are refused at intake | the client cannot plant a love Qloo never returned | `tests/gate.test.ts:423` |
 | Another visitor cannot change a week (403, read-only) | plans carry the creator's httpOnly owner cookie | `tests/gate.test.ts:320` |
