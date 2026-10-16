@@ -139,6 +139,11 @@
    "commit": "ff3e2d5",
    "date": "2026-10-17",
    "subject": "a2a r09: provider errors drop account ids before the trace, the stored plan and the plan API"
+  },
+  {
+   "commit": "763644e",
+   "date": "2026-10-17",
+   "subject": "a2a r09: one source for the empty-slot reason prefixes that double as state"
   }
  ]
 }
