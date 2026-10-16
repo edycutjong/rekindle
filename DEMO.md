@@ -36,6 +36,9 @@ BENCH_TOKEN=… QWEN_API_KEY=… QWEN_BASE_URL=https://dashscope-intl.aliyuncs.c
   python3 scripts/bench.py --base https://rekindle.edycu.dev --out bench/results.json
 # 2. re-plan responsiveness on arm B's week-1 plans
 BENCH_TOKEN=… python3 scripts/replan_check.py --base https://rekindle.edycu.dev
+# 2b. live ember margins over every stored re-plan, the hero week's included (needs the deployment's store env;
+#     read-only): /judge's "Ember threads on this deployment" is this file
+npx tsx scripts/ember-margins.ts --out bench/ember-live.json
 # 3. manual audit sample (20 A + 20 B venues, fixed seed); fill the verdicts, then summarise
 python3 scripts/manual_audit.py sample && python3 scripts/manual_audit.py summary --auditor "…" --method "…"
 # 4. paste the numbers into README.md and DEMO.md
