@@ -116,3 +116,18 @@ describe("lib/qloo", () => {
     expect(logs).toHaveLength(1); // the second request never left the server
   });
 });
+
+describe("endpoints (a2a r11: the hackathon bans Qloo's legacy recommendation endpoints)", () => {
+  it("no source file calls the legacy /recommendations or /recs endpoint", async () => {
+    const { readdirSync, readFileSync, statSync } = await import("node:fs");
+    const path = await import("node:path");
+    const walk = (d: string): string[] =>
+      readdirSync(d).flatMap((f) => {
+        const p = path.join(d, f);
+        return statSync(p).isDirectory() ? walk(p) : /\.(ts|tsx|py|mjs|cjs)$/.test(f) ? [p] : [];
+      });
+    const files = ["lib", "app", "scripts", "components", "middleware.ts"].flatMap((d) => (statSync(d).isDirectory() ? walk(d) : [d]));
+    expect(files.length).toBeGreaterThan(30);
+    for (const f of files) expect(readFileSync(f, "utf8"), f).not.toMatch(/["'`/]v?\d?\/?(recommendations|recs)\b/);
+  });
+});

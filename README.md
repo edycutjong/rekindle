@@ -15,7 +15,7 @@
   <br/>
 
   ![Qloo Insights API](https://img.shields.io/badge/Qloo-Insights_API-2E5B4F?style=flat)
-  ![tests](https://img.shields.io/badge/tests-249_passing-2E5B4F?style=flat)
+  ![tests](https://img.shields.io/badge/tests-250_passing-2E5B4F?style=flat)
   [![License: MIT](https://img.shields.io/badge/License-MIT-6F675B?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
@@ -128,6 +128,8 @@ Rekindle depends on these parts of the Qloo API:
 - `/entities` to re-check, live, the enjoyed activity a re-plan keeps in its slot;
 - `/search` and `/v2/tags` at intake ([`/cases/new`](https://rekindle.edycu.dev/cases/new)).
 
+No legacy `/recommendations` or `/recs` endpoint is called anywhere in the code ([`tests/qloo.test.ts:121`](tests/qloo.test.ts#L121 "no source file calls the legacy /recommendations or /recs endpoint")).
+
 <!-- arch:qloo:start -->
 The plan loop (every plan, re-plan, swap and toggle) can send up to 15 distinct Qloo parameters to `/entities` and `/v2/insights`; which ones a given plan sends depends on its constraints (quiet and wheelchair add `filter.tags`, a re-plan adds `/entities`), and [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) counts what the latest live plans actually sent. Intake, the health check and the bench grader add `/search` and `/v2/tags` and 4 more parameters (19 in all, to 4 endpoints). Both lists are generated from the code in [ARCHITECTURE.md](ARCHITECTURE.md#agent-tools-and-qloo-surface).
 <!-- arch:qloo:end -->
@@ -140,7 +142,7 @@ The Qloo requests behind the latest plans (or any one plan, via `/integrations/q
 
 | Metric | Value | Source |
 |---|---|---|
-| Unit + property tests | **249** (Vitest, 20 files), no keys needed | `npm test` |
+| Unit + property tests | **250** (Vitest, 20 files), no keys needed | `npm test` |
 | Generated verifier cases | **60,000** (3 properties × 20,000, fixed seeds) | `tests/verify.property.test.ts` |
 | Tests named for the defect they pin | 85 (probes P8–P23, bench B5 / D9, QA rounds 1–6, COACH-* rules) | `tests/*.test.ts`, counted by `scripts/rigor.py` |
 | Coverage (`lib/`, API routes) | 95.1% lines · 81.9% branches | `npm run test:coverage` (CI uploads the report) |
@@ -202,7 +204,7 @@ npm run dev                    # http://localhost:3000
 
 ## 🧪 Testing & CI
 
-- **249 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
+- **250 tests** (Vitest, 20 files) cover the verifier rules against captured Qloo shapes, the agent loop's truth boundary (incl. COACH-ALC, COACH-DOSE and the raced coaching hand-off), intake validation (deny list, re-resolved loves), superseded weeks after a toggle, ember margins, constraint toggles, the clinician gate (its memory across weeks, one re-plan per week, case ownership), re-plan math (incl. the kept activity), rate limits, the store, health, and the view helpers. Three fast-check properties sweep 60,000 generated venues through the verifier.
 - `npm run check` runs typecheck, lint, the tests, the seed-data check, and checks that `ARCHITECTURE.md`, the bench numbers in this README, DEMO.md and JUDGE.md, and the test, property-case and coverage numbers still match the code, `bench/*.json` and the suite (`scripts/rigor.py`).
 - **End-to-end** (Playwright, logged-out):
   - `e2e/` runs keyless in CI: smoke, `/judge` with no credentials, the keyless refusal (no week is invented) and 375 / 768 / 1440 px layouts; `e2e/live-plan.spec.ts` plans Maya live when `E2E_LIVE=1`.
