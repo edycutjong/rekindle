@@ -132,6 +132,29 @@ describe("API routes (in-memory store, no network)", () => {
     expect(bad.status).toBe(400);
   });
 
+  it("a2a r10: a plan stored before redaction (raw org id in llm_errors) is redacted on read: getPlan and GET /api/plans/:id", async () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    const msg = "Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01testorgid42` service tier `on_demand` on tokens per minute (TPM)";
+    const doc = planDocFromAgent({ week: 1, slots: [], refusals: [], review: [], calls: [], llm: null, llmSteps: 0, llmMs: 0, llmErrors: [], dropped: [], latencyMs: 1 }, { caseId: crypto.randomUUID(), history: EMPTY_HISTORY, calls: 0 });
+    // written as the store held it before ff3e2d5: straight JSON, never through PlanDoc
+    const shared = { docs: new Map<string, { at: number; body: string }>(), tick: { n: 0 } };
+    shared.docs.set(`plans/${doc.id}.json`, { at: 1, body: JSON.stringify({ ...doc, llm_errors: [{ provider: "groq", error: msg }] }) });
+    const mem = new MemoryStore("", shared);
+    expect((await mem.getPlan(doc.id))!.llm_errors[0]!.error).toContain("organization `org_…`");
+    const g = globalThis as { __rekindleMemory?: MemoryStore };
+    const before = g.__rekindleMemory;
+    g.__rekindleMemory = mem;
+    try {
+      const r = await getPlanRoute(new Request(`http://x/api/plans/${doc.id}`), ctx({ id: doc.id }));
+      expect(r.status).toBe(200);
+      const body = await r.text();
+      expect(body).toContain("org_…");
+      expect(body).not.toMatch(/org_[0-9A-Za-z]/);
+    } finally {
+      g.__rekindleMemory = before;
+    }
+  });
+
   it("GET /api/plans/:id 404s for an unknown plan and 400s for a malformed id", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     expect((await getPlanRoute(new Request("http://x"), ctx({ id: crypto.randomUUID() }))).status).toBe(404);
