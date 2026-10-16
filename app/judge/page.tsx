@@ -90,7 +90,7 @@ export default async function Judge() {
             Click <b>In recovery</b>. Alcohol-serving venues are struck in place with their rule (<code>R-ALC …</code>) and those slots are refilled live.
           </li>
           <li>
-            Come back here for the six edge states (each with a live start button) and the bench, and open{" "}
+            Come back here for the six edge states (four with a live start button; refused and empty show on the weeks those start) and the bench, and open{" "}
             <Link className={r.link} href="/integrations/qloo">
               /integrations/qloo
             </Link>{" "}

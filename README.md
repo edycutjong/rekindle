@@ -49,7 +49,7 @@ The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, 
 ## 🔍 For judges
 
 - **Click path (about 4 min):** [DEMO.md](DEMO.md). The short version: open the live app → **Plan Maya's week, live** → toggle **In recovery** → **swap** a card → **Approve week** → rate 3 cards → **Re-plan week 2** → **Patient sheet**.
-- **Receipts:** [`/judge`](https://rekindle.edycu.dev/judge). It has the six edge states with live start buttons (loading, refused, REVIEW, empty, coverage refusal, Qloo unavailable), plus the bench, ablation and re-plan N/N, all read from the committed `bench/*.json`.
+- **Receipts:** [`/judge`](https://rekindle.edycu.dev/judge). It has the six edge states (loading, refused, REVIEW, empty, coverage refusal, Qloo unavailable): four have a live start button, and refused and empty show on the weeks those start; plus the bench, ablation and re-plan N/N, all read from the committed `bench/*.json`.
 - **Nothing on the default path is replayed.** Every plan, re-plan, swap and toggle calls Qloo live; plans and re-plans also call the routing model. Captured Qloo responses are used only in unit tests (`tests/replay.ts`).
 - **One page for you:** [JUDGE.md](JUDGE.md) mirrors `/judge`: the claim, a 30-second path, the receipts, the real reproduce command and the limitations.
 

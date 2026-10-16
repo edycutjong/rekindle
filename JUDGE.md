@@ -1,6 +1,6 @@
 # For judges
 
-This file mirrors the top of [`/judge`](https://rekindle.edycu.dev/judge) on the live app (the claim, the path, the receipts, the reproduce command, the limitations and the links); the page adds the six edge states with live start buttons and the full bench. No login, no keys, no cloning. Every case is fictional.
+This file mirrors the top of [`/judge`](https://rekindle.edycu.dev/judge) on the live app (the claim, the path, the receipts, the reproduce command, the limitations and the links); the page adds the six edge states (four with a live start button; refused and empty show on the weeks those start) and the full bench. No login, no keys, no cloning. Every case is fictional.
 
 ## The claim
 
@@ -10,7 +10,7 @@ This file mirrors the top of [`/judge`](https://rekindle.edycu.dev/judge) on the
 
 1. Open **https://rekindle.edycu.dev** and click **Plan Maya's week, live**. The agent trace lists each Qloo call as it happens; the week arrives in about 20 s.
 2. Click **In recovery**. Alcohol-serving venues are struck in place with their rule (`R-ALC …`) and those slots are refilled live.
-3. Open [`/judge`](https://rekindle.edycu.dev/judge) for the six edge states (each with a live start button) and the bench, and [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) for every Qloo request behind the latest plans (the key is never shown).
+3. Open [`/judge`](https://rekindle.edycu.dev/judge) for the six edge states (four with a live start button; refused and empty show on the weeks those start) and the bench, and [`/integrations/qloo`](https://rekindle.edycu.dev/integrations/qloo) for every Qloo request behind the latest plans (the key is never shown).
 
 The full click path (swap, approve, rate, re-plan week 2, patient sheet) is in [DEMO.md](DEMO.md), about 4 minutes.
 
