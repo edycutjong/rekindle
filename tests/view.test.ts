@@ -5,7 +5,11 @@ import type { WeekPlan } from "../lib/plan";
 import { EMPTY_HISTORY } from "../lib/plan";
 import { changedRatings, clampScore, parseScore, coverageRefusal, emberLabel, keptLabel, reviewsByDay, toggleNotice, emberThreads, isOutage, outageState, ratedCount, stampLabel, swapNotice, widerRadius } from "../lib/view";
 import { distanceLabel, hoursCheck, passedChecks, priceLabel, rungLabel, printSheet, realRefusals, strikeReason, strikesByDay, traceFromPlan, traceLine, typeLabel, whyParts } from "../lib/view";
-import { leadShown, llmFailure, reviewReason, routingLabel, shortDetail, tagKind, tagLeaf } from "../lib/view";
+import { isToolFailure, leadShown, llmFailure, reviewReason, routingLabel, shortDetail, tagKind, tagLeaf } from "../lib/view";
+import { EMPTY } from "../lib/empty";
+import { runAgent } from "../lib/agent";
+import type { QlooClient } from "../lib/qloo";
+import { MAYA, replayClient } from "./replay";
 
 const card = (o: Partial<CardDoc> = {}): CardDoc => ({
   id: "c1",
@@ -364,5 +368,23 @@ describe("QA 2026-10-09 (demo video): the trace says what failed, and the stats 
     // a2a r09: no card placed by a model → no model named, even if the stored plan credited one
     expect(routingLabel(plan([{ routed_by: "kept" }, { routed_by: "fallback" }]))).toBe("deterministic ×1 · kept ×1");
     expect(routingLabel(plan([{ routed_by: "fallback" }]))).toBe("deterministic route");
+  });
+});
+
+describe("a2a r09: empty-slot reasons are state, matched by one prefix", () => {
+  it("every producer's sentence starts with its EMPTY prefix, and the readers classify it", async () => {
+    const outage = await runAgent({ qloo: replayClient([], true), case: MAYA, llms: [] });
+    const outageReasons = outage.slots.filter((s) => s.slot.rung !== "home").map((s) => s.empty ?? "");
+    expect(outageReasons.length).toBeGreaterThan(0);
+    for (const r of outageReasons) expect(r.startsWith(EMPTY.outage) && isOutage(r)).toBe(true);
+    // a Qloo client that throws something other than a QlooError: every empty slot still classifies (lib/plan.ts)
+    const broken = { insights: async () => { throw new TypeError("boom"); } } as unknown as QlooClient;
+    const failed = await runAgent({ qloo: broken, case: MAYA, llms: [] });
+    const reasons = failed.slots.filter((s) => !s.card).map((s) => s.empty ?? "");
+    expect(reasons.length).toBeGreaterThan(0);
+    for (const r of reasons) expect(isOutage(r) || isToolFailure(r)).toBe(true);
+    expect(isToolFailure(`${EMPTY.toolFailed} (TypeError) — slot left empty`)).toBe(true);
+    expect(isToolFailure(`${EMPTY.notRouted}: its tool call did not finish`)).toBe(true);
+    expect(isOutage("no verified candidate") || isToolFailure("no verified candidate")).toBe(false);
   });
 });

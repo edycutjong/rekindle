@@ -7,6 +7,7 @@
  * flags on every request (I7).
  */
 import type { QlooCallLog, QlooClient, QlooEntity, QlooParams } from "./qloo";
+import { EMPTY, isOutageReason } from "./empty";
 import { QlooError } from "./qloo";
 import { ALCOHOL_EXCLUDE_14, TAG_QUIET, TAG_WHEELCHAIR } from "./tags";
 import { DAYS, explainSplit, reslotHour, slotStatus, verifyCard, type CaseConstraints, type DayName, type RuleResult, type Verdict } from "./verify";
@@ -452,14 +453,14 @@ export async function placeSocial(ctx: ToolContext, slot: SlotSpec): Promise<Too
       const cell = a.geohash ?? cells.find((c) => c.lon === a.center?.lon && c.lat === a.center?.lat)?.geohash ?? top.geohash;
       return { card: { ...r.card, geohash: cell }, refusals, review, returned, cell, cells: cells.slice(0, 49) };
     }
-    if (r.empty?.startsWith("Qloo unavailable")) break;
+    if (isOutageReason(r.empty)) break;
   }
   return { card: null, refusals, review, returned, empty: last?.empty ?? "no social venue passed all rules", cell: top.geohash, cells: cells.slice(0, 49) };
 }
 
 function qlooDown(e: unknown): string {
-  if (e instanceof QlooError) return `Qloo unavailable (${/run deadline/.test(e.message) ? "time limit" : e.status || "network"}) — slot left empty`;
-  return "Qloo unavailable — slot left empty";
+  if (e instanceof QlooError) return `${EMPTY.outage} (${/run deadline/.test(e.message) ? "time limit" : e.status || "network"}) — slot left empty`;
+  return `${EMPTY.outage} — slot left empty`;
 }
 
 /* ------------------------------------------------------------------ re-plan: keep what she enjoyed */
@@ -588,7 +589,7 @@ export async function applyConstraints(qloo: QlooClient, prev: WeekPlan, c: Case
   // outings still empty after the change: re-diagnose under the new case row (the binding filter may have moved)
   await Promise.allSettled(
     slots.map(async (s) => {
-      if (s.card || s.slot.rung === "home" || (s.empty ?? "").startsWith("Qloo unavailable")) return;
+      if (s.card || s.slot.rung === "home" || isOutageReason(s.empty)) return;
       const relax = await diagnoseEmpty(ctx, s.slot);
       if (relax) s.relax = relax;
       else delete s.relax;

@@ -16,6 +16,7 @@ import { generateText, stepCountIs, tool, type StopCondition, type ToolSet } fro
 import { z } from "zod";
 import type { LlmHandle } from "./llm";
 import type { QlooClient } from "./qloo";
+import { EMPTY, isOutageReason, isToolFailureReason } from "./empty";
 import { providerError } from "./redact";
 import { DAYS, type DayName } from "./verify";
 import { diagnoseEmpty, EMPTY_HISTORY, findAtHome, findOutings, HOME_TYPES, ladder, placeSocial, type Card, type Relax, type CaseRow, type HomeType, type PlanHistory, type Refusal, type SlotSpec, type ToolContext, type ToolResult, type WeekPlan } from "./plan";
@@ -337,7 +338,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     } catch (e) {
       // QA round 4: the AI SDK turns a throwing execute() into a tool-error part and carries on, so a throw here used to
       // leave the day `pending`, never `filled`, and dropped from the week (the deterministic route threw the whole run)
-      r = { card: null, refusals: [], review: [], returned: 0, empty: `tool failed (${e instanceof Error ? e.name : "error"}) — slot left empty` };
+      r = { card: null, refusals: [], review: [], returned: 0, empty: `${EMPTY.toolFailed} (${e instanceof Error ? e.name : "error"}) — slot left empty` };
     } finally {
       pending.delete(slot.day);
     }
@@ -347,7 +348,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   /** a slot left empty only because Qloo was unavailable may be routed again */
   const retryable = (day: DayName) => {
     const f = filled.get(day);
-    return !pending.has(day) && !!f && !f.card && (f.empty ?? "").startsWith("Qloo unavailable");
+    return !pending.has(day) && !!f && !f.card && isOutageReason(f.empty);
   };
   const allRouted = () => skeleton.every((s) => claimed.has(s.day) && !retryable(s.day));
 
@@ -535,7 +536,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   await Promise.allSettled(
     skeleton.map(async (s) => {
       const f = filled.get(s.day);
-      if (!f || f.card || s.rung === "home" || /^(Qloo unavailable|tool failed)/.test(f.empty ?? "")) return;
+      if (!f || f.card || s.rung === "home" || isOutageReason(f.empty) || isToolFailureReason(f.empty)) return;
       const relax = await diagnoseEmpty(ctx, s);
       if (relax) f.relax = relax;
     }),
@@ -543,7 +544,7 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
 
   // every ladder day stays on the week, with a reason when it has no card (never dropped silently)
   const slots: AgentSlot[] = skeleton.map(
-    (s) => filled.get(s.day) ?? { slot: s, card: null, empty: "not routed: its tool call did not finish", routedBy: "fallback", tool: s.rung === "home" ? "findAtHome" : s.rung === "solo" ? "findOutings" : "placeSocial", params: { day: s.day } },
+    (s) => filled.get(s.day) ?? { slot: s, card: null, empty: `${EMPTY.notRouted}: its tool call did not finish`, routedBy: "fallback", tool: s.rung === "home" ? "findAtHome" : s.rung === "solo" ? "findOutings" : "placeSocial", params: { day: s.day } },
   );
   for (const s of slots) if (s.card) otherNames.add(s.card.name);
   const dropped = assembleCoaching(slots, submitted, otherNames);

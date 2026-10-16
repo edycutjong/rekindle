@@ -2,6 +2,7 @@
  * Pure view helpers for the week ledger. Every string a card shows is derived here from the stored plan
  * (Qloo data + verifier results), so the UI never states a fact the plan does not carry. Unit-tested in tests/view.test.ts.
  */
+import { isOutageReason, isToolFailureReason } from "./empty";
 import { EMBER_MIN_MARGIN, emberLead } from "./replan";
 import type { CardDoc, CaseDoc, PlanDoc, RefusalDoc } from "./store";
 import { DAYS, type DayName } from "./verify";
@@ -443,9 +444,9 @@ export function swapNotice(before: Pick<CardDoc, "name" | "day_name">, plan: Pic
 
 /* ------------------------------------------------------------------ edge states (D10) */
 
-export const isOutage = (reason: string | null | undefined) => !!reason && reason.startsWith("Qloo unavailable");
+export const isOutage = isOutageReason;
 /** a slot whose tool threw or never finished (lib/agent.ts runSlot): it says so, and it is not a coverage refusal */
-export const isToolFailure = (reason: string | null | undefined) => !!reason && /^(tool failed|not routed)/.test(reason);
+export const isToolFailure = isToolFailureReason;
 
 /** The radius the coverage refusal offers next (the case-strip distance steps), or null at the widest. */
 export function widerRadius(current: number, steps: readonly number[] = DISTANCE_OPTIONS): number | null {
