@@ -7,7 +7,7 @@ import type { Card } from "../lib/plan";
 import { MAYA, replayClient } from "./replay";
 import { planDocFromAgent } from "../lib/store";
 import { EMPTY_HISTORY } from "../lib/plan";
-import { routingLabel, traceLine } from "../lib/view";
+import { llmFailure, routingLabel, traceLine } from "../lib/view";
 
 /* A scripted OpenAI-compatible endpoint: the agent runs the real AI SDK loop against it (test-only; the app calls the
  * real provider). Each handler sees the request body (incl. earlier tool results) and returns the next assistant turn. */
@@ -166,7 +166,7 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
 
   it("LLM fallback switch: the primary fails, the secondary provider routes the week", async () => {
     const events: AgentEvent[] = [];
-    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])], [], "groq")], onEvent: (e) => events.push(e) });
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [failingLlm("qwen"), scriptedLlm([() => completion(ROUTE_ALL), (b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }])], [], "groq")], onEvent: (e) => events.push(e) });
     expect(events.find((e) => e.type === "llm_fallback")).toMatchObject({ from: "qwen:qwen3.8-flash", to: "groq:openai/gpt-oss-120b" });
     expect(plan.llm?.provider).toBe("groq");
     expect(plan.llmErrors).toHaveLength(1);
@@ -267,7 +267,7 @@ describe("agent loop (AI SDK tool loop over the deterministic tools)", () => {
   it("QA round 4: LLM fallback on a TIMEOUT: a primary that hangs leaves the secondary time to route the week (README: 'on a provider error or timeout')", async () => {
     const hung = makeLlm("qwen", { QWEN_API_KEY: "k" }, (async (_u: string, init: RequestInit) =>
       new Promise<Response>((_, rej) => init.signal?.addEventListener("abort", () => rej(init.signal!.reason)))) as unknown as typeof fetch)!;
-    const groq = scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])], [], "groq");
+    const groq = scriptedLlm([() => completion(ROUTE_ALL), (b) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }])], [], "groq");
     const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [hung, groq], llmBudgetMs: 6000, coachBudgetMs: 1600 });
     expect(plan.llm?.provider).toBe("groq");
     expect(plan.slots.every((s) => s.routedBy === "llm")).toBe(true);
@@ -444,5 +444,17 @@ describe("a2a r09: routing credit and progress come from the model's own tool ca
     expect(plan.slots.filter((s) => s.slot.rung !== "home").every((s) => !s.card && /^Qloo unavailable/.test(s.empty ?? ""))).toBe(true);
     expect(plan.llmErrors.filter((e) => /no progress/.test(e.error))).toEqual([]);
     expect(plan.coachedBy?.provider).toBe("qwen");
+  });
+});
+
+describe("a2a r09: the coaching race is won by a usable call only", () => {
+  it("a fast submitPlan with no line for a placed card does not abort the provider writing real lines", async () => {
+    const coach = (b: Body) => completion([{ name: "submitPlan", args: { coaching: placedIds(b).map((entity_id) => ({ entity_id, line: "One small step is plenty." })) } }]);
+    const qwen = scriptedLlm([() => completion(ROUTE_ALL), () => completion([{ name: "submitPlan", args: { coaching: [] } }])]);
+    const slowGroq = scriptedLlm([(b) => new Promise<Response>((r) => setTimeout(() => r(coach(b)), 50)) as unknown as Response], [], "groq");
+    const plan = await runAgent({ qloo: replayClient(), case: MAYA, llms: [qwen, slowGroq], routeTokenBudget: 1e6 });
+    expect(plan.coachedBy?.provider).toBe("groq");
+    expect(plan.slots.filter((s) => s.card).every((s) => s.coachingBy === "llm")).toBe(true);
+    expect(llmFailure("Error: the model's submitPlan named no placed card")).toBe("named no placed card");
   });
 });

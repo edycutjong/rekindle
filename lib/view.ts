@@ -192,6 +192,7 @@ export function llmFailure(error: unknown): string {
   if (/rate limit|\b429\b|tokens per minute|requests per minute|quota/i.test(t)) return "rate-limited";
   if (/timeout|timed out|aborted/i.test(t)) return "timed out";
   if (/no progress|no tool called|did not call/i.test(t)) return "made no tool call";
+  if (/no placed card/i.test(t)) return "named no placed card";
   return "failed";
 }
 

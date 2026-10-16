@@ -82,9 +82,9 @@ export interface AgentOptions {
   onEvent?: (e: AgentEvent) => void;
   /** total budget for LLM calls (ms); tools already started keep running */
   llmBudgetMs?: number;
-  /** the coaching hand-off gets its own window after the routing budget (each provider attempt ≤ COACH_ATTEMPT_MS) */
+  /** the coaching hand-off is due this long after the routing budget ends (or after routing, if that ends later); the
+   *  providers race inside it (coachRace) */
   coachBudgetMs?: number;
-  coachAttemptMs?: number;
   maxSteps?: number;
   /** tokens one provider may spend routing (default ROUTE_TOKEN_BUDGET) */
   routeTokenBudget?: number;
@@ -100,9 +100,9 @@ const FACT_PATTERN = /\b\d+(?:[.,]\d+)?\s?(?:m|km|metres?|meters?|miles?|mi|bloc
 const dayEnum = z.enum(DAYS);
 
 const fmtHour = (h: number) => `${String(h).padStart(2, "0")}:00`;
-/** coaching window after the routing budget, and the cap on one provider's coaching attempt inside it */
+/** the coaching race is due this long after the routing budget (a2a r09: COACH_ATTEMPT_MS, a per-provider cap from
+ *  before the race, had no reader left) */
 export const COACH_BUDGET_MS = 6_000;
-export const COACH_ATTEMPT_MS = 4_000;
 /**
  * With another provider still to try, one routing attempt may spend at most this share of the routing budget left, so a
  * primary that hangs cannot starve the fallback (20 s budget → ≤ 12 s primary, ≥ 8 s for the fallback to route).
@@ -515,7 +515,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const coachDeadline = Math.max(deadline, Date.now()) + (opts.coachBudgetMs ?? COACH_BUDGET_MS);
   const coaches = opts.llms.filter((l) => !failed.has(l));
   if (placed.length && submitCalls === 0 && coaches.length) {
-    const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd });
+    const placedIds = new Set(placed.map((s) => s.card!.entity_id));
+    const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd, accept: (lines) => lines.some((l) => placedIds.has(l.entity_id)) });
     if (r.lines) {
       submitted = [...submitted, ...r.lines];
       submitCalls++;
@@ -559,9 +560,11 @@ const coachingSchema = z.object({ coaching: z.array(z.object({ entity_id: z.stri
 /**
  * Race the providers for one forced submitPlan call inside `windowMs`. Each provider gets its own submitPlan tool (so
  * a loser's late call can never add lines), the first provider whose call returns lines wins and the rest are
- * aborted. Errors are reported only when no provider won (an aborted loser is not a failure).
+ * aborted. Errors are reported only when no provider won (an aborted loser is not a failure). `accept` (a2a r09): a
+ * call it rejects (e.g. `coaching: []`, or lines keyed only to IDs no card carries) is a failed attempt, not a win, so
+ * it cannot abort a provider still writing usable lines.
  */
-export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs: number; onCallEnd?: CallEnd }): Promise<{ lines: { entity_id: string; line: string }[] | null; by: LlmHandle | null; errors: { provider: string; from: string; error: string }[] }> {
+export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs: number; onCallEnd?: CallEnd; accept?: (lines: { entity_id: string; line: string }[]) => boolean }): Promise<{ lines: { entity_id: string; line: string }[] | null; by: LlmHandle | null; errors: { provider: string; from: string; error: string }[] }> {
   if (!o.llms.length || o.windowMs < 1500) return { lines: null, by: null, errors: [] };
   const won = new AbortController();
   const signal = AbortSignal.any([AbortSignal.timeout(o.windowMs), won.signal]);
@@ -590,6 +593,7 @@ export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs
       ...(o.onCallEnd ? { onLanguageModelCallEnd: o.onCallEnd(llm) } : {}),
     });
     if (!got) throw new Error("the model did not call submitPlan");
+    if (o.accept && !o.accept(got)) throw new Error("the model's submitPlan named no placed card");
     won.abort();
     return { llm, lines: got as { entity_id: string; line: string }[] };
   };
