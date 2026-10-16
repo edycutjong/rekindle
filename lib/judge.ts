@@ -2,10 +2,12 @@
  * /judge view model: the bench table, ablation, re-plan responsiveness and the manual audit,
  * read from the committed files that scripts produce (bench/results.json ← scripts/bench.py, bench/replan.json ←
  * scripts/replan_check.py, bench/audit.json ← scripts/manual_audit.py). Nothing here computes a new claim: rates are
- * the scripts' own fields, formatted. A missing file renders as "not run yet", never as a number.
+ * the scripts' own fields, formatted. A missing file renders as "not run yet", never as a number, and so does a file whose
+ * shape no longer matches what the page reads (a2a r09: zod at the read, tests/judge-data.test.ts on the committed files).
  */
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { z } from "zod";
 
 export interface ArmSummary {
   outing_venues: number;
@@ -112,12 +114,17 @@ export interface JudgeData {
   emberLive: EmberLive | null;
 }
 
-async function readJson<T>(file: string): Promise<T | null> {
+/** a2a r09: a missing or unparsable file, or one whose shape drifted from what /judge reads, renders as "not run yet" */
+async function readJson<T>(file: string, schema: z.ZodType<T>): Promise<T | null> {
+  let raw: unknown;
   try {
-    return JSON.parse(await readFile(file, "utf8")) as T;
+    raw = JSON.parse(await readFile(file, "utf8"));
   } catch {
     return null;
   }
+  const r = schema.safeParse(raw);
+  if (!r.success) console.error(`judge: ${path.basename(file)} does not match what /judge reads`, r.error.issues.slice(0, 3));
+  return r.success ? r.data : null;
 }
 
 /** bench/ember-live.json ← scripts/ember-margins.ts: ember margins measured on this deployment's live re-plans */
@@ -142,13 +149,52 @@ export interface EmberLive {
   bench: { source: string; finished_at: string | null; new_cards: number | null; cards_with_margin: number; threaded: number; margin_median: number | null } | null;
 }
 
+/* Shapes of the committed files, checked at the read. Loose objects: fields the page does not read pass through. Each is
+ * typed against its interface, so tsc fails when one drifts from the other. */
+const num = z.number();
+const numN = z.number().nullable();
+const ArmSummarySchema: z.ZodType<ArmSummary> = z.looseObject({
+  outing_venues: num, errors: num, violation: num, violation_rate: numN, unverifiable: num, closed_at_slot: num, alcohol: num,
+  alcohol_denominator: num, unknown_hours: num, alcohol_review: num.optional(), beyond_radius: num.optional(),
+});
+const AblationArmSchema: z.ZodType<AblationArm> = z.looseObject({
+  profiles: num, pool_candidates: num, pool_alcohol: num, pool_alcohol_rate: numN, profiles_with_pool_alcohol: num, outing_cards: num,
+  plan_alcohol_leak: num, plan_alcohol_leak_rate: numN, profiles_with_plan_leak: num,
+});
+const BenchResultsSchema: z.ZodType<BenchResults> = z.looseObject({
+  generated_by: z.string(), finished_at: z.string(), base: z.string(), model_arm_a: z.string(), profiles: num, in_recovery_profiles: num,
+  definitions: z.record(z.string(), z.string()), arms: z.record(z.string(), ArmSummarySchema), ablation_in_recovery: z.record(z.string(), AblationArmSchema),
+  latency: z.record(z.string(), z.record(z.string(), numN)),
+  coverage_refusals_arm_b: z.array(z.looseObject({ profile: z.string(), empty_outings: z.array(z.looseObject({ day: z.string(), rung: z.string(), reason: z.string() })) })),
+  plans: z.array(z.looseObject({ profile: z.string(), arm: z.string(), review: num, refusals_by_rule: z.record(z.string(), num), qloo_calls: num.optional() })),
+  errors: z.array(z.unknown()), started_at: z.string().optional(), wall_seconds: num.optional(), verify_venue_calls: num.optional(), arm_a_runs: z.array(z.unknown()).optional(),
+});
+const ReplanResultsSchema: z.ZodType<ReplanResults> = z.looseObject({
+  generated_by: z.string(), finished_at: z.string(), N: num, passed: num, result: z.string(), excluded: z.array(z.looseObject({ profile: z.string(), reason: z.string() })),
+  errors: z.array(z.unknown()), low_rated_reappearing: num, attributed_new_cards_total: num, new_cards_total: num, ember_margin_median_of_profiles: numN,
+  replan_seconds_p50: numN, definition: z.string(),
+});
+const AuditArmSchema: z.ZodType<AuditArm> = z.looseObject({ sampled: num, checked: num, inconclusive: num, violations: num, rate: numN, not_found: num, closed_at_slot: num, alcohol: num });
+const AuditResultsSchema: z.ZodType<AuditResults> = z.looseObject({
+  generated_by: z.string(), finished_at: z.string(), auditor: z.string(), method: z.string(), arms: z.record(z.string(), AuditArmSchema),
+  oracle_vs_hand: z.record(z.string(), z.record(z.string(), z.looseObject({ ok: num, wrong: num, inconclusive: num }))).optional(),
+});
+const PredatesSchema: z.ZodType<Predates> = z.looseObject({ bench_finished_at: z.string(), commits: z.array(z.looseObject({ commit: z.string(), date: z.string(), subject: z.string() })) });
+const EmberLiveSchema: z.ZodType<EmberLive> = z.looseObject({
+  generated_at: z.string(), definition: z.string(), threshold: num, replans: num, new_cards_naming_a_rating: num, rating_leads_loves: num, threaded: num, tied: num,
+  threaded_with_co_inputs: num, margin_median: numN,
+  distinct: z.looseObject({ cards: num, rating_sets: num, rating_leads_loves: num, threaded: num, previous_rule_threaded: num }),
+  previous_rule: z.looseObject({ rekindled_top: num, threaded: num, margin_median: numN }),
+  bench: z.looseObject({ source: z.string(), finished_at: z.string().nullable(), new_cards: numN, cards_with_margin: num, threaded: num, margin_median: numN }).nullable(),
+});
+
 export async function loadJudgeData(dir = path.join(process.cwd(), "bench")): Promise<JudgeData> {
   const [bench, replan, audit, predates, emberLive] = await Promise.all([
-    readJson<BenchResults>(path.join(dir, "results.json")),
-    readJson<ReplanResults>(path.join(dir, "replan.json")),
-    readJson<AuditResults>(path.join(dir, "audit.json")),
-    readJson<Predates>(path.join(dir, "predates.json")),
-    readJson<EmberLive>(path.join(dir, "ember-live.json")),
+    readJson(path.join(dir, "results.json"), BenchResultsSchema),
+    readJson(path.join(dir, "replan.json"), ReplanResultsSchema),
+    readJson(path.join(dir, "audit.json"), AuditResultsSchema),
+    readJson(path.join(dir, "predates.json"), PredatesSchema),
+    readJson(path.join(dir, "ember-live.json"), EmberLiveSchema),
   ]);
   return { bench, replan, audit, predates, emberLive };
 }
