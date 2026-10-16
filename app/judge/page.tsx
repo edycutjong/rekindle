@@ -111,7 +111,7 @@ export default async function Judge() {
             {rigor.tests} Vitest tests in {rigor.files} files
           </b>
           , no keys needed (<code>npm test</code>) · <b>{rigor.property_cases.toLocaleString("en-US")} generated verifier cases</b> ({rigor.properties} properties ×{" "}
-          {rigor.runs_per_property.toLocaleString("en-US")}, fixed seeds): no PASS outing ever breaks a hard constraint
+          {rigor.runs_per_property.toLocaleString("en-US")}, fixed seeds): in none did a PASS outing break a hard constraint
           {bench && (
             <>
               {" "}
