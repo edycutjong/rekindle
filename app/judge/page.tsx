@@ -243,6 +243,13 @@ E2E_BASE_URL=${LIVE} E2E_LIVE=1 npx playwright test e2e/live-plan.spec.ts --proj
             </span>
           </li>
         </ol>
+        <p className={j.def} data-testid="capacity-note">
+          <b>Capacity reached</b> (not a state to click): public plan runs share a daily cap and a per-address hourly limit, and the judge link in the Devpost testing
+          instructions has its own daily quota (<code>lib/ratelimit.ts</code>; each plan response carries the cap in <code>x-ratelimit-daily-limit</code>). Past a
+          limit the app says &ldquo;Capacity reached&rdquo;, invents no week, and links the latest live runs at <Link href="/integrations/qloo">Qloo integration</Link>. Two stored
+          weeks stay readable without a run: Maya&apos;s <Link href="/plans/ab088de3-3544-4a11-9c4e-033d2cf60965">week 1</Link> and her{" "}
+          <Link href="/plans/e0adf88a-6274-4b7e-a0af-428e3af9973e">week 2, re-planned from her ratings</Link>.
+        </p>
 
         <h2 className={s.h2}>Bench: named places, checked</h2>
         {predates && predates.commits.length > 0 && (
