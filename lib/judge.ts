@@ -235,7 +235,7 @@ export function benchRows(bench: BenchResults, audit: AuditResults | null): Benc
     const au = audit?.arms[arm];
     return {
       arm,
-      label: ARM_LABEL[arm] ?? arm,
+      label: ARM_LABEL[arm]!,
       venues: s.outing_venues,
       violations: s.violation,
       rate: pctLabel(s.violation_rate),
@@ -285,7 +285,7 @@ export function benchReceipt(b: BenchResults): string {
   const armA = b.arm_a_runs ? ` + ${b.arm_a_runs.length} arm-A model plans` : "";
   parts.push(`${b.plans.length} Rekindle plans${armA}`);
   if (b.plans.every((x) => typeof x.qloo_calls === "number")) {
-    parts.push(`${b.plans.reduce((n, x) => n + (x.qloo_calls ?? 0), 0)} Qloo calls on the plan path`);
+    parts.push(`${b.plans.reduce((n, x) => n + x.qloo_calls!, 0)} Qloo calls on the plan path`);
   }
   if (typeof b.verify_venue_calls === "number") parts.push(`${b.verify_venue_calls} grading calls`);
   parts.push(`${b.errors.length} errors`);
