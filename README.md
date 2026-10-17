@@ -11,6 +11,7 @@
   [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-C4501A?style=for-the-badge)](https://rekindle.edycu.dev/judge)
   [![Demo video](https://img.shields.io/badge/▶_Demo-Video_2:29-c4501a?style=for-the-badge)](https://youtu.be/a2axsKACYsk)
   [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-2E5B4F?style=for-the-badge)](https://qloo.devpost.com/)
+  [![Devpost submission](https://img.shields.io/badge/Devpost-Submission-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/rekindle-xw53nk)
 
   <br/>
 
