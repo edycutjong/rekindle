@@ -19,10 +19,11 @@ const llmOk = () =>
 function stubNetwork(o: { llm?: boolean; seen?: string[] } = {}) {
   vi.stubGlobal("fetch", async (input: unknown, init?: RequestInit) => {
     const url = String(input instanceof Request ? input.url : input);
-    o.seen?.push(new URL(url).host + new URL(url).pathname);
-    if (url.includes("qloo.com")) return Response.json({ results: { tags: [{ id: "urn:tag:genre:place:bakery", name: "Bakery" }] } });
-    if (url.includes("dashscope")) return o.llm === false ? new Response("{}", { status: 400 }) : llmOk();
-    if (url.includes("upstash.test")) {
+    const u = new URL(url);
+    o.seen?.push(u.host + u.pathname);
+    if (u.hostname.endsWith(".qloo.com")) return Response.json({ results: { tags: [{ id: "urn:tag:genre:place:bakery", name: "Bakery" }] } });
+    if (u.hostname.includes("dashscope")) return o.llm === false ? new Response("{}", { status: 400 }) : llmOk();
+    if (u.hostname === "upstash.test" || u.hostname.endsWith(".upstash.test")) {
       // Upstash replies base64; the client batches even one command into /pipeline
       const reply = (cmd: string[]) => ({ result: Buffer.from(cmd[0]!.toLowerCase() === "ping" ? "PONG" : "OK").toString("base64") });
       const cmds = JSON.parse(String(init?.body ?? "[]")) as string[] | string[][];
