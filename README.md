@@ -54,6 +54,22 @@ The rest of the bench is in [DEMO.md](DEMO.md#bench-reproduce): the full table, 
 - **Nothing on the default path is replayed.** Every plan, re-plan, swap and toggle calls Qloo live; plans and re-plans also call the routing model. Captured Qloo responses are used only in unit tests (`tests/replay.ts`).
 - **One page for you:** [JUDGE.md](JUDGE.md) mirrors `/judge`: the claim, a 30-second path, the receipts, the real reproduce command and the limitations.
 
+## 📸 See it in Action
+
+Three silent screen recordings of the live app on 17 Oct 2026, judge path, Maya (a fictional case). Each links to the stored week it shows.
+
+<p align="center"><img src="docs/broll-plan.gif" width="100%" alt="Screen recording of rekindle.edycu.dev: clicking Plan Maya's week, live opens Week 1 for Maya (fictional case) with seven pencil-sketch day slots; the Agent trace lists findAtHome, findOutings and placeSocial calls as Qloo returns candidates, verified cards are pencilled in day by day, then the full week lands: each card with its because line of Qloo explainability weights (for example Phoebe Bridgers 0.54, Fleabag 0.46), and each outing with its distance, opening hours and slot check."></p>
+
+<sub>Plan Maya's week, live: the agent trace streams the Qloo tool calls while verified cards are pencilled in, then the week lands with its "because" weights and hours checks. Real time, waits trimmed (two cuts); the trace's plan time for this run reads 13.7 s. Week: <a href="https://rekindle.edycu.dev/plans/41c8c068-868f-4613-b901-50a93d395372">41c8c068</a>.</sub>
+
+<p align="center"><img src="docs/broll-recovery.gif" width="100%" alt="Screen recording of the same week: clicking the In recovery constraint turns the Thursday, Saturday and Sunday outing cards into 're-checking against the new constraint' placeholders while the at-home cards stay; the slots are then refilled live with Dun-Well Doughnuts, Muz Muz Shop and Juice Generation, the notice reads '3 outings struck in place and 3 slots refilled live · 2.3 s', and the trace adds 'constraint change in_recovery=true, struck 3, refilled 3'."></p>
+
+<sub>Switching on In recovery re-checks only the outing slots, live: three venues are struck with their R-ALC rule (they stay on the sheet, below the refills) and three slots are refilled. Real time, uncut. Week: <a href="https://rekindle.edycu.dev/plans/7d7b54d5-f083-4015-b846-10c075cf83a6">7d7b54d5</a>.</sub>
+
+<p align="center"><img src="docs/broll-replan.gif" width="100%" alt="Screen recording: an approved Week 1 for Maya (fictional case) with three ratings (Lucy Dacus P7, Ceremonia Bakeshop P8, Juice Generation P2); Re-plan week 2 streams a new week, then Week 1 as rated appears above it with Ceremonia Bakeshop underlined in ember, Juice Generation struck as excluded, and two ember threads from Ceremonia Bakeshop to Saturday's Dun-Well Doughnuts (+0.026) and Sunday's Oslo Coffee Roasters (+0.076), each card reading 'because of Ceremonia Bakeshop, rated 8'; Thursday keeps Ceremonia Bakeshop, marked kept from last week and re-checked live."></p>
+
+<sub>Re-plan week 2 from three ratings: the bakery rated 8 comes back re-checked, the juice bar rated 2 stays out, and ember threads join the rating to the two new outings it outweighs the original loves on (Qloo's attribution, not causation). Real time, waits trimmed (two cuts); the trace's re-plan time reads 11.0 s. Week 2: <a href="https://rekindle.edycu.dev/plans/3479abb7-84ce-4bef-96c9-0517f0fdaf67">3479abb7</a>.</sub>
+
 ## 💡 The Problem & Solution
 
 ### The Problem
