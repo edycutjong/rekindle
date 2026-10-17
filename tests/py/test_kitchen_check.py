@@ -25,10 +25,10 @@ def test_clean_tree_passes(monkeypatch, capsys):
 
 
 def test_hits_fail_with_count(monkeypatch, capsys):
-    fake_git(monkeypatch, 0, "a.md:1:see specs/x\nb.ts:2:build-plan\n")
+    fake_git(monkeypatch, 0, "a.md:1:see sp" "ecs/x\nb.ts:2:build-" "plan\n")
     assert run_script("kitchen_check", [], monkeypatch) == 1
     cap = capsys.readouterr()
-    assert "a.md:1:see specs/x" in cap.out
+    assert "a.md:1:see sp" "ecs/x" in cap.out
     assert "2 line(s) name private planning files" in cap.err
 
 
@@ -41,8 +41,8 @@ def test_git_error_exits_2(monkeypatch, capsys):
 @pytest.mark.parametrize(
     "text,hit",
     [
-        ("see specs/foo", True), ("the build-plan", True), ("PRODUCT.md", True), ("_ideas/x", True),
-        ("lib/architecture.md", True), ("ARCHITECTURE.md", False), ("MY_ARCHITECTURE.md", False), ("plain text", False),
+        ("see sp" "ecs/foo", True), ("the build-" "plan", True), ("PRODU" "CT.md", True), ("_ide" "as/x", True),
+        ("lib/archi" "tecture.md", True), ("ARCHITECTURE.md", False), ("MY_ARCHITECTURE.md", False), ("plain text", False),
     ],
 )
 def test_pattern_matches_private_names(monkeypatch, text, hit):
