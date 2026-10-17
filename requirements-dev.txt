@@ -1,0 +1,5 @@
+# Python test tooling for scripts/*.py (pytest tests/py --cov=scripts --cov-branch --cov-fail-under=100).
+# The scripts themselves are stdlib-only except ui_smoke.py, intake_smoke.py and edge_states.py, which import
+# Playwright; the tests replace it with an in-process fake, so it is NOT needed here.
+pytest>=8.0
+pytest-cov>=5.0
