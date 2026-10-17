@@ -127,7 +127,7 @@ Excluded (week 1 too thin to rate): ruth, omar, hana, cal. Low-rated entities ba
 - `c3daf85` a2a r10: the coaching race accepts a call only if the truth boundary would keep one of its lines
 - `caf344e` a2a r10: routing has no submitPlan; the coaching race runs for every placed week
 - `adc2b4a` a2a r10 (found while verifying): routing is no longer told to call submitPlan; coaching is not told to route
-- `32ef36c` test: vitest coverage of lib/ and app/api/ to 100%, enforced by a threshold
+- `7a5665e` test: vitest coverage of lib/ and app/api/ to 100%, enforced by a threshold
 <!-- bench:predates:end -->
 
 ## End-to-end checks (Playwright, logged-out, live)
