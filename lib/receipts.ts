@@ -37,7 +37,7 @@ export function summarise(plans: PlanReceipt[]): Receipts["totals"] {
   const counted = plans.filter((p) => p.plan.model_routed !== undefined);
   const agency = {
     cards: counted.reduce((n, p) => n + p.plan.cards, 0),
-    model_routed: counted.reduce((n, p) => n + (p.plan.model_routed ?? 0), 0),
+    model_routed: counted.reduce((n, p) => n + p.plan.model_routed!, 0),
     model_coached: counted.reduce((n, p) => n + (p.plan.model_coached ?? 0), 0),
   };
   return { calls: all.length, non200: all.filter((c) => c.status !== 200).length, endpoints, params, p50: percentile(ms, 50), p95: percentile(ms, 95), refusals_by_rule, review, agency };

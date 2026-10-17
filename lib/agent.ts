@@ -162,8 +162,8 @@ export function namedMinutes(line: string): number[] {
   const out: number[] = [];
   for (const m of line.replace(/\bhalf an? hour\b/gi, "30 minutes").matchAll(DURATION)) {
     const n = m[1]!.toLowerCase();
-    const v = /^\d/.test(n) ? Number(n) : NUM_WORDS[n.replace("-", " ")] ?? NUM_WORDS[n];
-    if (v === undefined) continue;
+    // DURATION only matches the words NUM_WORDS holds ("forty-five" is looked up as "forty five")
+    const v = /^\d/.test(n) ? Number(n) : NUM_WORDS[n.replace("-", " ")]!;
     out.push(/^h/i.test(m[2]!) ? v * 60 : v);
   }
   return out;
@@ -377,6 +377,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
   const claim = (toolName: ToolName, day: DayName, rung: SlotSpec["rung"]): SlotSpec | { error: string } => {
     const slot = skeleton.find((s) => s.day === day);
     let error: string | null = null;
+    // every ladder has all seven days and the tool schemas only accept those, so this arm is unreachable; kept as a guard
+    /* v8 ignore next -- unreachable by construction (guard against a schema/ladder mismatch) */
     if (!slot) error = `${day} is not in this week's ladder`;
     else if (slot.rung !== rung) error = `${day} is a ${slot.rung} slot, not ${rung}`;
     else if (claimed.has(day) && !retryable(day)) error = `${day} is already filled`;
@@ -534,7 +536,8 @@ export async function runAgent(opts: AgentOptions): Promise<AgentPlan> {
     const names = [...otherNames, ...cards.map((c) => c.name)];
     const r = await coachRace({ llms: coaches, prompt: `All slots are filled:\n${placed.map((s) => JSON.stringify(summary(s))).join("\n")}\nCall submitPlan now.`, windowMs: coachDeadline - Date.now(), onCallEnd, accept: (lines) => usableLines(cards, lines, names).length > 0 });
     submitted = r.lines ?? r.rejected;
-    if (r.lines) coachedBy = r.by ? { provider: r.by.provider, model: r.by.modelId } : null;
+    // coachRace returns lines only together with the provider that wrote them
+    if (r.by) coachedBy = { provider: r.by.provider, model: r.by.modelId };
     for (const e of r.errors) {
       llmErrors.push(e);
       emit({ type: "llm_fallback", from: e.from, to: null, error: e.error, stage: "coach" });
@@ -621,12 +624,13 @@ export async function coachRace(o: { llms: LlmHandle[]; prompt: string; windowMs
     const r = await Promise.any(runs);
     return { lines: r.lines, by: r.llm, errors: [], rejected: [] };
   } catch {
-    const settled = await Promise.allSettled(runs);
+    // Promise.any only rejects once every run has, so every settled result is a rejection
+    const settled = (await Promise.allSettled(runs)) as PromiseRejectedResult[];
     return {
       lines: null,
       by: null,
       rejected,
-      errors: settled.flatMap((x, k) => (x.status === "rejected" ? [{ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: providerError(x.reason) }] : [])),
+      errors: settled.map((x, k) => ({ provider: o.llms[k]!.provider, from: `${o.llms[k]!.provider}:${o.llms[k]!.modelId}`, error: providerError(x.reason) })),
     };
   }
 }

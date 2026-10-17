@@ -361,6 +361,9 @@ export async function findOutings(ctx: ToolContext, slot: SlotSpec, o: OutingPar
     const moved = onlyOpen ? reslotHour(e.properties?.hours, slot.day, DAY_HOURS.filter((x) => x !== slot.hour)) : null;
     if (moved !== null) {
       const v2 = verifyCard(ent, { ...base, slot: { day: slot.day, hour: moved } });
+      // Defence in depth: `v` failed only R-OPEN and `moved` is an hour slotStatus calls OPEN, so v2 always passes (no test can
+      // reach the else arm); the guard stays so a card can never ship unless the verifier says PASS.
+      /* v8 ignore else -- unreachable by construction, kept as a truth-boundary guard */
       if (v2.verdict === "PASS") {
         // a move, not a refusal: the card carries `movedFrom` ("moved from 18:00 (closed then)") and the venue is never
         // struck under itself or counted as an R-OPEN refusal
@@ -455,7 +458,7 @@ export async function placeSocial(ctx: ToolContext, slot: SlotSpec): Promise<Too
     }
     if (isOutageReason(r.empty)) break;
   }
-  return { card: null, refusals, review, returned, empty: last?.empty ?? "no social venue passed all rules", cell: top.geohash, cells: cells.slice(0, 49) };
+  return { card: null, refusals, review, returned, empty: last!.empty, cell: top.geohash, cells: cells.slice(0, 49) };
 }
 
 function qlooDown(e: unknown): string {
