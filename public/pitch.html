@@ -575,10 +575,16 @@ html.overview, .overview body { overflow: auto; }
   slides.forEach(function (s, i) {
     var f = d.createElement("div");
     f.className = "foot";
-    f.innerHTML = '<span class="brand"><img src="favicon.svg" alt="">Rekindle · <span class="mono" style="font-size:18px;color:var(--muted)">' +
-      (d.querySelector(".ver") ? d.querySelector(".ver").textContent : "") + '</span></span>' +
-      '<span>' + (i === 0 || i === 2 || i === 3 || i === 9 ? "" : "Maya is a fictional case") + '</span>' +
-      '<span class="n">' + pad(i + 1) + " / " + pad(N) + "</span>";
+    /* built with DOM nodes, not innerHTML: the version text is read from the page, so it is set as text (CodeQL js/xss-through-dom) */
+    var brand = d.createElement("span"), img = d.createElement("img"), ver = d.createElement("span");
+    brand.className = "brand"; img.src = "favicon.svg"; img.alt = "";
+    ver.className = "mono"; ver.style.fontSize = "18px"; ver.style.color = "var(--muted)";
+    ver.textContent = d.querySelector(".ver") ? d.querySelector(".ver").textContent : "";
+    brand.appendChild(img); brand.appendChild(d.createTextNode("Rekindle · ")); brand.appendChild(ver);
+    var mid = d.createElement("span"), num = d.createElement("span");
+    mid.textContent = i === 0 || i === 2 || i === 3 || i === 9 ? "" : "Maya is a fictional case";
+    num.className = "n"; num.textContent = pad(i + 1) + " / " + pad(N);
+    f.appendChild(brand); f.appendChild(mid); f.appendChild(num);
     s.appendChild(f);
     s.addEventListener("click", function () { if (root.classList.contains("overview")) { overview(false); go(i); } });
   });

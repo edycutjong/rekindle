@@ -48,7 +48,9 @@ describe("the audit is never called a hand check (a2a r11)", () => {
     const { readFileSync } = await import("node:fs");
     const files = ["README.md", "JUDGE.md", "DEMO.md", "app/judge/page.tsx", "lib/judge.ts", "public/about.html", "public/pitch.html"];
     for (const f of files) {
-      const text = readFileSync(f, "utf8").replace(/<[^>]+>/g, "");
+      // strip tags until none are left, so a tag split by another tag cannot survive one pass (CodeQL js/incomplete-multi-character-sanitization)
+      let text = readFileSync(f, "utf8"), prev = "";
+      while (text !== prev) { prev = text; text = text.replace(/<[^>]+>/g, ""); }
       expect(text, f).not.toMatch(/no passing outing breaks/i);
       expect(text, f).not.toMatch(/\b\d+ and \d+ inconclusive/);
       // the screen's 0 is by construction; never set against the four-tag arm alone
