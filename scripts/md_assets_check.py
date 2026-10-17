@@ -45,7 +45,7 @@ for md in md_files:
                 for part in p.parts:
                     if part == "..":
                         parts = parts[:-1]
-                    elif part != ".":
+                    else:  # PurePosixPath never yields "." parts, so no `part != "."` guard is needed
                         parts.append(part)
                 path = "/".join(parts)
                 if path in tracked or any(t.startswith(path.rstrip("/") + "/") for t in tracked):

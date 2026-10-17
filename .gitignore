@@ -53,3 +53,5 @@ bench/manual_audit_key.csv
 
 # Python venv for the Playwright scripts (JUDGE.md "Reproduce")
 .venv/
+.coverage
+.pytest_cache/

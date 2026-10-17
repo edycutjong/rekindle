@@ -58,6 +58,22 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  python-tests:
+    name: "Stage 1 · Python script tests (pytest, 100% statements + branches)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # this job never pushes
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: pytest with branch coverage over scripts/ (no network, no keys; fails under 100%)
+        run: python -m pytest tests/py --cov=scripts --cov-branch --cov-fail-under=100
+
   # ── STAGE 2: Security (parallel with Stage 1) ────────────────
   secret-scan:
     name: "Stage 2 · Secret scan (gitleaks, full history)"
@@ -85,7 +101,7 @@ jobs:
   # ── STAGE 3: Build ───────────────────────────────────────────
   build:
     name: "Stage 3 · Build + bundle budget"
-    needs: [quality]
+    needs: [quality, python-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -189,7 +205,7 @@ jobs:
   # ── STAGE 6: Deploy gate (main only) ─────────────────────────
   deploy-gate:
     name: "Stage 6 · Deploy gate"
-    needs: [quality, secret-scan, dependency-audit, build, e2e, performance]
+    needs: [quality, python-tests, secret-scan, dependency-audit, build, e2e, performance]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -197,7 +213,7 @@ jobs:
         run: |
           {
             echo "## All CI/CD gates passed"
-            echo "- Stage 1 Quality: ESLint, tsc, Vitest + coverage, seed/docs/kitchen checks"
+            echo "- Stage 1 Quality: ESLint, tsc, Vitest + 100% coverage, seed/docs/kitchen checks; pytest + 100% script coverage"
             echo "- Stage 2 Security: gitleaks (full history), npm audit, license check"
             echo "- Stage 3 Build: next build, bundle budget"
             echo "- Stage 4 E2E: Playwright, desktop + Pixel 7"
