@@ -159,6 +159,11 @@
    "commit": "adc2b4a",
    "date": "2026-10-17",
    "subject": "a2a r10 (found while verifying): routing is no longer told to call submitPlan; coaching is not told to route"
+  },
+  {
+   "commit": "32ef36c",
+   "date": "2026-10-17",
+   "subject": "test: vitest coverage of lib/ and app/api/ to 100%, enforced by a threshold"
   }
  ]
 }
