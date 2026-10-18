@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   title: "Rekindle",
   description:
     "A behavioral-activation planning agent for clinicians: a verified, clinician-approved week of real activities from what a patient used to love, via Qloo.",
+  authors: [{ name: "Edy Cu", url: "https://x.com/edycutjong" }],
+  creator: "Edy Cu",
   // the SVG for every browser that takes one; /favicon.ico (16 + 32) and the 180 px touch icon for the clients that ask
   // for those paths by convention (iOS home screen, some unfurlers and feed readers): /favicon.ico was a 404 (QA 2026-10-09)
   icons: {
@@ -39,6 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    creator: "@edycutjong",
     title: "Rekindle",
     description:
       "Turns what a patient used to love into a clinician-approved week of real, open, nearby activities, re-planned from ratings.",
