@@ -15,7 +15,7 @@ const OG_ALT = `Rekindle: audited by our build agent (an AI), the same LLM got $
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rekindle.edycu.dev"),
-  title: "Rekindle",
+  title: "Rekindle — Behavioral activation planner for clinicians",
   description:
     "A behavioral-activation planning agent for clinicians: a verified, clinician-approved week of real activities from what a patient used to love, via Qloo.",
   authors: [{ name: "Edy Cu", url: "https://x.com/edycutjong" }],
