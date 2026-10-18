@@ -10,6 +10,8 @@
   [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-26221D?style=for-the-badge)](https://rekindle.edycu.dev)
   [![Judge receipts](https://img.shields.io/badge/🧾_Judge-Receipts-C4501A?style=for-the-badge)](https://rekindle.edycu.dev/judge)
   [![Demo video](https://img.shields.io/badge/▶_Demo-Video_2:29-c4501a?style=for-the-badge)](https://youtu.be/a2axsKACYsk)
+  [![The story](https://img.shields.io/badge/📖_The-Story-6F675B?style=for-the-badge)](https://rekindle.edycu.dev/about)
+  [![Pitch deck](https://img.shields.io/badge/🎞_Pitch-Deck-2E5B4F?style=for-the-badge)](https://rekindle.edycu.dev/pitch)
   [![Built for Qloo Agentic Hackathon](https://img.shields.io/badge/Devpost-Qloo_Agentic_Hackathon-2E5B4F?style=for-the-badge)](https://qloo.devpost.com/)
   [![Devpost submission](https://img.shields.io/badge/Devpost-Submission-003E54?style=for-the-badge&logo=devpost&logoColor=white)](https://devpost.com/software/rekindle-xw53nk)
 
@@ -20,6 +22,11 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-6F675B?style=flat)](LICENSE)
   [![CI](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/ci.yml)
   [![Release](https://img.shields.io/github/v/release/edycutjong/rekindle?sort=semver)](https://github.com/edycutjong/rekindle/releases/latest)
+  [![CodeQL](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/codeql.yml)
+  [![gitleaks](https://github.com/edycutjong/rekindle/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/gitleaks.yml)
+  [![Uptime](https://github.com/edycutjong/rekindle/actions/workflows/uptime.yml/badge.svg)](https://github.com/edycutjong/rekindle/actions/workflows/uptime.yml)
+  ![Next.js 15](https://img.shields.io/badge/Next.js-15-26221D?style=flat&logo=nextdotjs&logoColor=white)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
 
   <p>
     <a href="https://rekindle.edycu.dev"><b>Try it live: rekindle.edycu.dev</b></a> (no login, fictional cases) ·
